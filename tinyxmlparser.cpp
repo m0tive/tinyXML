@@ -23,8 +23,6 @@ distribution.
 
 #include "tinyxml.h"
 #include <ctype.h>
-#include <strstream>
-using namespace std;
 
 //#define DEBUG_PARSER
 
@@ -55,8 +53,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	return p;
 }
 
-
-/*static*/ bool TiXmlBase::StreamWhiteSpace( std::istream* in, std::string* tag )
+/*static*/ bool TiXmlBase::StreamWhiteSpace( TiXmlInStream * in, TiXmlString * tag )
 {
 	for( ;; )
 	{
@@ -69,8 +66,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	}
 }
 
-
-/*static*/ bool TiXmlBase::StreamTo( std::istream* in, int character, std::string* tag )
+/*static*/ bool TiXmlBase::StreamTo( TiXmlInStream * in, int character, TiXmlString * tag )
 {
 	while ( in->good() )
 	{
@@ -84,8 +80,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	return false;
 }
 
-
-const char* TiXmlBase::ReadName( const char* p, string* name )
+const char* TiXmlBase::ReadName( const char* p, TiXmlString * name )
 {
 	*name = "";
 	assert( p );
@@ -111,11 +106,10 @@ const char* TiXmlBase::ReadName( const char* p, string* name )
 	return 0;
 }
 
-
 const char* TiXmlBase::GetEntity( const char* p, char* value )
 {
 	// Presume an entity, and pull it out.
-	string ent;
+   TiXmlString ent;
 	int i;
 
 	// Ignore the &#x entities.
@@ -187,15 +181,13 @@ bool TiXmlBase::StringEqual( const char* p,
 	return false;
 }
 
-
 const char* TiXmlBase::ReadText(	const char* p, 
-									string* text, 
+									TiXmlString * text, 
 									bool trimWhiteSpace, 
 									const char* endTag, 
 									bool caseInsensitive )
 {
-	*text = "";
-
+   *text = "";
 	if (    !trimWhiteSpace			// certain tags always keep whitespace
 		 || !condenseWhiteSpace )	// if true, whitespace is always kept
 	{
@@ -206,7 +198,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 		{
 			char c;
 			p = GetChar( p, &c );
-			text->append( &c, 1 );
+         (* text) += c;
 		}
 	}
 	else
@@ -234,20 +226,19 @@ const char* TiXmlBase::ReadText(	const char* p,
 				// new character. Any whitespace just becomes a space.
 				if ( whitespace )
 				{
-					text->append( " ", 1 );
+               (* text) += ' ';
 					whitespace = false;
 				}
 				char c;
 				p = GetChar( p, &c );
-				text->append( &c, 1 );
+            (* text) += c;
 			}
 		}
 	}
 	return p + strlen( endTag );
 }
 
-
-void TiXmlDocument::StreamIn( std::istream* in, std::string* tag )
+void TiXmlDocument::StreamIn( TiXmlInStream * in, TiXmlString * tag )
 {
 	// The basic issue with a document is that we don't know what we're
 	// streaming. Read something presumed to be a tag (and hope), then
@@ -302,7 +293,6 @@ void TiXmlDocument::StreamIn( std::istream* in, std::string* tag )
 	// We should have returned sooner. 
 	SetError( TIXML_ERROR );
 }
-
 
 const char* TiXmlDocument::Parse( const char* p )
 {
@@ -411,8 +401,7 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 	return returnNode;
 }
 
-
-void TiXmlElement::StreamIn( std::istream* in, std::string* tag )
+void TiXmlElement::StreamIn (TiXmlInStream * in, TiXmlString * tag)
 {
 	// We're called with some amount of pre-parsing. That is, some of "this"
 	// element is in "tag". Go ahead and stream to the closing ">"
@@ -515,7 +504,6 @@ void TiXmlElement::StreamIn( std::istream* in, std::string* tag )
 	}
 }
 
-
 const char* TiXmlElement::Parse( const char* p )
 {
 	p = SkipWhiteSpace( p );
@@ -530,14 +518,14 @@ const char* TiXmlElement::Parse( const char* p )
 	p = SkipWhiteSpace( p+1 );
 
 	// Read the name.
-	p = ReadName( p, &value );
+   p = ReadName( p, &value );
 	if ( !p || !*p )
 	{
 		if ( document )	document->SetError( TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME );
 		return false;
 	}
 
-	string endTag = "</";
+   TiXmlString endTag ("</");
 	endTag += value;
 	endTag += ">";
 
@@ -670,8 +658,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 	return p;
 }
 
-
-void TiXmlUnknown::StreamIn( std::istream* in, std::string* tag )
+void TiXmlUnknown::StreamIn( TiXmlInStream * in, TiXmlString * tag )
 {
 	while ( in->good() )
 	{
@@ -686,7 +673,6 @@ void TiXmlUnknown::StreamIn( std::istream* in, std::string* tag )
 	}
 }
 
-
 const char* TiXmlUnknown::Parse( const char* p )
 {
 	TiXmlDocument* document = GetDocument();
@@ -697,7 +683,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 		return 0;
 	}
 	++p;
-	value = "";
+   value = "";
 
 	while ( p && *p && *p != '>' )
 	{
@@ -714,8 +700,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 	return p;
 }
 
-
-void TiXmlComment::StreamIn( std::istream* in, std::string* tag )
+void TiXmlComment::StreamIn( TiXmlInStream * in, TiXmlString * tag )
 {
 	while ( in->good() )
 	{
@@ -731,7 +716,6 @@ void TiXmlComment::StreamIn( std::istream* in, std::string* tag )
 		}
 	}
 }
-
 
 const char* TiXmlComment::Parse( const char* p )
 {
@@ -811,8 +795,7 @@ const char* TiXmlAttribute::Parse( const char* p )
 	return p;
 }
 
-
-void TiXmlText::StreamIn( std::istream* in, std::string* tag )
+void TiXmlText::StreamIn( TiXmlInStream * in, TiXmlString * tag )
 {
 	while ( in->good() )
 	{
@@ -824,8 +807,6 @@ void TiXmlText::StreamIn( std::istream* in, std::string* tag )
 		in->get();
 	}
 }
-
-
 
 const char* TiXmlText::Parse( const char* p )
 {
@@ -842,8 +823,7 @@ const char* TiXmlText::Parse( const char* p )
 	return 0;
 }
 
-
-void TiXmlDeclaration::StreamIn( std::istream* in, std::string* tag )
+void TiXmlDeclaration::StreamIn( TiXmlInStream * in, TiXmlString * tag )
 {
 	while ( in->good() )
 	{
@@ -920,9 +900,6 @@ const char* TiXmlDeclaration::Parse( const char* p )
 
 bool TiXmlText::Blank() const
 {
-	for ( unsigned i=0; i<value.size(); i++ )
-		if ( !isspace( value[i] ) )
-			return false;
-	return true;
+   return value . isblank ();
 }
 

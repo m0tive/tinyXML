@@ -21,18 +21,12 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-#include <iostream>
-#include <sstream>
-#include <fstream>
 #include <ctype.h>
 #include "tinyxml.h"
-using namespace std;
-
 
 bool TiXmlBase::condenseWhiteSpace = true;
 
-
-void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
+void TiXmlBase::PutString( const TiXmlString & str, TiXmlOutStream * stream )
 {
 	// Scan for the all important '&'
 	unsigned int i=0, j=0;
@@ -41,15 +35,21 @@ void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 	{
 		unsigned next = str.find( '&', i );
 
-		if ( next == string::npos )
+      if ( next == TiXmlString::notfound)
 		{
-			stream->write( &str.at( i ), str.length() - i );
+         const char * ati;
+         ati = str . c_str () + i;
+         stream -> write (ati, str.length() - i);
 			return;
    		}
 
 		// We found an entity.
 		if ( next - i > 0 )
-			stream->write( &str.at( i ), next - i );
+      {
+         const char * ati;
+         ati = str . c_str () + i;
+         stream -> write (ati, next - i);
+      }
 		i = next;
 
 		// Check for the special "&#x" entitity
@@ -251,30 +251,27 @@ bool TiXmlNode::RemoveChild( TiXmlNode* removeThis )
 	return true;
 }
 
-
-TiXmlNode* TiXmlNode::FirstChild( const std::string& value ) const
+TiXmlNode* TiXmlNode::FirstChild( const char * value ) const
 {
 	TiXmlNode* node;
 	for ( node = firstChild; node; node = node->next )
 	{
-		if ( node->Value() == value )
+		if ( node->SValue() == TiXmlString (value))
 			return node;
 	}
 	return 0;
 }
 
-
-TiXmlNode* TiXmlNode::LastChild( const std::string& value ) const
+TiXmlNode* TiXmlNode::LastChild( const char * value ) const
 {
 	TiXmlNode* node;
 	for ( node = lastChild; node; node = node->prev )
 	{
-		if ( node->Value() == value )
+		if ( node->SValue() == TiXmlString (value))
 			return node;
 	}
 	return 0;
 }
-
 
 TiXmlNode* TiXmlNode::IterateChildren( TiXmlNode* previous ) const
 {
@@ -289,8 +286,7 @@ TiXmlNode* TiXmlNode::IterateChildren( TiXmlNode* previous ) const
 	}
 }
 
-
-TiXmlNode* TiXmlNode::IterateChildren( const std::string& val, TiXmlNode* previous ) const
+TiXmlNode* TiXmlNode::IterateChildren( const char * val, TiXmlNode* previous ) const
 {
 	if ( !previous )
 	{
@@ -303,32 +299,30 @@ TiXmlNode* TiXmlNode::IterateChildren( const std::string& val, TiXmlNode* previo
 	}
 }
 
-
-TiXmlNode* TiXmlNode::NextSibling( const std::string& value ) const
+TiXmlNode* TiXmlNode::NextSibling( const char * value ) const
 {
 	TiXmlNode* node;
 	for ( node = next; node; node = node->next )
 	{
-		if ( node->Value() == value )
+		if ( node->SValue() == TiXmlString (value))
 			return node;
 	}
 	return 0;
 }
 
 
-TiXmlNode* TiXmlNode::PreviousSibling( const std::string& value ) const
+TiXmlNode* TiXmlNode::PreviousSibling( const char * value ) const
 {
 	TiXmlNode* node;
 	for ( node = prev; node; node = node->prev )
 	{
-		if ( node->Value() == value )
+		if ( node->SValue() == TiXmlString (value))
 			return node;
 	}
 	return 0;
 }
 
-
-void TiXmlElement::RemoveAttribute( const std::string& name )
+void TiXmlElement::RemoveAttribute( const char * name )
 {
 	TiXmlAttribute* node = attributeSet.Find( name );
 	if ( node )
@@ -337,7 +331,6 @@ void TiXmlElement::RemoveAttribute( const std::string& name )
 		delete node;
 	}
 }
-
 
 TiXmlElement* TiXmlNode::FirstChildElement() const
 {
@@ -353,8 +346,7 @@ TiXmlElement* TiXmlNode::FirstChildElement() const
 	return 0;
 }
 
-
-TiXmlElement* TiXmlNode::FirstChildElement( const std::string& value ) const
+TiXmlElement* TiXmlNode::FirstChildElement( const char * value ) const
 {
 	TiXmlNode* node;
 
@@ -383,8 +375,7 @@ TiXmlElement* TiXmlNode::NextSiblingElement() const
 	return 0;
 }
 
-
-TiXmlElement* TiXmlNode::NextSiblingElement( const std::string& value ) const
+TiXmlElement* TiXmlNode::NextSiblingElement( const char * value ) const
 {
 	TiXmlNode* node;
 
@@ -418,7 +409,7 @@ TiXmlDocument* TiXmlNode::GetDocument() const
 // {
 // }
 
-TiXmlElement::TiXmlElement( const std::string& _value ) 
+TiXmlElement::TiXmlElement (const char * _value) 
 	: TiXmlNode( TiXmlNode::ELEMENT )
 {
 	firstChild = lastChild = 0;
@@ -435,40 +426,37 @@ TiXmlElement::~TiXmlElement()
 	}
 }
 
-const std::string* TiXmlElement::Attribute( const std::string& name ) const
+const char * TiXmlElement::Attribute( const char * name ) const
 {
 	TiXmlAttribute* node = attributeSet.Find( name );
 
 	if ( node )
-		return &(node->Value() );
+		return node->Value();
 
 	return 0;
 }
 
 
-const std::string* TiXmlElement::Attribute( const std::string& name, int* i ) const
+const char * TiXmlElement::Attribute( const char * name, int & i ) const
 {
-	const std::string* s = Attribute( name );
+	const char * s = Attribute( name );
 	if ( s )
-		*i = atoi( s->c_str() );
+		i = atoi( s );
 	else
-		*i = 0;
+		i = 0;
 	return s;
 }
 
 
-void TiXmlElement::SetAttribute( const std::string& name, int val )
+void TiXmlElement::SetAttribute( const char * name, int val )
 {	
 	char buf[64];
 	sprintf( buf, "%d", val );
-
-	std::string v = buf;
-
-	SetAttribute( name, v );
+	SetAttribute( name, buf );
 }
 
 
-void TiXmlElement::SetAttribute( const std::string& name, const std::string& value )
+void TiXmlElement::SetAttribute( const char * name, const char * value )
 {
 	TiXmlAttribute* node = attributeSet.Find( name );
 	if ( node )
@@ -488,7 +476,6 @@ void TiXmlElement::SetAttribute( const std::string& name, const std::string& val
 		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY );
 	}
 }
-
 
 void TiXmlElement::Print( FILE* cfile, int depth ) const
 {
@@ -541,8 +528,7 @@ void TiXmlElement::Print( FILE* cfile, int depth ) const
 	}
 }
 
-
-void TiXmlElement::StreamOut( std::ostream* stream ) const
+void TiXmlElement::StreamOut( TiXmlOutStream * stream ) const
 {
 	(*stream) << "<" << value;
 
@@ -572,11 +558,9 @@ void TiXmlElement::StreamOut( std::ostream* stream ) const
 	}
 }
 
-
 TiXmlNode* TiXmlElement::Clone() const
 {
-	TiXmlElement* clone = new TiXmlElement( Value() );
-
+   TiXmlElement* clone = new TiXmlElement( Value() );
 	if ( !clone )
 		return 0;
 	
@@ -606,34 +590,30 @@ TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 //	ignoreWhiteSpace = true;
 }
 
-
-TiXmlDocument::TiXmlDocument( const std::string& documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
+TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 //	ignoreWhiteSpace = true;
 	value = documentName;
 	error = false;
 }
 
-
 bool TiXmlDocument::LoadFile()
 {
-	return LoadFile( value );
+   return LoadFile( value . c_str ());
 }
-
 
 bool TiXmlDocument::SaveFile() const
 {
- 	return SaveFile( value );
+   return SaveFile( value . c_str ());
 }
 
-
-bool TiXmlDocument::LoadFile( const std::string& filename )
+bool TiXmlDocument::LoadFile( const char * filename )
 {
 	// Delete the existing data:
 	Clear();
-	value = filename;
+   value = filename;
 
-	FILE* file = fopen( filename.c_str(), "r" );
+   FILE* file = fopen( value . c_str (), "r" );
 
 	if ( file )
 	{
@@ -652,7 +632,7 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 
 		// If we have a file, assume it is all one big XML file, and read it in.
 		// The document parser may decide the document ends sooner than the entire file, however.
-		std::string data;
+      TiXmlString data;
 		data.reserve( length );
 
 		const int BUF_SIZE = 2048;
@@ -674,11 +654,10 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 	return false;
 }
 
-
-bool TiXmlDocument::SaveFile( const std::string& filename ) const
+bool TiXmlDocument::SaveFile( const char * filename ) const
 {
 	// The old c stuff lives on...
-	FILE* fp = fopen( filename.c_str(), "w" );
+	FILE* fp = fopen( filename, "w" );
 	if ( fp )
 	{
 		Print( fp, 0 );
@@ -697,7 +676,7 @@ TiXmlNode* TiXmlDocument::Clone() const
 
 	CopyToClone( clone );
 	clone->error = error;
-	clone->errorDesc = errorDesc;
+	clone->errorDesc = errorDesc . c_str ();
 
 	TiXmlNode* node = 0;
 	for ( node = firstChild; node; node = node->NextSibling() )
@@ -718,8 +697,7 @@ void TiXmlDocument::Print( FILE* cfile, int depth ) const
 	}
 }
 
-
-void TiXmlDocument::StreamOut( std::ostream* out ) const
+void TiXmlDocument::StreamOut( TiXmlOutStream * out ) const
 {
 	TiXmlNode* node;
 	for ( node=FirstChild(); node; node=node->NextSibling() )
@@ -733,7 +711,6 @@ void TiXmlDocument::StreamOut( std::ostream* out ) const
 			break;
 	}
 }
-
 
 TiXmlAttribute* TiXmlAttribute::Next() const
 {
@@ -757,17 +734,15 @@ TiXmlAttribute* TiXmlAttribute::Previous() const
 
 void TiXmlAttribute::Print( FILE* cfile, int /*depth*/ ) const
 {
-	ostringstream stream( ostringstream::out );
-	stream.str().reserve( 500 );
-	
-	StreamOut( &stream );
-	fprintf( cfile, "%s", stream.str().c_str() );
+   if (value . find ('\"') == TiXmlString::notfound)
+      fprintf (cfile, "%s=\"%s\"", Name (), Value ());
+   else
+      fprintf (cfile, "%s='%s'", Name (), Value ());
 }
 
-
-void TiXmlAttribute::StreamOut( std::ostream* stream ) const
+void TiXmlAttribute::StreamOut( TiXmlOutStream * stream ) const
 {
-	if ( value.find( '\"' ) != std::string::npos )
+	if (value.find( '\"' ) != TiXmlString::notfound)
 	{
 		PutString( name, stream );
 		(*stream) << "=" << "'";
@@ -783,64 +758,48 @@ void TiXmlAttribute::StreamOut( std::ostream* stream ) const
 	}
 }
 
-
 void TiXmlAttribute::SetIntValue( int value )
 {
-	std::string s;
-	std::ostringstream stream( s );
-	stream << value;
-	SetValue( stream.str() );
+   char buf [64];
+   sprintf (buf, "%d", value);
+   SetValue (buf);
 }
-
 
 void TiXmlAttribute::SetDoubleValue( double value )
 {
-	std::string s;
-	std::ostringstream stream( s );
-	stream << value;
-	SetValue( stream.str() );
+   char buf [64];
+   sprintf (buf, "%lf", value);
+   SetValue (buf);
 }
-
 
 const int TiXmlAttribute::IntValue() const
 {
-	int v;
-	std::istringstream string( value );
-	string >> v;
-	return v;
+   return atoi (value . c_str ());
 }
-
 
 const double  TiXmlAttribute::DoubleValue() const
 {
-	double v;
-	std::istringstream string( value );
-	string >> v;
-	return v;
+   return atof (value . c_str ());
 }
-
 
 void TiXmlComment::Print( FILE* cfile, int depth ) const
 {
-	ostringstream stream( ostringstream::out );
-	stream.str().reserve( 1000 );
-	
+   TiXmlOutStream stream;
+
 	for ( int i=0; i<depth; i++ )
 	{
-		fprintf( cfile, "    " );
+		fputs( "    ", cfile );
 	}
-	StreamOut( &stream );
-	fprintf( cfile, "%s", stream.str().c_str() );
+   StreamOut (& stream);
+	fprintf( cfile, "%s", stream.c_str() );
 }
 
-
-void TiXmlComment::StreamOut( std::ostream* stream ) const
+void TiXmlComment::StreamOut( TiXmlOutStream * stream ) const
 {
 	(*stream) << "<!--";
 	PutString( value, stream );
 	(*stream) << "-->";
 }
-
 
 TiXmlNode* TiXmlComment::Clone() const
 {
@@ -856,18 +815,15 @@ TiXmlNode* TiXmlComment::Clone() const
 
 void TiXmlText::Print( FILE* cfile, int depth ) const
 {
-	ostringstream stream( ostringstream::out );
-	stream.str().reserve( 1000 );
-	StreamOut( &stream );
-	fprintf( cfile, "%s", stream.str().c_str() );
+   TiXmlOutStream stream;
+   StreamOut (& stream);
+	fprintf( cfile, "%s", stream.c_str() );
 }
 
-
-void TiXmlText::StreamOut( std::ostream* stream ) const
+void TiXmlText::StreamOut( TiXmlOutStream * stream ) const
 {
 	PutString( value, stream );
 }
-
 
 TiXmlNode* TiXmlText::Clone() const
 {	
@@ -881,28 +837,31 @@ TiXmlNode* TiXmlText::Clone() const
 	return clone;
 }
 
-
-TiXmlDeclaration::TiXmlDeclaration( const std::string& _version, 
-									const std::string& _encoding,
-									const std::string& _standalone )
+TiXmlDeclaration::TiXmlDeclaration( const char * _version, 
+									const char * _encoding,
+									const char * _standalone )
 	: TiXmlNode( TiXmlNode::DECLARATION ) 
 {
-	version = _version;
-	encoding = _encoding;
-	standalone = _standalone;
+   version = _version;
+   encoding = _encoding;
+   standalone = _standalone;
 }
 
 
 void TiXmlDeclaration::Print( FILE* cfile, int depth ) const
 {
-	ostringstream stream( ostringstream::out );
-	stream.str().reserve( 200 );
-	StreamOut( &stream );
-	fprintf( cfile, "%s", stream.str().c_str() );
+	fprintf (cfile, "<?xml ");
+
+	if ( !version.empty() )
+		fprintf (cfile, "version=\"%s\" ", version . c_str ());
+	if ( !encoding.empty() )
+		fprintf (cfile, "encoding=\"%s\" ", encoding . c_str ());
+	if ( !standalone.empty() )
+		fprintf (cfile, "standalone=\"%s\" ", standalone . c_str ());
+	fprintf (cfile, "?>");
 }
 
-
-void TiXmlDeclaration::StreamOut( std::ostream* stream ) const
+void TiXmlDeclaration::StreamOut( TiXmlOutStream * stream ) const
 {
 	(*stream) << "<?xml ";
 
@@ -927,7 +886,6 @@ void TiXmlDeclaration::StreamOut( std::ostream* stream ) const
 	(*stream) << "?>";
 }
 
-
 TiXmlNode* TiXmlDeclaration::Clone() const
 {	
 	TiXmlDeclaration* clone = new TiXmlDeclaration();
@@ -945,21 +903,17 @@ TiXmlNode* TiXmlDeclaration::Clone() const
 
 void TiXmlUnknown::Print( FILE* cfile, int depth ) const
 {
-	ostringstream stream( ostringstream::out );
-	stream.str().reserve( 200 );
-	StreamOut( &stream );
-
+   TiXmlOutStream stream;
+   StreamOut (& stream);
 	for ( int i=0; i<depth; i++ )
 		fprintf( cfile, "    " );
-	fprintf( cfile, "%s", stream.str().c_str() );
+	fprintf( cfile, "%s", stream.c_str() );
 }
 
-
-void TiXmlUnknown::StreamOut( std::ostream* stream ) const
+void TiXmlUnknown::StreamOut( TiXmlOutStream * stream ) const
 {
 	(*stream) << "<" << value << ">";		// Don't use entities hear! It is unknown.
 }
-
 
 TiXmlNode* TiXmlUnknown::Clone() const
 {
@@ -1016,14 +970,13 @@ void TiXmlAttributeSet::Remove( TiXmlAttribute* removeMe )
 	assert( 0 );		// we tried to remove a non-linked attribute.
 }
 
-
-TiXmlAttribute*	TiXmlAttributeSet::Find( const std::string& name ) const
+TiXmlAttribute*	TiXmlAttributeSet::Find( const char * name ) const
 {
 	TiXmlAttribute* node;
 
 	for( node = sentinel.next; node != &sentinel; node = node->next )
 	{
-		if ( node->Name() == name )
+      if ( node->name == name )
 			return node;
 	}
 	return 0;

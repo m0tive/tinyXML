@@ -1,4 +1,4 @@
-# Microsoft Developer Studio Project File - Name="tinyxml" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="tinyxml" 
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
@@ -23,8 +23,6 @@ CFG=tinyxml - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
 CPP=xicl6.exe
 RSC=rc.exe
 
@@ -104,6 +102,14 @@ SOURCE=.\tinyxmlerror.cpp
 # Begin Source File
 
 SOURCE=.\tinyxmlparser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\tinystr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\tinystr.h
 # End Source File
 # Begin Source File
 

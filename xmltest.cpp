@@ -1,35 +1,85 @@
+/*
+   Test program for TinyXML.
+   Includes the "new" style with TiXmlString and the "old" style.
+   The new style is 
+*/
 #include "tinyxml.h"
-#include <iostream>
-#include <sstream>
-#include <strstream>
-using namespace std;
 
-int gPass = 0;
-int gFail = 0;
+#ifdef TIXML_STRING
+   #include <stdio.h>
+#else
+   #include <iostream>
+   #include <sstream>
+   #include <strstream>
+   using namespace std;
+#endif
 
-// Utility functions:
-template< class T >
-bool XmlTest( const char* testString, T expected, T found, bool noEcho = false )
-{
-	if ( expected == found ) 
-		cout << "[pass]";
-	else
-		cout << "[fail]";
+static int gPass = 0;
+static int gFail = 0;
 
-	if ( noEcho )
-		cout << " " << testString;
-	else
-		cout << " " << testString << " [" << expected << "][" <<  found << "]";
-	cout << "\n";
+#ifdef TIXML_STRING
+   bool XmlTest (const char * testString, const char * expected, const char * found, bool noEcho = false)
+   {
+	   bool pass = ! strcmp (expected, found);
+	   if ( pass ) 
+		   printf ("[pass]");
+	   else
+		   printf ("[fail]");
 
-	bool pass = ( expected == found );
-	if ( pass )
-		++gPass;
-	else
-		++gFail;
-	return pass;
-}
+	   if ( noEcho )
+		   printf (" %s\n", testString);
+	   else
+         printf (" %s [%s][%s]\n", testString, expected, found);
 
+	   if ( pass )
+		   ++gPass;
+	   else
+		   ++gFail;
+	   return pass;
+   }
+   bool XmlTest( const char* testString, int expected, int found, bool noEcho = false )
+   {
+      bool pass = ( expected == found );
+      if ( pass )
+		   printf ("[pass]");
+	   else
+		   printf ("[fail]");
+
+	   if ( noEcho )
+		   printf (" %s\n", testString);
+	   else
+         printf (" %s [%d][%d]\n", testString, expected, found);
+
+	   if ( pass )
+		   ++gPass;
+	   else
+		   ++gFail;
+	   return pass;
+   }
+#else
+   // Utility functions:
+   template< class T >
+   bool XmlTest( const char* testString, T expected, T found, bool noEcho = false )
+   {
+	   if ( expected == found ) 
+		   cout << "[pass]";
+	   else
+		   cout << "[fail]";
+
+	   if ( noEcho )
+		   cout << " " << testString;
+	   else
+		   cout << " " << testString << " [" << expected << "][" <<  found << "]";
+	   cout << "\n";
+
+	   bool pass = ( expected == found );
+	   if ( pass )
+		   ++gPass;
+	   else
+		   ++gFail;
+	   return pass;
+   }
+#endif
 
 //
 // This file demonstrates some basic functionality of TinyXml.
@@ -86,7 +136,11 @@ int main()
 
 		if ( doc.Error() )
 		{
-			printf( "Error in %s: %s\n", doc.Value().c_str(), doc.ErrorDesc().c_str() );
+         #ifdef TIXML_STRING
+			   printf( "Error in %s: %s\n", doc.Value(), doc.ErrorDesc() );
+         #else
+			   printf( "Error in %s: %s\n", doc.Value().c_str(), doc.ErrorDesc().c_str() );
+         #endif
 			exit( 1 );
 		}
 		doc.SaveFile();
@@ -97,7 +151,11 @@ int main()
 
 	if ( !loadOkay )
 	{
-		printf( "Could not load test file 'demotest.xml'. Error='%s'. Exiting.\n", doc.ErrorDesc().c_str() );
+      #ifdef TIXML_STRING
+		   printf( "Could not load test file 'demotest.xml'. Error='%s'. Exiting.\n", doc.ErrorDesc() );
+      #else
+		   printf( "Could not load test file 'demotest.xml'. Error='%s'. Exiting.\n", doc.ErrorDesc().c_str() );
+      #endif
 		exit( 1 );
 	}
 
@@ -189,7 +247,13 @@ int main()
 	doc.Print( stdout );
 
 	printf( "** Demo doc processed to stream: ** \n\n" );
-	cout << doc << endl << endl;
+   #ifdef TIXML_STRING
+      TiXmlOutStream ostr;
+      ostr << doc;
+      printf ("%s\n\n", ostr . c_str ());
+   #else
+	   cout << doc << endl << endl;
+   #endif
 
 	// --------------------------------------------------------
 	// Different tests...do we have what we expect?
@@ -199,27 +263,52 @@ int main()
 	TiXmlElement*	element;
 
 	//////////////////////////////////////////////////////
-	cout << "** Basic structure. **\n";
-	ostringstream outputStream( ostringstream::out );
-	outputStream << doc;
 
-	XmlTest( "Output stream correct.", string( demoEnd ), outputStream.str(), true );
+   #ifdef TIXML_STRING
+      printf ("** Basic structure. **\n");
+      TiXmlOutStream outputStream;
+   #else
+	   cout << "** Basic structure. **\n";
+	   ostringstream outputStream( ostringstream::out );
+   #endif
+	outputStream << doc;
+   #ifdef TIXML_STRING
+	   XmlTest ( "Output stream correct.", demoEnd, outputStream . c_str (), true );
+   #else
+	   XmlTest( "Output stream correct.", string( demoEnd ), outputStream.str(), true );
+   #endif
 
 	node = doc.RootElement();
 	XmlTest( "Root element exists.", true, ( node != 0 && node->ToElement() ) );	
-	XmlTest( "Root element value is 'ToDo'.", string( "ToDo" ), node->Value() );
+   #ifdef TIXML_STRING
+	   XmlTest ( "Root element value is 'ToDo'.", "ToDo",  node->Value());
+   #else
+	   XmlTest( "Root element value is 'ToDo'.", string( "ToDo" ), node->Value() );
+   #endif
 	node = node->FirstChild();
 	XmlTest( "First child exists & is a comment.", true, ( node != 0 && node->ToComment() ) );
 	node = node->NextSibling();
 	XmlTest( "Sibling element exists & is an element.", true, ( node != 0 && node->ToElement() ) );
-	XmlTest( "Value is 'Item'.", string( "Item" ), node->Value() );
+   #ifdef TIXML_STRING
+	   XmlTest ( "Value is 'Item'.", "Item", node->Value() );
+   #else
+	   XmlTest( "Value is 'Item'.", string( "Item" ), node->Value() );
+   #endif
 	node = node->FirstChild();
-	XmlTest( "First child exists.", true, ( node != 0 && node->ToText() ) );
-	XmlTest( "Value is 'Go to the'.", string( "Go to the" ), node->Value() );
+	XmlTest ( "First child exists.", true, ( node != 0 && node->ToText() ) );
+   #ifdef TIXML_STRING
+	   XmlTest ( "Value is 'Go to the'.", "Go to the", node->Value() );
+   #else
+	   XmlTest( "Value is 'Go to the'.", string( "Go to the" ), node->Value() );
+   #endif
 
 
 	//////////////////////////////////////////////////////
-	cout << "\n** Iterators. **" << "\n";
+   #ifdef TIXML_STRING
+	   printf ("\n** Iterators. **\n");
+   #else
+	   cout << "\n** Iterators. **" << "\n";
+   #endif
 	// Walk all the top level nodes of the document.
 	count = 0;
 	for( node = doc.FirstChild();
@@ -280,49 +369,103 @@ int main()
 	}
 	XmlTest( "'Item' children of the 'ToDo' element, using Last/Previous.", 3, count );
 
-
-	//////////////////////////////////////////////////////
-	cout << "\n** Parsing. **\n";
-	istringstream parse0( "<Element0 attribute0='foo0' attribute1= noquotes attribute2 = '&gt;' />" );
+   #ifdef TIXML_STRING
+	   printf ("\n** Parsing. **\n");
+      TiXmlInStream parse0 ( "<Element0 attribute0='foo0' attribute1= noquotes attribute2 = '&gt;' />" );
+   #else
+	   cout << "\n** Parsing. **\n";
+	   istringstream parse0( "<Element0 attribute0='foo0' attribute1= noquotes attribute2 = '&gt;' />" );
+   #endif
 	TiXmlElement element0( "default" );
 	parse0 >> element0;
 
-	XmlTest( "Element parsed, value is 'Element0'.", string( "Element0" ), element0.Value() );
-	XmlTest( "Reads attribute 'attribute0=\"foo0\"'.", string( "foo0" ), *( element0.Attribute( "attribute0" ) ) );
-	XmlTest( "Reads incorrectly formatted 'attribute1=noquotes'.", string( "noquotes" ), *( element0.Attribute( "attribute1" ) ) );
-	XmlTest( "Read attribute with entity value '>'.", string( ">" ), *( element0.Attribute( "attribute2" ) ) );
+   #ifdef TIXML_STRING
+	   XmlTest ( "Element parsed, value is 'Element0'.", "Element0", element0.Value() );
+   #else
+	   XmlTest( "Element parsed, value is 'Element0'.", string( "Element0" ), element0.Value() );
+   #endif
+   #ifdef TIXML_STRING
+	   XmlTest ( "Reads attribute 'attribute0=\"foo0\"'.", "foo0", element0.Attribute( "attribute0" ));
+   #else
+	   XmlTest( "Reads attribute 'attribute0=\"foo0\"'.", string( "foo0" ), *( element0.Attribute( "attribute0" ) ) );
+   #endif
+   #ifdef TIXML_STRING
+	   XmlTest ( "Reads incorrectly formatted 'attribute1=noquotes'.", "noquotes", element0.Attribute( "attribute1" ) );
+   #else
+	   XmlTest( "Reads incorrectly formatted 'attribute1=noquotes'.", string( "noquotes" ), *( element0.Attribute( "attribute1" ) ) );
+   #endif
+   #ifdef TIXML_STRING
+	   XmlTest ( "Read attribute with entity value '>'.", ">", element0.Attribute( "attribute2" ) );
+   #else
+	   XmlTest( "Read attribute with entity value '>'.", string( ">" ), *( element0.Attribute( "attribute2" ) ) );
+   #endif
+
+   #ifdef TIXML_STRING
+	   //////////////////////////////////////////////////////
+	   printf ("\n** Streaming. **\n");
+
+	   // Round trip check: stream in, then stream back out to verify. The stream
+	   // out has already been checked, above. We use the output
+
+	   TiXmlInStream inputStringStream ( outputStream.c_str() );
+	   TiXmlDocument document0;
+
+	   inputStringStream >> document0;
+
+	   TiXmlOutStream outputStream0;
+	   outputStream0 << document0;
+
+	   XmlTest( "Stream round trip correct.", demoEnd, outputStream0.c_str(), true );
+   #else
+	   //////////////////////////////////////////////////////
+	   cout << "\n** Streaming. **\n";
+
+	   // Round trip check: stream in, then stream back out to verify. The stream
+	   // out has already been checked, above. We use the output
+
+	   istringstream inputStringStream( outputStream.str() );
+	   TiXmlDocument document0;
+
+	   inputStringStream >> document0;
+
+	   ostringstream outputStream0( ostringstream::out );
+	   outputStream0 << document0;
+
+	   XmlTest( "Stream round trip correct.", string( demoEnd ), outputStream0.str(), true );
+   #endif
 
 	//////////////////////////////////////////////////////
-	cout << "\n** Streaming. **\n";
-
-	// Round trip check: stream in, then stream back out to verify. The stream
-	// out has already been checked, above. We use the output
-
-	istringstream inputStringStream( outputStream.str() );
-	TiXmlDocument document0;
-
-	inputStringStream >> document0;
-
-	ostringstream outputStream0( ostringstream::out );
-	outputStream0 << document0;
-
-	XmlTest( "Stream round trip correct.", string( demoEnd ), outputStream0.str(), true );
-
-
-	//////////////////////////////////////////////////////
-	cout << "\n** Parsing, no Condense Whitespace **\n";
+   #ifdef TIXML_STRING
+	   printf ("\n** Parsing, no Condense Whitespace **\n");
+   #else
+	   cout << "\n** Parsing, no Condense Whitespace **\n";
+   #endif
 	TiXmlBase::SetCondenseWhiteSpace( false );
 
-	istringstream parse1( "<start>This  is    \ntext</start>" );
+   #ifdef TIXML_STRING
+      TiXmlInStream parse1( "<start>This  is    \ntext</start>" );
+   #else
+	   istringstream parse1( "<start>This  is    \ntext</start>" );
+   #endif
 	TiXmlElement text1( "text" );
 	parse1 >> text1;
 
-	XmlTest( "Condense white space OFF.", string( "This  is    \ntext" ),
-										  text1.FirstChild()->Value(),
-										  true );
+   #ifdef TIXML_STRING
+	   XmlTest ( "Condense white space OFF.", "This  is    \ntext",
+										     text1.FirstChild()->Value(),
+										     true );
+   #else
+	   XmlTest( "Condense white space OFF.", string( "This  is    \ntext" ),
+										     text1.FirstChild()->Value(),
+										     true );
+   #endif
 							
 	//////////////////////////////////////////////////////
-	cout << "\n** Bug regression tests **\n";
+   #ifdef TIXML_STRING
+   	printf ("\n** Bug regression tests **\n");
+   #else
+	   cout << "\n** Bug regression tests **\n";
+   #endif
 
 	// InsertBeforeChild and InsertAfterChild causes crash.
 	{
@@ -346,7 +489,11 @@ int main()
 		XmlTest( "Test InsertAfterChild on empty node. ", ( childNode1 == parent.LastChild() ), true );
 	}
 
-	cout << endl << "Pass " << gPass << ", Fail " << gFail << endl;	
+   #ifdef TIXML_STRING
+      printf ("\nPass %d, Fail %d\n", gPass, gFail);
+   #else
+	   cout << endl << "Pass " << gPass << ", Fail " << gFail << endl;	
+   #endif
 	return gFail;
 }
 
