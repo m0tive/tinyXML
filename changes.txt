@@ -183,3 +183,6 @@ Changes in version 2.1.5
   remove const in a method like this: TiXmlElement* Foo() const, where the returned element
   was a pointer to internal data. That is now: const TiXmlElement* Foo() const and
   TiXmlElement* Foo().
+
+2.3.4
+- Fixed additional const errors, thanks Kent Gibson.

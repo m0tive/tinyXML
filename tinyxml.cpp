@@ -359,7 +359,7 @@ TiXmlNode* TiXmlNode::LastChild( const char * _value )
 	return 0;
 }
 
-const TiXmlNode* TiXmlNode::IterateChildren( TiXmlNode* previous ) const
+const TiXmlNode* TiXmlNode::IterateChildren( const TiXmlNode* previous ) const
 {
 	if ( !previous )
 	{
@@ -385,7 +385,7 @@ TiXmlNode* TiXmlNode::IterateChildren( TiXmlNode* previous )
 	}
 }
 
-const TiXmlNode* TiXmlNode::IterateChildren( const char * val, TiXmlNode* previous ) const
+const TiXmlNode* TiXmlNode::IterateChildren( const char * val, const TiXmlNode* previous ) const
 {
 	if ( !previous )
 	{
