@@ -913,7 +913,7 @@ int main()
             TiXmlDocument doc;
             doc.Parse( str );
 
-			doc.Print( stdout, 0 );
+			//doc.Print( stdout, 0 );
 
             TiXmlHandle docHandle( &doc );
             TiXmlHandle aHandle = docHandle.FirstChildElement( "ä" );
