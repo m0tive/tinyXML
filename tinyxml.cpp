@@ -37,7 +37,7 @@ TiXmlNode::TiXmlNode( int _type, TiXmlDocument* doc )
 TiXmlNode::~TiXmlNode()
 {
 	TiXmlBase* node = firstChild;
-	TiXmlBase* temp;
+	TiXmlBase* temp = 0;
 
 	while ( node )
 	{
@@ -48,7 +48,7 @@ TiXmlNode::~TiXmlNode()
 }
 
 
-bool TiXmlNode::InsertEndChild( TiXmlNode* node )
+TiXmlNode* TiXmlNode::InsertEndChild( TiXmlNode* node )
 {
 	node->parent = this;
 	node->document = document;
@@ -59,14 +59,14 @@ bool TiXmlNode::InsertEndChild( TiXmlNode* node )
 	if ( lastChild )
 		lastChild->next = node;
 	else
-		firstChild = node;
+		firstChild = node;			// it was an empty list.
 
 	lastChild = node;
-	return true;
+	return node;
 }
 	
 
-bool TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
+TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 {
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
@@ -76,14 +76,14 @@ bool TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 }
 
 
-bool TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addThis )
+TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addThis )
 {
 	if ( beforeThis->parent != this )
 		return false;
 	
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
-		return false;
+		return 0;
 	node->parent = this;
 	node->document = document;
 	
@@ -91,18 +91,18 @@ bool TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addTh
 	node->prev = beforeThis->prev;
 	beforeThis->prev->next = node;
 	beforeThis->prev = node;
-	return true;
+	return node;
 }
 
 
-bool TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& addThis )
+TiXmlNode* TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& addThis )
 {
 	if ( afterThis->parent != this )
 		return false;
 	
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
-		return false;
+		return 0;
 	node->parent = this;
 	node->document = document;
 	
@@ -110,32 +110,35 @@ bool TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& addThis
 	node->next = afterThis->next;
 	afterThis->next->prev = node;
 	afterThis->next = node;
-	return true;
+	return node;
 }
 
 
-bool TiXmlNode::ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& withThis )
+TiXmlNode* TiXmlNode::ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& withThis )
 {
 	if ( replaceThis->parent != this )
-		return false;
+		return 0;
 	
 	TiXmlNode* node = withThis.Clone();
 	if ( !node )
-		return false;
+		return 0;
 
 	node->next = replaceThis->next;
 	node->prev = replaceThis->prev;
 	replaceThis->next->prev = node;
 	replaceThis->prev->next = node;
 	delete replaceThis;
-	return true;
+	return node;
 }
 
 
 bool TiXmlNode::RemoveChild( TiXmlNode* removeThis )
 {
 	if ( removeThis->parent != this )
+	{	
+		assert( 0 );
 		return false;
+	}
 	
 	if ( removeThis->next )
 		removeThis->next->prev = removeThis->prev;
@@ -200,10 +203,19 @@ TiXmlNode* TiXmlNode::PreviousSibling( const std::string& value ) const
 }
 
 
-TiXmlElement::TiXmlElement( TiXmlDocument* doc ) : TiXmlNode( TiXmlNode::ELEMENT, doc )
+TiXmlElement::TiXmlElement( TiXmlDocument* doc ) 
+	: TiXmlNode( TiXmlNode::ELEMENT, doc )
 {
 	firstAttrib = lastAttrib = 0;
 	firstChild = lastChild = 0;
+}
+
+TiXmlElement::TiXmlElement( const std::string& _value, TiXmlDocument* doc ) 
+	: TiXmlNode( TiXmlNode::ELEMENT, doc )
+{
+	firstAttrib = lastAttrib = 0;
+	firstChild = lastChild = 0;
+	value = _value;
 }
 
 TiXmlElement::~TiXmlElement()

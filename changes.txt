@@ -1,4 +1,4 @@
-Changes in version 1.1:
+Changes in version 1.0.1:
 - Fixed comment tags which were outputing as '<?--' instead of 
   the correct '<!--'.
 - Implemented the Next and Prev methods of the TiXmlAttribute class.
@@ -6,4 +6,16 @@ Changes in version 1.1:
 - Fixed bad pointer to 'isspace' that could occur while parsing text.
 - Errors finding beginning and end of tags no longer throw it into an
   infinite loop. (Hopefully.)
+
+Changes in version 1.0.2
+- Minor documentation fixes.
+
+Changes in version 1.0.3
+- After nodes are added to a document, they return a pointer
+  to the new node instead of a bool for success.
+- Elements can be constructed with a value, which is the
+  element name. Every element must have a value or it will be
+  invalid, but the code changes to enforce this are not fully
+  in place.
+
 

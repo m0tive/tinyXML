@@ -142,17 +142,25 @@ class TiXmlNode : public TiXmlBase
 	TiXmlNode* LastChild() const	{ return (TiXmlNode*) lastChild; }		/// The last child of this node. Will be null if there are no children.
 	TiXmlNode* LastChild( const std::string& value ) const;			/// The last child of this node matching 'value'. Will be null if there are no children.
 		
-	/// Add a new node related to this. Adds a child past the LastChild.
-	bool InsertEndChild( const TiXmlNode& addThis );					
+	/** Add a new node related to this. Adds a child past the LastChild.
+		Returns a pointer to the new object or NULL if an error occured.
+	*/
+	TiXmlNode* InsertEndChild( const TiXmlNode& addThis );					
 
-	/// Add a new node related to this. Adds a child before the specified child.
-	bool InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addThis );
+	/** Add a new node related to this. Adds a child before the specified child.
+		Returns a pointer to the new object or NULL if an error occured.
+	*/
+	TiXmlNode* InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addThis );
 
-	/// Add a new node related to this. Adds a child after the specified child.
-	bool InsertAfterChild(  TiXmlNode* afterThis, const TiXmlNode& addThis );
+	/** Add a new node related to this. Adds a child after the specified child.
+		Returns a pointer to the new object or NULL if an error occured.
+	*/
+	TiXmlNode* InsertAfterChild(  TiXmlNode* afterThis, const TiXmlNode& addThis );
 	
-	/// Replace a child of this node.
-	bool ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& withThis );
+	/** Replace a child of this node.
+		Returns a pointer to the new object or NULL if an error occured.
+	*/
+	TiXmlNode* ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& withThis );
 	
 	/// Delete a child of this node.
 	bool RemoveChild( TiXmlNode* removeThis );
@@ -183,7 +191,8 @@ class TiXmlNode : public TiXmlBase
 	virtual const char* Parse( const char* ) = 0;
 
 	// The node is passed in by ownership. This object will delete it.
-	bool InsertEndChild( TiXmlNode* addThis );
+	TiXmlNode* InsertEndChild( TiXmlNode* addThis );
+
 	// Figure out what is at *p, and parse it. Return a node if
 	// successful, and update p.
 	TiXmlNode* IdentifyAndParse( const char** p, TiXmlDocument* doc );
@@ -252,6 +261,9 @@ class TiXmlElement : public TiXmlNode
   public:
 	/// Construct an empty element.
 	TiXmlElement( TiXmlDocument* doc = 0);
+	/// Construct an empty element.
+	TiXmlElement( const std::string& value, TiXmlDocument* doc = 0);
+
 	virtual ~TiXmlElement();
 
 	/** Given an attribute name, attribute returns the value
