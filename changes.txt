@@ -45,3 +45,9 @@ Changes in version 1.2.1
 Changes in version 1.2.2
 - Fixed TiXmlAttribute::Previous actually returning "next." Thanks
   to Rickard Troedsson for the bug fix.
+
+Changes in version 1.2.3
+- Added the TIXML prefix to the error strings to resolve conflicts
+  with #defines in OS headers. Thanks to Steve Lhomme.
+- Fixed a delete buf that should be a delete [] buf. 
+  Thanks to Ephi Sinowitz.

@@ -529,7 +529,7 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 		fclose( fp );
 		
 		Parse( buf );
-		delete buf;
+		delete [] buf;
 
 		if ( !Error() )
 			return true;
