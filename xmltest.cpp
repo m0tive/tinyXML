@@ -473,6 +473,19 @@ int main()
 		fclose( textfile );
 	}
 
+    {
+		FILE* textfile = fopen( "test5.xml", "w" );
+		if ( textfile )
+		{
+            fputs ("<?xml version='1.0'?><a.elem xmi.version='2.0'/>", textfile);
+            fclose (textfile);
+            TiXmlDocument doc;
+            doc . LoadFile ("test5.xml");
+            XmlTest ( "dot in element attributes and names", doc . Error (), 0);
+		}
+		textfile = fopen( "textfile.txt", "r" );
+        
+    }
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }
