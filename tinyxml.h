@@ -52,7 +52,6 @@ distribution.
 #ifdef TIXML_USE_STL
 	#include <string>
  	#include <iostream>
-    //#include <ostream>
 	#define TIXML_STRING	std::string
 	#define TIXML_ISTREAM	std::istream
 	#define TIXML_OSTREAM	std::ostream
@@ -91,6 +90,15 @@ enum
 	TIXML_SUCCESS,
 	TIXML_NO_ATTRIBUTE,
 	TIXML_WRONG_TYPE
+};
+
+
+// Used by the parsing routines.
+enum TiXmlEncoding
+{
+	TIXML_ENCODING_UNKNOWN,
+	TIXML_ENCODING_UTF8,
+	TIXML_ENCODING_LEGACY
 };
 
 /** TiXmlBase is a base class for every class in TinyXml.
@@ -183,7 +191,7 @@ protected:
 		char* buffer;
 	};
 
-	static const char*	SkipWhiteSpace( const char* );
+	static const char*	SkipWhiteSpace( const char*, TiXmlEncoding encoding );
 	inline static bool	IsWhiteSpace( char c )		
 	{ 
 		return ( isspace( (unsigned char) c ) || c == '\n' || c == '\r' ); 
@@ -200,7 +208,7 @@ protected:
 		a pointer just past the last character of the name,
 		or 0 if the function has an error.
 	*/
-	static const char* ReadName( const char* p, TIXML_STRING* name );
+	static const char* ReadName( const char* p, TIXML_STRING* name, TiXmlEncoding encoding );
 
 	/*	Reads text. Returns a pointer past the given end tag.
 		Wickedly complex options, but it keeps the (sensitive) code in one place.
@@ -209,25 +217,35 @@ protected:
 									TIXML_STRING* text,			// the string read
 									bool ignoreWhiteSpace,		// whether to keep the white space
 									const char* endTag,			// what ends this text
-									bool ignoreCase );			// whether to ignore case in the end tag
+									bool ignoreCase,			// whether to ignore case in the end tag
+									TiXmlEncoding encoding );	// the current encoding
 
-	virtual const char* Parse( const char* p, TiXmlParsingData* data ) = 0;
+	virtual const char* Parse(	const char* p, 
+								TiXmlParsingData* data, 
+								TiXmlEncoding encoding /*= TIXML_ENCODING_UNKNOWN */ ) = 0;
 
 	// If an entity has been found, transform it into a character.
-	static const char* GetEntity( const char* in, char* value, int* length );
+	static const char* GetEntity( const char* in, char* value, int* length, TiXmlEncoding encoding );
 
 	// Get a character, while interpreting entities.
 	// The length can be from 0 to 4 bytes.
-	inline static const char* GetCharUTF8( const char* p, char* _value, int* length )
+	inline static const char* GetChar( const char* p, char* _value, int* length, TiXmlEncoding encoding )
 	{
 		assert( p );
-		*length = utf8ByteTable[ *((unsigned char*)p) ];
-		assert( *length >= 0 && *length < 5 );
+		if ( encoding == TIXML_ENCODING_UTF8 )
+		{
+			*length = utf8ByteTable[ *((unsigned char*)p) ];
+			assert( *length >= 0 && *length < 5 );
+		}
+		else
+		{
+			*length = 1;
+		}
 
 		if ( *length == 1 )
 		{
 			if ( *p == '&' )
-				return GetEntity( p, _value, length );
+				return GetEntity( p, _value, length, encoding );
 			*_value = *p;
 			return p+1;
 		}
@@ -254,7 +272,8 @@ protected:
 	// to Engilish words: StringEqual( p, "version", true ) is fine.
 	static bool StringEqual(	const char* p,
 								const char* endTag,
-								bool ignoreCase );
+								bool ignoreCase,
+								TiXmlEncoding encoding );
 
 
 	enum
@@ -286,12 +305,19 @@ protected:
 	
 	// None of these methods are reliable for any language except English.
 	// Good for approximation, not great for accuracy.
-	static int IsAlphaUTF8( unsigned char anyByte );
-	static int IsAlphaNumUTF8( unsigned char anyByte );
-	inline static int ToLowerUTF8( int v )
+	static int IsAlpha( unsigned char anyByte, TiXmlEncoding encoding );
+	static int IsAlphaNum( unsigned char anyByte, TiXmlEncoding encoding );
+	inline static int ToLower( int v, TiXmlEncoding encoding )
 	{
-		if ( v < 128 ) return tolower( v );
-		return v;
+		if ( encoding == TIXML_ENCODING_UTF8 )
+		{
+			if ( v < 128 ) return tolower( v );
+			return v;
+		}
+		else
+		{
+			return tolower( v );
+		}
 	}
 	static void ConvertUTF32ToUTF8( unsigned long input, char* output, int* length );
 
@@ -563,7 +589,7 @@ protected:
 	#endif
 
 	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
-	TiXmlNode* Identify( const char* start );
+	TiXmlNode* Identify( const char* start, TiXmlEncoding encoding );
 	void CopyToClone( TiXmlNode* target ) const	{ target->SetValue (value.c_str() );
 												  target->userData = userData; }
 
@@ -678,7 +704,7 @@ public:
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
-	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -847,13 +873,13 @@ protected:
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
 	/*	[internal use]
 		Reads the "value" of the element -- another element, or text.
 		This should terminate with the current end tag.
 	*/
-	const char* ReadValue( const char* in, TiXmlParsingData* prevData );
+	const char* ReadValue( const char* in, TiXmlParsingData* prevData, TiXmlEncoding encoding );
 
 private:
 	TiXmlElement( const TiXmlElement& );				// not implemented.
@@ -887,7 +913,7 @@ protected:
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
 private:
 	TiXmlComment( const TiXmlComment& );				// not implemented.
@@ -930,7 +956,7 @@ protected :
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -981,9 +1007,9 @@ public:
 
 	virtual ~TiXmlDeclaration()	{}
 
-	/// Version. Will return empty if none was found.
+	/// Version. Will return an empty string if none was found.
 	const char * Version() const		{ return version.c_str (); }
-	/// Encoding. Will return empty if none was found.
+	/// Encoding. Will return an empty string if none was found.
 	const char * Encoding() const		{ return encoding.c_str (); }
 	/// Is this a standalone document?
 	const char * Standalone() const		{ return standalone.c_str (); }
@@ -1003,7 +1029,7 @@ protected:
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 
-	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
 private:
 	TiXmlDeclaration( const TiXmlDeclaration& copy );
@@ -1041,7 +1067,7 @@ protected:
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
 private:
 	TiXmlUnknown( const TiXmlUnknown& copy );
@@ -1073,19 +1099,19 @@ public:
 		Returns true if successful. Will delete any existing
 		document data before loading.
 	*/
-	bool LoadFile();
+	bool LoadFile( TiXmlEncoding encoding = TIXML_ENCODING_UNKNOWN );
 	/// Save a file using the current document value. Returns true if successful.
 	bool SaveFile() const;
 	/// Load a file using the given filename. Returns true if successful.
-	bool LoadFile( const char * filename );
+	bool LoadFile( const char * filename, TiXmlEncoding encoding = TIXML_ENCODING_UNKNOWN );
 	/// Save a file using the given filename. Returns true if successful.
 	bool SaveFile( const char * filename ) const;
 
 	#ifdef TIXML_USE_STL
-	bool LoadFile( const std::string& filename )			///< STL std::string version.
+	bool LoadFile( const std::string& filename, TiXmlEncoding encoding = TIXML_ENCODING_UNKNOWN )			///< STL std::string version.
 	{
 		StringToBuffer f( filename );
-		return ( f.buffer && LoadFile( f.buffer ));
+		return ( f.buffer && LoadFile( f.buffer, encoding ));
 	}
 	bool SaveFile( const std::string& filename ) const		///< STL std::string version.
 	{
@@ -1094,9 +1120,11 @@ public:
 	}
 	#endif
 
-	/** Parse the given null terminated block of xml data.
+	/** Parse the given null terminated block of xml data. Passing in an encoding to this
+		method (either TIXML_ENCODING_LEGACY or TIXML_ENCODING_UTF8 will force TinyXml
+		to use that encoding, regardless of what TinyXml might otherwise try to detect.
 	*/
-	virtual const char* Parse( const char* p, TiXmlParsingData* data = 0 );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data = 0, TiXmlEncoding encoding = TIXML_ENCODING_UNKNOWN );
 
 	/** Get the root element -- the only top level element -- of the document.
 		In well formed XML, there should only be one. TinyXml is tolerant of
@@ -1169,7 +1197,7 @@ public:
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth = 0 ) const;
 	// [internal use]
-	void SetError( int err, const char* errorLocation, TiXmlParsingData* prevData );
+	void SetError( int err, const char* errorLocation, TiXmlParsingData* prevData, TiXmlEncoding encoding );
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;

@@ -564,7 +564,7 @@ void TiXmlElement::SetAttribute( const char * name, const char * _value )
 	else
 	{
 		TiXmlDocument* document = GetDocument();
-		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0, 0 );
+		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0, 0, TIXML_ENCODING_UNKNOWN );
 	}
 }
 
@@ -699,12 +699,12 @@ TiXmlDocument::TiXmlDocument( const std::string& documentName ) : TiXmlNode( TiX
 #endif
 
 
-bool TiXmlDocument::LoadFile()
+bool TiXmlDocument::LoadFile( TiXmlEncoding encoding )
 {
 	// See STL_STRING_BUG below.
 	StringToBuffer buf( value );
 
-	if ( buf.buffer && LoadFile( buf.buffer ) )
+	if ( buf.buffer && LoadFile( buf.buffer, encoding ) )
 		return true;
 
 	return false;
@@ -722,7 +722,7 @@ bool TiXmlDocument::SaveFile() const
 	return false;
 }
 
-bool TiXmlDocument::LoadFile( const char* filename )
+bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 {
 	// Delete the existing data:
 	Clear();
@@ -769,14 +769,14 @@ bool TiXmlDocument::LoadFile( const char* filename )
 		}
 		fclose( file );
 
-		Parse( data.c_str(), 0 );
+		Parse( data.c_str(), 0, encoding );
 
 		if (  Error() )
             return false;
         else
 			return true;
 	}
-	SetError( TIXML_ERROR_OPENING_FILE, 0, 0 );
+	SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TIXML_ENCODING_UNKNOWN );
 	return false;
 }
 
@@ -1137,7 +1137,7 @@ TIXML_ISTREAM & operator >> (TIXML_ISTREAM & in, TiXmlNode & base)
 	tag.reserve( 8 * 1000 );
 	base.StreamIn( &in, &tag );
 
-	base.Parse( tag.c_str(), 0 );
+	base.Parse( tag.c_str(), 0, TIXML_ENCODING_UNKNOWN );
 	return in;
 }
 #endif

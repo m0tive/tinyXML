@@ -97,13 +97,35 @@ line of tinyxml.h.
 
 <h3> UTF-8 </h3>
 
-TinyXml supports UTF-8 allowing to manipulate XML files in any language. UTF-8
-is the default encoding of all XML files.
+TinyXml supports UTF-8 allowing to manipulate XML files in any language.
+
+The rules for reading text are:
+<ol>
+	<li> If the "UTF-8 byte order marks" or "UTF-8 lead bytes" (0xef 0xbb 0xbf) 
+		 begin the file or data stream, TinyXml will read it as UTF-8. </li>
+	<li> If the declaration tag is read, and it has an encoding="UTF-8", then
+		 TinyXml will read it as UTF-8. </li>
+	<li> If the declaration tag is read, and it has no encoding specified, then
+		 TinyXml will read it as UTF-8. </li>
+	<li> If the declaration tag is read, and it has an encoding="something else", then
+		 TinyXml will read it as Legacy Mode. In legacy mode, TinyXml will 
+		 work as it did before. It's not clear what that mode does, but old content
+		 should keep working.</li>
+</ol>
+
+What happens if another encoding is sent to TinyXml to parse? TinyXml will try
+to read and pass through text seen as improperly encoded. You may get some strange
+results or mangled characters, however. In this case, you may want to force
+TinyXml to Legacy Mode.
+
+<b> You may force TinyXml to Legacy Mode by using LoadFile( TIXML_ENCODING_LEGACY ) or
+LoadFile( filename, TIXML_ENCODING_LEGACY ).</b>
 
 For English users, using English XML, UTF-8 is the same as low-ASCII. You
-don't need to be aware of UTF-8 or change your code in any way.
+don't need to be aware of UTF-8 or change your code in any way. You can think
+of UTF-8 as a "superset" of ASCII.
 
-For "high-ascii" languages - everything else, pretty much - TinyXml can
+For "high-ascii" languages - everything not English, pretty much - TinyXml can
 handle all languages, at the same time, as long as the XML is encoded
 in UTF-8. That can be a little tricky, older programs and operating systems
 tend to use the "default" or "traditional" code page. Many apps (and almost all
@@ -126,10 +148,6 @@ it correctly. Also note that (at least on my Windows machine) console output
 is in a Western code page, so that Print() or printf() cannot correctly display
 the file. This is not a bug in TinyXml - just an OS issue. No data is lost or 
 destroyed by TinyXml. The console just doesn't render UTF-8.
-
-What happens if another encoding is sent to TinyXml to parse? TinyXml will try
-to read and pass through text seen as improperly encoded. You may get some strange
-results or mangled characters, however.
 
 
 <h3> Entities </h3>
