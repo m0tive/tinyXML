@@ -72,15 +72,10 @@ Changes in version 2.0.0
 - Added a switch to enable or disable the ignoring of white space. ( TiXmlDocument::SetIgnoreWhiteSpace() )
 - Greater standardization and code re-use in the parser.
 - Added a stream out operator.
+- Added a stream in operator.
+- Entity support.
 
 TODO
-Tentative code: Added the C++ stream out operator.
-Test white space sensitivity.
-Test attributes int/double sets.
-Entities.
 CDATA.
+Support for "generic entity" #xxx thing.
 
-Later:
-UTF-8 conversion?
-Stream in operator consistent with Parse.
-Tentative code: Added the C++ stream in operator.
