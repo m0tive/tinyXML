@@ -24,7 +24,11 @@ int main( int argc, char* argv[] )
 	printf( "Read from c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
 	prev = now;
 
+#ifdef TIXML_USE_STL	
+	doc.SaveFile( "echoteststl.xml" );
+#else
 	doc.SaveFile( "echotest.xml" );
+#endif	
 	now = clock();
 	printf( "Write to c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
 	prev = now;
@@ -33,6 +37,7 @@ int main( int argc, char* argv[] )
 	prev = clock();
 	ifstream inputStream( argv[1] );
 
+#ifdef TIXML_USE_STL		
 	inputStream >> doc;
 	now = clock();
 	printf( "Read from stream: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
@@ -43,6 +48,7 @@ int main( int argc, char* argv[] )
 	now = clock();
 	printf( "Write to stream: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
 	prev = now;
+#endif
 
 	return 0;
 }

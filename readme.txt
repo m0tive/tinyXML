@@ -58,7 +58,24 @@ There are some areas of improvement; please check sourceforge if you are
 interested in working on TinxXml.
 
 
-<h2> Changes between version 1 and 2 </h2>
+<h2> Features </h2>
+
+<h3> Using STL </h3>
+
+TinyXml can be compiled to use or not use STL. When using STL, TinyXml
+uses the std::string class, and fully supports std::istream, std::ostream,
+operator<<, and operator>>. Many API methods have both 'const char*' and
+'const std::string&' forms.
+
+When STL support is compiled out, no STL files are included whatsover. All
+the string classes are implemented by TinyXml itself. API methods
+all use the 'const char*' form for input.
+
+Use the compile time #define:
+	
+	TIXML_USE_STL
+
+to compile one version or the other.
 
 Ignoring other changes, 1.2 is limited to the STL string class, while version
 2.0 makes extensive use of STL. If you need a minimal STL implementation,
@@ -97,7 +114,8 @@ entities, and leave them unprocessed.
 
 
 <h3> Streams </h3>
-TiXml has been modified to support both C (FILE) and C++ (operator <<,>>)
+With TIXML_USE_STL on,
+TiXml has been modified to support both C (FILE) and C++ (operator <<,>>) 
 streams. There are some differences that you may need to be aware of.
 
 C style output:
@@ -170,7 +188,7 @@ hard coded.
 
 To Use in an Application:
 
-Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, and tinyxmlparser.cpp to your 
+Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, tinyxmlparser.cpp, and tinystr.cpp to your 
 project or make file. That's it! It should compile on any reasonably
 compliant C++ system. You do not need to enable exceptions or
 RTTI for TinyXml.
