@@ -10,6 +10,7 @@
 const char* TiXmlBase::errorString[ TIXML_ERROR_STRING_COUNT ] =
 {
 	"No error",
+	"Error",
 	"Failed to open file",
 	"Memory allocation failed.",
 	"Error parsing Element.",
@@ -21,4 +22,5 @@ const char* TiXmlBase::errorString[ TIXML_ERROR_STRING_COUNT ] =
 	"Error parsing Unknown.",
 	"Error parsing Comment.",
 	"Error parsing Declaration.",
+	"Error document empty."
 };

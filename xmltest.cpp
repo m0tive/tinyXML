@@ -1,4 +1,5 @@
 #include "tinyxml.h"
+#include <iostream>
 
 //
 // This file demonstrates some basic functionality of TinyXml.
@@ -60,7 +61,13 @@ int main()
 	}
 
 	TiXmlDocument doc( "demotest.xml" );
-	doc.LoadFile();
+	bool loadOkay = doc.LoadFile();
+
+	if ( !loadOkay )
+	{
+		printf( "Could not load test file 'demotest.xml'. Error='%s'. Exiting.\n", doc.ErrorDesc().c_str() );
+		exit( 1 );
+	}
 
 	printf( "** Demo doc read from disk: ** \n\n" );
 	doc.Print( stdout );
@@ -92,6 +99,7 @@ int main()
 	// Change the distance to "doing bills" from
 	// "none" to "here". It's the next sibling element.
 	itemElement = itemElement->NextSiblingElement();
+	assert( itemElement );
 	itemElement->SetAttribute( "distance", "here" );
 
 	// Remove the "Look for Evil Dinosours!" item.
@@ -148,10 +156,30 @@ int main()
 	printf( "\n** Demo doc processed: ** \n\n" );
 	doc.Print( stdout );
 
+	printf( "** Demo doc processed to stream: ** \n\n" );
+	std::cout << doc << std::endl << std::endl;
+
+//	printf( "** Individual parsing tests: ** \n\n" );
+//	char buf[ 512 ];
+//	std::strstream stream( buf, sizeof( buf ), std::ios::in );
+//
+//	stream << "<TestElement name='testElement' />";
+//
+//	TiXmlElement elementIn( "test" );
+//	stream >> elementIn;
+//
+//	std::cout << "Element: " << elementIn << "\n";
+//
+//	std::istream
+//	std::string elementString = "<Element name='testElement' />";
+//	elementString >> elementIn;
+
+
 	// --------------------------------------------------------
 	// Different ways to walk the XML document.
 	// --------------------------------------------------------
 
+	printf( "** Test of node walking: ** \n\n" );
 	int count = 0;
 	TiXmlElement*	element;
 

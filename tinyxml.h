@@ -42,7 +42,7 @@ class TiXmlDeclaration;
 
 
 /** TiXmlBase is a base class for every class in TinyXml.
-	It does little except to establist that TinyXml classes
+	It does little except to establish that TinyXml classes
 	can be printed and provide some utility functions.
 
 	In XML, the document and elements can contain
@@ -73,9 +73,26 @@ class TiXmlBase
 	TiXmlBase()								{}	
 	virtual ~TiXmlBase()					{}
 	
-	/*	All TinyXml classes can print themselves to a filestream.
+	/**	All TinyXml classes can print themselves to a filestream.
+		This is a formatted print, and will insert tabs and newlines.
+		For an unformatted stream, use the << operator.
 	*/
-	virtual void Print( FILE* fp, int depth )	= 0;
+ 	virtual void Print( std::ostream* stream, int depth ) const = 0;
+
+	/** An output stream operator, for every class. Note that this outputs
+		without any newlines or formatting, as opposed to Print(), which
+		includes tabs and new lines.
+	*/
+	friend std::ostream& operator<< ( std::ostream& out, const TiXmlBase& base )
+	{
+		base.Print( &out, -1 );
+		return out;
+	}
+
+	/**	An input stream operator, for every class. Note that without a way
+		to identify the class to be parsed, this is of somewhat limited use.
+	*/
+	friend std::istream& operator>> ( std::istream& in, TiXmlBase& base );
 
   protected:
 	/*	General parsing helper method. Takes a pointer in,
@@ -90,9 +107,26 @@ class TiXmlBase
 	*/
 	static const char* ReadName( const char* p, std::string* name );
 
+	/*	Reads text, either skipping or leaving the whitespace as is.
+		
+	*/
+	static const char* ReadText( const char* p, std::string* text, bool ignoreWhiteSpace, const char* endTag );
+
+	// Pull the stream out into a buffer, that can be used for the parsing.
+	// Really, the whole thing should use the input streams...but a lot of
+	// code is invested in parsing character pointers.
+	//
+	// Normally, this pulls one tag out of the stream and parses it.
+	// However, for the document, it pulls in a bunch of tags, and the method is 
+	// over ridden.
+//	virtual bool ParseIStream( std::istream* in );
+
+	virtual const char* Parse( const char* in ) = 0;
+
 	enum
 	{
 		TIXML_NO_ERROR = 0,
+		TIXML_ERROR,
 		TIXML_ERROR_OPENING_FILE,
 		TIXML_ERROR_OUT_OF_MEMORY,
 		TIXML_ERROR_PARSING_ELEMENT,
@@ -104,6 +138,7 @@ class TiXmlBase
 		TIXML_ERROR_PARSING_UNKNOWN,
 		TIXML_ERROR_PARSING_COMMENT,
 		TIXML_ERROR_PARSING_DECLARATION,
+		TIXML_ERROR_DOCUMENT_EMPTY,
 
 		TIXML_ERROR_STRING_COUNT
 	};
@@ -114,7 +149,7 @@ class TiXmlBase
 /** The parent class for everything in the Document Object Model.
 	(Except for attributes, which are contained in elements.)
 	Nodes have siblings, a parent, and children. A node can be
-	in a document, or stand on its own. The type of a TyXmlNode
+	in a document, or stand on its own. The type of a TiXmlNode
 	can be queried, and it can be cast to its more defined type.
 */
 class TiXmlNode : public TiXmlBase
@@ -183,10 +218,10 @@ class TiXmlNode : public TiXmlBase
 		the next one. If the previous child is null, it returns the
 		first. IterateChildren will return null when done.
 	*/
-	TiXmlNode* IterateChildren( TiXmlNode* previous );
+	TiXmlNode* IterateChildren( TiXmlNode* previous ) const;
 
 	/// This flavor of IterateChildren searches for children with a particular 'value'
-	TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous );
+	TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous ) const;
 		
 	/** Add a new node related to this. Adds a child past the LastChild.
 		Returns a pointer to the new object or NULL if an error occured.
@@ -242,32 +277,33 @@ class TiXmlNode : public TiXmlBase
 	TiXmlElement* FirstChildElement( const std::string& value ) const;
 
 	/// Query the type (as an enumerated value, above) of this node.
-	virtual int Type()	{ return type; }
+	virtual int Type() const	{ return type; }
 
 	/** Return a pointer to the Document this node lives in. 
 		Returns null if not in a document.
 	*/
 	TiXmlDocument* GetDocument() const;
 
-	TiXmlDocument* ToDocument()	const	{ return ( type == DOCUMENT ) ? (TiXmlDocument*) this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
-	TiXmlElement*  ToElement() const	{ return ( type == ELEMENT  ) ? (TiXmlElement*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
-	TiXmlComment*  ToComment() const	{ return ( type == COMMENT  ) ? (TiXmlComment*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
-	TiXmlUnknown*  ToUnknown() const	{ return ( type == UNKNOWN  ) ? (TiXmlUnknown*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
-	TiXmlText*	   ToText()    const	{ return ( type == TEXT     ) ? (TiXmlText*)     this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
-	TiXmlDeclaration* ToDeclaration() const	{ return ( type == DECLARATION ) ? (TiXmlDeclaration*) this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
+	TiXmlDocument* ToDocument()	const		{ return ( this && type == DOCUMENT ) ? (TiXmlDocument*) this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
+	TiXmlElement*  ToElement() const		{ return ( this && type == ELEMENT  ) ? (TiXmlElement*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
+	TiXmlComment*  ToComment() const		{ return ( this && type == COMMENT  ) ? (TiXmlComment*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
+	TiXmlUnknown*  ToUnknown() const		{ return ( this && type == UNKNOWN  ) ? (TiXmlUnknown*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
+	TiXmlText*	   ToText()    const		{ return ( this && type == TEXT     ) ? (TiXmlText*)     this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
+	TiXmlDeclaration* ToDeclaration() const	{ return ( this && type == DECLARATION ) ? (TiXmlDeclaration*) this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
 
 	virtual TiXmlNode* Clone() const = 0;
 
   protected:
 	TiXmlNode( NodeType type );
-	virtual const char* Parse( const char* ) = 0;
 
 	// The node is passed in by ownership. This object will delete it.
 	TiXmlNode* LinkEndChild( TiXmlNode* addThis );
 
 	// Figure out what is at *p, and parse it. Return a node if
 	// successful, and update p.
-	TiXmlNode* IdentifyAndParse( const char** p );
+	// start	Input, where to start parsing.
+	// past		The end of parsing.
+	TiXmlNode* IdentifyAndParse( const char* start, const char** past );
 
 	void CopyToClone( TiXmlNode* target ) const	{ target->value = value; }
 
@@ -305,15 +341,20 @@ class TiXmlAttribute : public TiXmlBase
 	TiXmlAttribute( const std::string& _name, const std::string& _value )	: name( _name ), value( _value ), prev( 0 ), next( 0 ) {}
 
 	const std::string& Name()  const { return name; }		///< Return the name of this attribute.
+
 	const std::string& Value() const { return value; }		///< Return the value of this attribute.
+	const int          IntValue() const;					///< Return the value of this attribute, converted to an integer.
+	const double	   DoubleValue() const;					///< Return the value of this attribute, converted to a double.
 
 	void SetName( const std::string& _name )	{ name = _name; }		///< Set the name of this attribute.
 	void SetValue( const std::string& _value )	{ value = _value; }		///< Set the value.
+	void SetIntValue( int value );										///< Set the value from an integer.
+	void SetDoubleValue( double value );								///< Set the value from a double.
 
 	/// Get the next sibling attribute in the DOM. Returns null at end.
-	TiXmlAttribute* Next();
+	TiXmlAttribute* Next() const;
 	/// Get the previous sibling attribute in the DOM. Returns null at beginning.
-	TiXmlAttribute* Previous();
+	TiXmlAttribute* Previous() const;
 
 	bool operator==( const TiXmlAttribute& rhs ) const { return rhs.name == name; }
 	bool operator<( const TiXmlAttribute& rhs )	 const { return name < rhs.name; }
@@ -323,10 +364,11 @@ class TiXmlAttribute : public TiXmlBase
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/	
-	const char* Parse( const char* );
+	const char* Parse( const char* in );
 
 	// [internal use] 
-	virtual void Print( FILE* fp, int depth );
+ 	virtual void Print( std::ostream* stream, int depth ) const;
+
 
 	// [internal use]
 	// Set the document pointer so the attribute can report errors.
@@ -411,20 +453,21 @@ class TiXmlElement : public TiXmlNode
 	*/
 	void RemoveAttribute( const std::string& name );
 
-	TiXmlAttribute* FirstAttribute()	{ return attributeSet.First(); }		///< Access the first attribute in this element.
-	TiXmlAttribute* LastAttribute()		{ return attributeSet.Last(); }		///< Access the last attribute in this element.
+	TiXmlAttribute* FirstAttribute() const	{ return attributeSet.First(); }		///< Access the first attribute in this element.
+	TiXmlAttribute* LastAttribute()	const 	{ return attributeSet.Last(); }		///< Access the last attribute in this element.
 
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
+
 	// [internal use] 
-	virtual void Print( FILE* fp, int depth );
+ 	virtual void Print( std::ostream* stream, int depth ) const;
 
   protected:
 	/*	[internal use] 
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* );
+	virtual const char* Parse( const char* in );
 	const char* ReadValue( const char* p );
 
   private:
@@ -444,14 +487,14 @@ class TiXmlComment : public TiXmlNode
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
-	virtual void Print( FILE* fp, int depth );
+ 	virtual void Print( std::ostream* stream, int depth ) const;
 
   protected:
 	/*	[internal use] 
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* );
+	virtual const char* Parse( const char* in );
 };
 
 
@@ -467,15 +510,15 @@ class TiXmlText : public TiXmlNode
 	// [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
-	virtual void Print( FILE* fp, int depth );
+ 	virtual void Print( std::ostream* stream, int depth ) const;
 	// [internal use] 	
-	bool Blank();	// returns true if all white space and new lines
+	bool Blank() const;	// returns true if all white space and new lines
 
 	/*	[internal use] 
 		Attribtue parsing starts: First char of the text
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* );
+	virtual const char* Parse( const char* in );
 };
 
 
@@ -506,23 +549,23 @@ class TiXmlDeclaration : public TiXmlNode
 	virtual ~TiXmlDeclaration()	{}
 
 	/// Version. Will return empty if none was found.
-	const std::string& Version()		{ return version; }
+	const std::string& Version() const		{ return version; }
 	/// Encoding. Will return empty if none was found.
-	const std::string& Encoding()		{ return encoding; }
+	const std::string& Encoding() const		{ return encoding; }
 	/// Is this a standalone document? 
-	const std::string& Standalone()		{ return standalone; }
+	const std::string& Standalone() const		{ return standalone; }
 
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
-	virtual void Print( FILE* fp, int depth );
+ 	virtual void Print( std::ostream* stream, int depth ) const;
 
   protected:
 	//	[internal use] 
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 	
-	virtual const char* Parse( const char* );
+	virtual const char* Parse( const char* in );
 
   private:
 	std::string version;
@@ -545,14 +588,14 @@ class TiXmlUnknown : public TiXmlNode
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 	
-	virtual void Print( FILE* fp, int depth );
+ 	virtual void Print( std::ostream* stream, int depth ) const;
 
   protected:
 	/*	[internal use] 
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* );
+	virtual const char* Parse( const char* in );
 };
 
 
@@ -576,24 +619,43 @@ class TiXmlDocument : public TiXmlNode
 	*/
 	bool LoadFile();
 	/// Save a file using the current document value. Returns true if successful.
-	bool SaveFile();
+	bool SaveFile() const;
 	/// Load a file using the given filename. Returns true if successful.
 	bool LoadFile( const std::string& filename );
 	/// Save a file using the given filename. Returns true if successful.
-	bool SaveFile( const std::string& filename );
+	bool SaveFile( const std::string& filename ) const;
 
 	/// Parse the given null terminated block of xml data.
-	const char* Parse( const char* );
+	const char* Parse( const char* in );
+
+	/** Turn on or off white space sensitivity. No one seems to agree on what
+		the correct behavior is, so this function will change the parsing to
+		your preference.
+
+		If true (the default) white space (new lines, carriage returns, tabs, and spaces),
+		in text tags, will be concatenated to a single space. If false, white space in text tags
+		will be left as is.
+	*/
+	void SetIgnoreWhiteSpace( bool ignore )	{ ignoreWhiteSpace = ignore; }
+	bool IgnoreWhiteSpace()					{ return ignoreWhiteSpace; }
 	
 	/// If, during parsing, a error occurs, Error will be set to true.
-	bool Error()						{ return error; }
+	bool Error() const						{ return error; }
 	/// Contains a textual (english) description of the error if one occurs.
-	const std::string& ErrorDesc()		{ return errorDesc; }
+	const std::string& ErrorDesc() const	{ return errorDesc; }
+	/** Generally, you probably want the error string ( ErrorDesc() ). But if you
+		prefer the ErrorId, this function will fetch it.
+	*/
+	const int ErrorId()	const				{ return errorId; }
 
 	/// Write the document to a file -- usually invoked by SaveFile.
-	virtual void Print( FILE* fp, int depth = 0 );
+
 	/// Dump the document to standard out.
-	void Print()										{ Print( stdout, 0 ); }
+	void Print() const								{ Print( stdout ); }
+	/// Print the document to an ostream -- preserve the tabbing.
+	void Print( std::ostream* stream, int depth = 0 ) const;
+	/// Print
+	void Print( FILE* cfile ) const;
   
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
@@ -602,12 +664,16 @@ class TiXmlDocument : public TiXmlNode
 									error   = true; 
 									errorId = err;
 									errorDesc = errorString[ errorId ]; }
+  protected:
+//	virtual bool ParseIStream( std::istream* in );
 
   private:
 	bool error;
 	int  errorId;	
 	std::string errorDesc;
+	bool ignoreWhiteSpace;
 };
+
 
 
 #endif
