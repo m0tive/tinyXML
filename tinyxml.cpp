@@ -103,8 +103,9 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 			// be out of the range of 0-255. Else something has gone strange.
 			assert( c > 0 && c < 256 );
 
-			char realc = (char) c;
-			outString->append( &realc, 1 );
+			//char realc = (char) c;
+			//outString->append( &realc, 1 );
+			*outString += (char) c;	// somewhat more efficient function call.
 			++i;
 		}
 	}

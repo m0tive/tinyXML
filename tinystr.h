@@ -194,13 +194,22 @@ class TiXmlString
         append (suffix . c_str ());
     }
 
-    // append for a single char. This could be improved a lot if needed
+    // append for a single char.
     void append (char single)
     {
-        char smallstr [2];
-        smallstr [0] = single;
-        smallstr [1] = 0;
-        append (smallstr);
+        if ( cstring && current_length < (allocated-1) )
+		{
+			cstring[ current_length ] = single;
+			++current_length;
+			cstring[ current_length ] = 0;
+		}
+		else
+		{
+			char smallstr [2];
+			smallstr [0] = single;
+			smallstr [1] = 0;
+			append (smallstr);
+		}
     }
 
 } ;

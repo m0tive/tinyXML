@@ -788,6 +788,17 @@ int main()
 		XmlTest( "White space condensed.", "This has leading, trailing, and internal space", text->Value() );
 	}
 
+	{
+		// Double attributes
+		const char* doctype = "<element attr='red' attr='blue' />";
+
+		TiXmlDocument doc;
+		doc.Parse( doctype );
+		
+		XmlTest( "Parsing repeated attributes.", 0, (int)doc.Error() );	// not an  error to tinyxml
+		XmlTest( "Parsing repeated attributes.", "blue", doc.FirstChildElement( "element" )->Attribute( "attr" ) );
+	}
+
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );
 	QueryPerformanceFrequency( (LARGE_INTEGER*) (&freq) );

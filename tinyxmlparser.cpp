@@ -303,7 +303,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 		int c = in->peek();
 		if ( !IsWhiteSpace( c ) )
 			return true;
-		*tag += in->get();
+		*tag += (char) in->get();
 	}
 }
 
@@ -317,7 +317,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 			return true;
 
 		in->get();
-		*tag += c;
+		*tag += (char) c;
 	}
 	return false;
 }
@@ -444,38 +444,36 @@ bool TiXmlBase::StringEqual( const char* p,
 							 bool ignoreCase )
 {
 	assert( p );
+	assert( tag );
 	if ( !p || !*p )
 	{
 		assert( 0 );
 		return false;
 	}
 
-    if ( ToLowerUTF8( *p ) == ToLowerUTF8( *tag ) )
+	const char* q = p;
+
+	if ( ignoreCase )
 	{
-		const char* q = p;
-
-		if ( ignoreCase )
+		while ( *q && *tag && ToLowerUTF8( *q ) == ToLowerUTF8( *tag ) )
 		{
-			while ( *q && *tag && ToLowerUTF8( *q ) == ToLowerUTF8( *tag ) )
-			{
-				++q;
-				++tag;
-			}
-
-			if ( *tag == 0 )
-				return true;
+			++q;
+			++tag;
 		}
-		else
+
+		if ( *tag == 0 )
+			return true;
+	}
+	else
+	{
+		while ( *q && *tag && *q == *tag )
 		{
-			while ( *q && *tag && *q == *tag )
-			{
-				++q;
-				++tag;
-			}
-
-			if ( *tag == 0 )		// Have we found the end of the tag, and everything equal?
-				return true;
+			++q;
+			++tag;
 		}
+
+		if ( *tag == 0 )		// Have we found the end of the tag, and everything equal?
+			return true;
 	}
 	return false;
 }
@@ -532,7 +530,10 @@ const char* TiXmlBase::ReadText(	const char* p,
 				char cArr[4];
 				int len;
 				p = GetCharUTF8( p, cArr, &len );
-				text->append( cArr, len );
+				if ( len == 1 )
+					(*text) += cArr[0];	// more efficient
+				else
+					text->append( cArr, len );
 			}
 		}
 	}
@@ -558,7 +559,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 
 	while ( in->good() )
 	{
-		int tagIndex = tag->length();
+		int tagIndex = (int) tag->length();
 		while ( in->good() && in->peek() != '>' )
 		{
 			int c = in->get();
@@ -822,7 +823,7 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 				if ( c == '>' )
 					break;
 
-				*tag += c;
+				*tag += (char) c;
 				in->get();
 
 				if ( !firstCharFound && c != '<' && !IsWhiteSpace( c ) )
@@ -838,7 +839,7 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 			{
 				int c = in->get();
 				assert( c == '>' );
-				*tag += c;
+				*tag += (char) c;
 
 				// We are done, once we've found our closing tag.
 				return;
@@ -1057,7 +1058,7 @@ void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	while ( in->good() )
 	{
 		int c = in->get();	
-		(*tag) += c;
+		(*tag) += (char) c;
 
 		if ( c == '>' )
 		{
@@ -1109,7 +1110,7 @@ void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	while ( in->good() )
 	{
 		int c = in->get();	
-		(*tag) += c;
+		(*tag) += (char) c;
 
 		if ( c == '>' 
 			 && tag->at( tag->length() - 2 ) == '-'
@@ -1228,7 +1229,7 @@ void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 		if ( c == '<' )
 			return;
 
-		(*tag) += c;
+		(*tag) += (char) c;
 		in->get();
 	}
 }
@@ -1258,7 +1259,7 @@ void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	while ( in->good() )
 	{
 		int c = in->get();
-		(*tag) += c;
+		(*tag) += (char) c;
 
 		if ( c == '>' )
 		{
