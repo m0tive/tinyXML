@@ -9,6 +9,7 @@
 const char* TiXmlBase::errorString[ ERROR_STRING_COUNT ] =
 {
 	"No error",
+	"Failed to open file",
 	"Memory allocation failed.",
 	"Error parsing Element.",
 	"Failed to read Element name",

@@ -31,9 +31,13 @@ Changes in version 1.1.0
 - Added the TiXmlDeclaration class to read xml declarations.
 
 Changes in version 1.2.0
-- Removed the factory. Not really in the spirit of small and simple,
-  confused the code, of limited value.
+- Removed the factory. The factory was not really in the spirit 
+  of small and simple, confused the code, and was of limited value.
+- Added FirstChildElement and NextSiblingElement, because they
+  are such common functions.
+- Re-wrote the example to test and demonstrate more functionality.
 
-
-
-
+Changes in version 1.2.1
+- Fixed a bug where comments couldn't be inside elements.
+- Loading now clears out existing XML rather than appending.
+- Added the "Clear" method on a node to delete all its children.

@@ -115,20 +115,32 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char** where )
 			&& tolower( *(p+2) ) == 'm'
 			&& tolower( *(p+3) ) == 'l' )
 	{
+		#ifdef DEBUG
+			printf( "XML parsing Declaration\n" );
+		#endif
 		returnNode = new TiXmlDeclaration();
 	}
 	else if ( isalpha( *p ) || *p == '_' )
 	{
+		#ifdef DEBUG
+			printf( "XML parsing Element\n" );
+		#endif
 		returnNode = new TiXmlElement( "" );
 	}
 	else if (    *(p+0) == '!'
 			  && *(p+1) == '-'
 			  && *(p+2) == '-' )
 	{
+		#ifdef DEBUG
+			printf( "XML parsing Comment\n" );
+		#endif
 		returnNode = new TiXmlComment();
 	}
 	else
 	{
+		#ifdef DEBUG
+			printf( "XML parsing Comment\n" );
+		#endif
 		returnNode = new TiXmlUnknown();
 	}
 
@@ -234,6 +246,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 	TiXmlDocument* document = GetDocument();
 
 	// Read in text and elements in any order.
+	p = SkipWhiteSpace( p );
 	while ( p && *p )
 	{
 		const char* start = p;
@@ -271,17 +284,26 @@ const char* TiXmlElement::ReadValue( const char* p )
 			}
 			else
 			{
-				TiXmlElement* element = new TiXmlElement( "" );
-
-				if ( element )
+// 				TiXmlElement* element = new TiXmlElement( "" );
+// 
+// 				if ( element )
+// 				{
+// 					p = element->Parse( p+1 );
+// 					if ( p )
+// 						LinkEndChild( element );
+// 				}
+// 				else
+// 				{
+// 					if ( document ) document->SetError( ERROR_OUT_OF_MEMORY );
+// 					return 0;
+// 				}
+				TiXmlNode* node = IdentifyAndParse( &p );
+				if ( node )
 				{
-					p = element->Parse( p+1 );
-					if ( p )
-						LinkEndChild( element );
-				}
+					LinkEndChild( node );
+				}				
 				else
 				{
-					if ( document ) document->SetError( ERROR_OUT_OF_MEMORY );
 					return 0;
 				}
 			}
@@ -413,6 +435,8 @@ const char* TiXmlText::Parse( const char* p )
 	value = "";
 	bool whitespace = false;
 
+	// Remove leading white space:
+	p = SkipWhiteSpace( p );
 	while ( *p && *p != '<' )
 	{
 		if ( *p == '\r' || *p == '\n' )

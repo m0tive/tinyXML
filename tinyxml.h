@@ -39,22 +39,22 @@ class TiXmlUnknown;
 class TiXmlAttribute;
 class TiXmlText;
 class TiXmlDeclaration;
-// class TiXmlFactory;
+
 
 /** TiXmlBase is a base class for every class in TinyXml.
 	It does little except to establist that TinyXml classes
 	can be printed and provide some utility functions.
 
-	Classes in the TinyXML DOM are either containment nodes 
-	or leaf nodes. No node (in a normal document) is both.
+	In XML, the document and elements can contain
+	other elements and other types of nodes.
 
 	@verbatim
-	A Document contains:	Element	(container)
+	A Document can contain:	Element	(container or leaf)
 							Comment (leaf)
 							Unknown (leaf)
 							Declaration( leaf )
 
-	An Element contains:	Element (container)
+	An Element can contain:	Element (container or leaf)
 							Text	(leaf)
 							Attributes (not on tree)
 							Comment (leaf)
@@ -93,6 +93,7 @@ class TiXmlBase
 	enum
 	{
 		NO_ERROR = 0,
+		ERROR_OPENING_FILE,
 		ERROR_OUT_OF_MEMORY,
 		ERROR_PARSING_ELEMENT,
 		ERROR_FAILED_TO_READ_ELEMENT_NAME,
@@ -154,14 +155,17 @@ class TiXmlNode : public TiXmlBase
 	*/
 	void SetValue( const std::string& _value )		{ value = _value; }
 
+	/// Delete all the children of this node. Does not affect 'this'.
+	void Clear();
+
 	/// One step up the DOM.
 	TiXmlNode* Parent() const					{ return parent; }
 
-	TiXmlNode* FirstChild()	const	{ return firstChild; }  ///< The first child of this node. Will be null if there are no children.
-	TiXmlNode* FirstChild( const std::string& value ) const;					 ///< The first child of this node with the matching 'value'. Will be null if none found.
+	TiXmlNode* FirstChild()	const	{ return firstChild; }		///< The first child of this node. Will be null if there are no children.
+	TiXmlNode* FirstChild( const std::string& value ) const;	///< The first child of this node with the matching 'value'. Will be null if none found.
 	
 	TiXmlNode* LastChild() const	{ return lastChild; }		/// The last child of this node. Will be null if there are no children.
-	TiXmlNode* LastChild( const std::string& value ) const;			/// The last child of this node matching 'value'. Will be null if there are no children.
+	TiXmlNode* LastChild( const std::string& value ) const;		/// The last child of this node matching 'value'. Will be null if there are no children.
 
 	/** An alternate way to walk the children of a node.
 		One way to iterate over nodes is:
@@ -209,11 +213,13 @@ class TiXmlNode : public TiXmlBase
 
 	/// Navigate to a sibling node.
 	TiXmlNode* PreviousSibling() const			{ return prev; }
+
 	/// Navigate to a sibling node.
 	TiXmlNode* PreviousSibling( const std::string& ) const;
 	
 	/// Navigate to a sibling node.
 	TiXmlNode* NextSibling() const				{ return next; }
+
 	/// Navigate to a sibling node with the given 'value'.
 	TiXmlNode* NextSibling( const std::string& ) const;
 
@@ -265,7 +271,6 @@ class TiXmlNode : public TiXmlBase
 
 	void CopyToClone( TiXmlNode* target ) const	{ target->value = value; }
 
-// 	TiXmlDocument*	document;
 	TiXmlNode*		parent;		
 	NodeType		type;
 	
@@ -283,7 +288,7 @@ class TiXmlNode : public TiXmlBase
 	number of attributes, each with a unique name.
 
 	@note The attributes are not TiXmlNodes, since they are not
-		  part of the XML document object model. There are other
+		  part of the tinyXML document object model. There are other
 		  suggested ways to look at this problem.
 
 	@note Attributes have a parent
@@ -565,7 +570,10 @@ class TiXmlDocument : public TiXmlNode
 	
 	virtual ~TiXmlDocument() {}
 
-	/// Load a file using the current document value. Returns true if successful.
+	/** Load a file using the current document value. 
+		Returns true if successful. Will delete any existing
+		document data before loading.
+	*/
 	bool LoadFile();
 	/// Save a file using the current document value. Returns true if successful.
 	bool SaveFile();
@@ -594,12 +602,8 @@ class TiXmlDocument : public TiXmlNode
 									error   = true; 
 									errorId = err;
 									errorDesc = errorString[ errorId ]; }
-	// [internal use]
-// 	TiXmlFactory* Factory() const	{ return factory; }
 
   private:
-
-// 	TiXmlFactory* factory;
 	bool error;
 	int  errorId;	
 	std::string errorDesc;

@@ -22,27 +22,25 @@ int main()
 		"<Item priority=\"2\" distance='far'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
-	// What the todo list should look like after processing.
-	// (Written as a c-str in case you decide to play with diffs.)
-	/*
-	const char* demoEnd =
-		"<?xml version=\"1.0\" standalone=\"no\" ?>\n"
-		"<!-- Our to do list data -->\n"
-		"<ToDo>\n"
-		"    <Item priority=\"2\" distance=\"close\"> Go to the \n"
-		"        <bold>Toy store!\n"
-		"        </bold>\n"
-		"    </Item>\n"
-		"    <Item priority=\"1\" distance=\"far\"> Talk to:\n"
-		"        <Meeting where=\"School\">\n"
-		"            <Attendee name=\"Marple\" position=\"teacher\" />\n"
-		"            <Attendee name=\"Voo\" position=\"counselor\" />\n"
-		"        </Meeting>\n"
-		"        <Meeting where=\"Lunch\" />\n"
-		"    </Item>\n"
-		"    <Item priority=\"2\" distance=\"here\"> Do bills \n"
-		"    </Item>\n"
-		"</ToDo>\n";
+	/* What the todo list should look like after processing.
+
+		<?xml version="1.0" standalone="no" ?>
+		<!-- Our to do list data -->
+		<ToDo>
+		    <Item priority="2" distance="close"> Go to the
+		        <bold>Toy store!
+		        </bold>
+		    </Item>
+		    <Item priority="1" distance="far"> Talk to:
+		        <Meeting where="School">
+		            <Attendee name="Marple" position="teacher" />
+		            <Attendee name="Voo" position="counselor" />
+		        </Meeting>
+		        <Meeting where="Lunch" />
+		    </Item>
+		    <Item priority="2" distance="here"> Do bills
+		    </Item>
+		</ToDo>
 	*/
 
 	// The example parses from the character string (above):

@@ -31,7 +31,8 @@ example to get you started. It is released under the ZLib license,
 so you can use it in open source or commercial code.
 
 It attempts to be a flexible parser, but with truly correct and 
-compliant XML output. TinyXml should compile on any reasonably C++ 
+compliant XML output (with the exception of the character set,
+below.) TinyXml should compile on any reasonably C++ 
 system. It does not rely on exceptions or RTTI, and only uses the STL
 string class.
 
@@ -53,7 +54,9 @@ complete XML needs, TinyXml is not the parser for you.
 Currently in use, TinyXml is looking pretty stable. If you find
 bugs, send them in and we'll get them straightened out as soon as possible.
 
-It currently does not recognize "entity references", meaning special characters. This is a missing feature that will hopefully be included soon. Namely:
+It currently does not recognize "entity references", meaning special 
+characters. This is a missing feature that will hopefully be 
+included soon. Namely:
 @verbatim
 	&amp;	&
 	&lt;	<
@@ -66,20 +69,21 @@ It currently does not recognize "entity references", meaning special characters.
 
 To Compile and Run xmltest:
 
-A Visual C++ .dsp file is provided. Simply compile and run. It will 
-write 4 xml files to disk. Hopefully the output matches the input! 
-It also briefly demonstrates walking the DOM by printing out the 
-top level element names, and runs some other tests.
+A Linux Makefile and a Windows Visual C++ .dsp file is provided. 
+Simply compile and run. It will write the file demotest.xml to your 
+disk and generate output on the screen. It also tests walking the
+DOM by printing out the number of nodes found using different 
+techniques.
 
-A linux makefile is also provided. It is very generic and will
-probably run on other systems, but is only tested on linux. Make
+The Linux makefile is very generic and will
+probably run on other systems, but is only tested on Linux. Make
 sure to run 'make depend' before you make, so you don't pick
 up incorrect dependencies.
 
 
 To Use in an Application:
 
-Add tinyxml.cpp, tinyxml.h, tinyxmlerror, and tinyxmlparser.cpp to your 
+Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, and tinyxmlparser.cpp to your 
 project or make file. That's it! It should compile on any reasonably
 compliant C++ system. You do not need to enable exceptions or
 RTTI for TinyXml.
@@ -87,14 +91,21 @@ RTTI for TinyXml.
 
 <b> Where it may go.  </b>
 
-It is my hope for this to become a collaborative effort. Tighten 
-up the interface to the DOM, fix the entity references, and 
-develop a stable useable XML parser.
+At this point, I'm focusing on tightening up remaining issues.
+Bug fixes (though comfortably rare) and minor interface 
+corrections. 
+
+On the "it would be nice if..." list is:
+- More intelligent (and consistent) parsing would
+  be worthwhile; the parser is somewhat "organic" in its current form.
+- Entities.
+
+I'm not currently working on either; but would ethusiastically welcome
+a patch!
 
 In the future, I think it would be great if XSL and DTDs were added 
 in some scalable way. So TinyXml would become a stand-alone core 
 component of say MedXml (adding DTDs) and LargeXml( adding XSL.) :-) 
-We’ll see.
 
 
 <b> How TinyXml works.  </b>

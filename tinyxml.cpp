@@ -49,6 +49,23 @@ TiXmlNode::~TiXmlNode()
 }
 
 
+void TiXmlNode::Clear()
+{
+	TiXmlNode* node = firstChild;
+	TiXmlNode* temp = 0;
+
+	while ( node )
+	{
+		temp = node;
+		node = node->next;
+		delete temp;
+	}	
+
+	firstChild = 0;
+	lastChild = 0;
+}
+
+
 TiXmlNode* TiXmlNode::LinkEndChild( TiXmlNode* node )
 {
 	node->parent = this;
@@ -491,6 +508,10 @@ bool TiXmlDocument::SaveFile()
 
 bool TiXmlDocument::LoadFile( const std::string& filename )
 {
+	// Delete the existing data:
+	Clear();
+	
+	// Load the new data:
 	FILE* fp = fopen( filename.c_str(), "r" );
 	if ( fp )
 	{
@@ -512,6 +533,10 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 
 		if ( !Error() )
 			return true;
+	}
+	else
+	{
+		SetError( ERROR_OPENING_FILE );
 	}
 	return false;
 }
