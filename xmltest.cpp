@@ -353,10 +353,9 @@ int main()
 							"</passages>";
 
         TiXmlDocument doc;
-		doc.TrackRowCol( 4 );
 		doc.Parse( error );
-		XmlTest( "Error row", doc.ErrorRow(), 2 );
-		XmlTest( "Error column", doc.ErrorCol(), 16 );
+		XmlTest( "Error row", doc.ErrorRow(), 3 );
+		XmlTest( "Error column", doc.ErrorCol(), 17 );
 		//printf( "error=%d id='%s' row %d col%d\n", (int) doc.Error(), doc.ErrorDesc(), doc.ErrorRow()+1, doc.ErrorCol() + 1 );
 
 	}
@@ -368,7 +367,6 @@ int main()
 							"</room>";
 
         TiXmlDocument doc;
-		doc.TrackRowCol( 4 );
 		doc.Parse( str );
 
 		TiXmlHandle docHandle( &doc );
@@ -397,27 +395,27 @@ int main()
 		TiXmlElement* door0 = door0Handle.Element();
 		TiXmlElement* door1 = door1Handle.Element();
 
-		XmlTest( "Location tracking: Declaration row", declaration->Row(), 0 );
-		XmlTest( "Location tracking: Declaration col", declaration->Column(), 4 );
-		XmlTest( "Location tracking: room row", room->Row(), 0 );
-		XmlTest( "Location tracking: room col", room->Column(), 44 );
-		XmlTest( "Location tracking: doors row", doors->Row(), 0 );
-		XmlTest( "Location tracking: doors col", doors->Column(), 50 );
-		XmlTest( "Location tracking: Comment row", comment->Row(), 1 );
-		XmlTest( "Location tracking: Comment col", comment->Column(), 2 );
-		XmlTest( "Location tracking: text row", text->Row(), 2 ); 
-		XmlTest( "Location tracking: text col", text->Column(), 23 );
-		XmlTest( "Location tracking: door0 row", door0->Row(), 2 );
-		XmlTest( "Location tracking: door0 col", door0->Column(), 4 );
-		XmlTest( "Location tracking: door1 row", door1->Row(), 3 );
-		XmlTest( "Location tracking: door1 col", door1->Column(), 4 );
+		XmlTest( "Location tracking: Declaration row", declaration->Row(), 1 );
+		XmlTest( "Location tracking: Declaration col", declaration->Column(), 5 );
+		XmlTest( "Location tracking: room row", room->Row(), 1 );
+		XmlTest( "Location tracking: room col", room->Column(), 45 );
+		XmlTest( "Location tracking: doors row", doors->Row(), 1 );
+		XmlTest( "Location tracking: doors col", doors->Column(), 51 );
+		XmlTest( "Location tracking: Comment row", comment->Row(), 2 );
+		XmlTest( "Location tracking: Comment col", comment->Column(), 3 );
+		XmlTest( "Location tracking: text row", text->Row(), 3 ); 
+		XmlTest( "Location tracking: text col", text->Column(), 24 );
+		XmlTest( "Location tracking: door0 row", door0->Row(), 3 );
+		XmlTest( "Location tracking: door0 col", door0->Column(), 5 );
+		XmlTest( "Location tracking: door1 row", door1->Row(), 4 );
+		XmlTest( "Location tracking: door1 col", door1->Column(), 5 );
 	}
 	{
 		const char* str =	"\t<?xml version=\"1.0\" standalone=\"no\" ?>\t<room doors='2'>\n"
 							"</room>";
 
         TiXmlDocument doc;
-		doc.TrackRowCol( 8 );
+		doc.SetTabSize( 8 );
 		doc.Parse( str );
 
 		TiXmlHandle docHandle( &doc );
@@ -431,10 +429,10 @@ int main()
 		TiXmlAttribute* doors = room->FirstAttribute();
 		assert( doors );
 
-		XmlTest( "Location tracking: Tab 8: room row", room->Row(), 0 );
-		XmlTest( "Location tracking: Tab 8: room col", room->Column(), 48 );
-		XmlTest( "Location tracking: Tab 8: doors row", doors->Row(), 0 );
-		XmlTest( "Location tracking: Tab 8: doors col", doors->Column(), 54 );
+		XmlTest( "Location tracking: Tab 8: room row", room->Row(), 1 );
+		XmlTest( "Location tracking: Tab 8: room col", room->Column(), 49 );
+		XmlTest( "Location tracking: Tab 8: doors row", doors->Row(), 1 );
+		XmlTest( "Location tracking: Tab 8: doors col", doors->Column(), 55 );
 	}
 
 	{

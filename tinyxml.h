@@ -73,20 +73,17 @@ class TiXmlDeclaration;
 /*	Internal structure for tracking location of items 
 	in the XML file.
 */
-struct TiXmlPosition
+struct TiXmlCursor
 {
-	TiXmlPosition() { last = 0; row = col = -1; }
+	TiXmlCursor()		{ Clear(); }
+	void Clear()		{ last = 0; row = col = -1; }
 
 	int row;	// 0 based.
-	int col;	
-	const char* last;
+	int col;	// 0 based.
+	const char* last;	// After parsing, this is a pointer to dangling memory! It should
+						// never be used.
 
-	void Stamp( const char* now, const TiXmlPosition* prev, int tabsize )
-	{
-		if ( tabsize > 0 )
-			StampImpl( now, prev, tabsize );
-	}
-	void StampImpl( const char* now, const TiXmlPosition* prev, int tabsize );
+	void Stamp( const char* now, const TiXmlCursor* prev, int tabsize );
 };
 
 // Only used by Attribute::Query functions
@@ -148,8 +145,8 @@ public:
 	static bool IsWhiteSpaceCondensed()						{ return condenseWhiteSpace; }
 
 	/** Return the position, in the original source file, of this node or attribute.
-		The row and column are 0-based. (That is the first row and first column is
-		0,0). If the returns values are less than 0, then the parser does not have
+		The row and column are 1-based. (That is the first row and first column is
+		1,1). If the returns values are 0 or less, then the parser does not have
 		a row and column value.
 
 		Generally, the row and column value will be set when the TiXmlDocument::Load(),
@@ -160,12 +157,10 @@ public:
 		(by adding or changing nodes and attributes) the new values will NOT update to
 		reflect changes in the document.
 
-		NOTE: You must turn this feature on with the TrackRowCol() method.
-
-		@sa TrackRowCol()
+		@sa TiXmlDocument::SetTabSize()
 	*/
-	int Row() const			{ return location.row; }
-	int Column() const		{ return location.col; }	///< See Row()
+	int Row() const			{ return location.row + 1; }
+	int Column() const		{ return location.col + 1; }	///< See Row()
 
 protected:
 	// See STL_STRING_BUG
@@ -203,7 +198,7 @@ protected:
 									const char* endTag,			// what ends this text
 									bool ignoreCase );			// whether to ignore case in the end tag
 
-	virtual const char* Parse( const char* p, const TiXmlPosition* position ) = 0;
+	virtual const char* Parse( const char* p, const TiXmlCursor* position ) = 0;
 
 	// If an entity has been found, transform it into a character.
 	static const char* GetEntity( const char* in, char* value );
@@ -256,7 +251,7 @@ protected:
 	};
 	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
 
-	TiXmlPosition location;
+	TiXmlCursor location;
 
 private:
 	struct Entity
@@ -498,7 +493,7 @@ public:
 	/** Returns the tab size being used to compute the location of nodes and attributes
 		in the document.
 
-		@sa TrackRowCol
+		@sa SetTabSize
 	*/
 	int TabSize() const;
 
@@ -553,8 +548,6 @@ protected:
 	@note The attributes are not TiXmlNodes, since they are not
 		  part of the tinyXML document object model. There are other
 		  suggested ways to look at this problem.
-
-	@note Attributes have a parent
 */
 class TiXmlAttribute : public TiXmlBase
 {
@@ -640,7 +633,7 @@ public:
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
-	virtual const char* Parse( const char* p, const TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlCursor* position );
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -801,13 +794,13 @@ protected:
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlCursor* position );
 
 	/*	[internal use]
 		Reads the "value" of the element -- another element, or text.
 		This should terminate with the current end tag.
 	*/
-	const char* ReadValue( const char* in, const TiXmlPosition* position );
+	const char* ReadValue( const char* in, const TiXmlCursor* position );
 
 private:
 	TiXmlAttributeSet attributeSet;
@@ -837,7 +830,7 @@ protected:
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlCursor* position );
 };
 
 
@@ -875,7 +868,7 @@ protected :
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
 		*/
-	virtual const char* Parse( const char* p, const TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlCursor* position );
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -944,7 +937,7 @@ protected:
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 
-	virtual const char* Parse( const char* p, const TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlCursor* position );
 
 private:
 	TIXML_STRING version;
@@ -953,7 +946,7 @@ private:
 };
 
 
-/** Any tag that tinyXml doesn't recognize is save as an
+/** Any tag that tinyXml doesn't recognize is saved as an
 	unknown. It is a tag of text, but should not be modified.
 	It will be written back to the XML, unchanged, when the file
 	is saved.
@@ -969,7 +962,6 @@ public:
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
 protected:
-	// used to be public
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
@@ -978,7 +970,7 @@ protected:
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlCursor* position );
 };
 
 
@@ -1033,7 +1025,7 @@ public:
 
 	/** Parse the given null terminated block of xml data.
 	*/
-	virtual const char* Parse( const char* p, const TiXmlPosition* position = 0 );
+	virtual const char* Parse( const char* p, const TiXmlCursor* position = 0 );
 
 	/** Get the root element -- the only top level element -- of the document.
 		In well formed XML, there should only be one. TinyXml is tolerant of
@@ -1057,36 +1049,36 @@ public:
 	*/
 	const int ErrorId()	const				{ return errorId; }
 
-	/** Returns the location (if known) of the error. The first column is column 0, 
-		and the first row is row 0. A value of -1 means the row and column wasn't applicable
+	/** Returns the location (if known) of the error. The first column is column 1, 
+		and the first row is row 1. A value of 0 means the row and column wasn't applicable
 		(memory errors, for example, have no row/column) or the parser lost the error. (An
-		error in the error reporting, in that case.) People generally expect to see rows and
-		columns "1" indexed, so the "human readable" form of the row or column 
-		is ( doc.ErrorRow() + 1 ) or ( doc.ErrorCol() + 1 ).
+		error in the error reporting, in that case.)
 
-		Row and Column tracking must be turned on with the TrackRowCol() method for this
-		to work.
-
-		@sa TrackRowCol, Row, Column
+		@sa SetTabSize, Row, Column
 	*/
-	int ErrorRow()	{ return errorLocation.row; }
-	int ErrorCol()	{ return errorLocation.col; }	///< The column where the error occured. See ErrorRow()
+	int ErrorRow()	{ return errorLocation.row+1; }
+	int ErrorCol()	{ return errorLocation.col+1; }	///< The column where the error occured. See ErrorRow()
 
-	/** Turn on row and column tracking. By calling this method, with a tab size
+	/** By calling this method, with a tab size
 		greater than 0, the row and column of each node and attribute is stored
 		with the data. Very useful for tracking the DOM back in the source file.
 
-		There is a significant performance overhead for this feature.
-	
 		The tab size is required for calculating the location of nodes. If not
-		set will default to 4. You can set to 0 to disable row/column computation.
+		set, the default of 4 is used. You can set to 0 to disable row/column computation.
 		The tabsize is set per document.
 
 		Note that row and column tracking is not supported when using operator>>.
 
+		The tab size needs to be enabled before the parse or load. Correct usage:
+		@verbatim
+		TiXmlDocument doc;
+		doc.SetTabSize( 8 );
+		doc.Load( "myfile.xml" );
+		@endverbatim
+
 		@sa Row, Column
 	*/
-	void TrackRowCol( int _tabsize )		{ tabsize = _tabsize; }
+	void SetTabSize( int _tabsize )		{ tabsize = _tabsize; }
 
 	int TabSize() const	{ return tabsize; }
 
@@ -1116,7 +1108,7 @@ private:
 	int  errorId;
 	TIXML_STRING errorDesc;
 	int tabsize;
-	TiXmlPosition errorLocation;
+	TiXmlCursor errorLocation;
 };
 
 

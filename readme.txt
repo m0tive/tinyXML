@@ -41,8 +41,9 @@ compiled with or without STL support.
 <h2> What it doesn't do. </h2>
 
 It doesnt parse or use DTDs (Document Type Definitions) or XSLs
-(eXtensible Stylesheet Language.) It is limited to the ASCII
-character set. There are other parsers out there (check out
+(eXtensible Stylesheet Language.) It is only tested in English - 
+although people have reported success in passing through Latin-1 
+and UTF-8 data. There are other parsers out there (check out
 www.sourceforge.org, search for XML) that are much more fully
 featured. But they are also much bigger, take longer to set up in
 your project, have a higher learning curve, and often have a more
@@ -208,10 +209,10 @@ in source files can be very important for some applications. Additionally,
 knowing where parsing errors occured in the original source can be very
 time saving.
 
-TinyXml can track the row and column origin of all nodes and attributes
-in a text file. The feature is turned on by calling TiXmlDocument::TrackRowCol().
-There is a performance impact for using this feature. (Although, like most
-performance impacts, it probably isn't significant for most applications.)
+TinyXml can tracks the row and column origin of all nodes and attributes
+in a text file. The TiXmlBase::Row() and TiXmlBase::Column() methods return
+the origin of the node in the source text. The correct tabs can be 
+configured in TiXmlDocument::SetTabSize().
 
 
 <h2> Using and Installing </h2>

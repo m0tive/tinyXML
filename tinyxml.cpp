@@ -26,13 +26,13 @@ distribution.
 #include "tinyxml.h"
 
 
-void TiXmlPosition::StampImpl( const char* now, const TiXmlPosition* prevPosition, int tabsize )
+void TiXmlCursor::Stamp( const char* now, const TiXmlCursor* prevPosition, int tabsize )
 {
 	// Do nothing if the tabsize is 0.
 	if ( tabsize < 1 )
 		return;
 
-	TiXmlPosition prev;
+	TiXmlCursor prev;
 
 	if ( prevPosition )
 		prev = *prevPosition;
@@ -751,13 +751,13 @@ TiXmlNode* TiXmlElement::Clone() const
 
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	tabsize = 0;
+	tabsize = 4;
 	ClearError();
 }
 
 TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	tabsize = 0;
+	tabsize = 4;
 	value = documentName;
 	ClearError();
 }
@@ -789,6 +789,7 @@ bool TiXmlDocument::LoadFile( const char* filename )
 {
 	// Delete the existing data:
 	Clear();
+	location.Clear();
 
 	// There was a really terrifying little bug here. The code:
 	//		value = filename
@@ -831,7 +832,7 @@ bool TiXmlDocument::LoadFile( const char* filename )
 		}
 		fclose( file );
 
-		TiXmlPosition start;
+		TiXmlCursor start;
 		start.col = 0;
 		start.row = 0;
 		start.last = data.c_str();

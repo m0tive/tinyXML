@@ -314,7 +314,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 
 #endif
 
-const char* TiXmlDocument::Parse( const char* p, const TiXmlPosition* prevLocation )
+const char* TiXmlDocument::Parse( const char* p, const TiXmlCursor* prevLocation )
 {
 	ClearError();
 
@@ -537,7 +537,7 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 }
 #endif
 
-const char* TiXmlElement::Parse( const char* p, const TiXmlPosition* prevPosition )
+const char* TiXmlElement::Parse( const char* p, const TiXmlCursor* prevPosition )
 {
 	p = SkipWhiteSpace( p );
 	TiXmlDocument* document = GetDocument();
@@ -593,7 +593,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlPosition* prevPositio
 			// Read the value -- which can include other
 			// elements -- read the end tag, and return.
 			++p;
-			p = ReadValue( p, prevPosition );		// Note this is an Element method, and will set the error if one happens.
+			p = ReadValue( p, &location );		// Note this is an Element method, and will set the error if one happens.
 			if ( !p || !*p )
 				return 0;
 
@@ -646,7 +646,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlPosition* prevPositio
 }
 
 
-const char* TiXmlElement::ReadValue( const char* p, const TiXmlPosition* prevPosition )
+const char* TiXmlElement::ReadValue( const char* p, const TiXmlCursor* prevPosition )
 {
 	TiXmlDocument* document = GetDocument();
 
@@ -665,7 +665,7 @@ const char* TiXmlElement::ReadValue( const char* p, const TiXmlPosition* prevPos
 				    return 0;
 			}
 
-			p = textNode->Parse( p, prevPosition );
+			p = textNode->Parse( p, &location );
 
 			if ( !textNode->Blank() )
 				LinkEndChild( textNode );
@@ -685,7 +685,7 @@ const char* TiXmlElement::ReadValue( const char* p, const TiXmlPosition* prevPos
 				TiXmlNode* node = Identify( p );
 				if ( node )
 				{
-					p = node->Parse( p, prevPosition );
+					p = node->Parse( p, &location );
 					LinkEndChild( node );
 				}				
 				else
@@ -723,7 +723,7 @@ void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 #endif
 
 
-const char* TiXmlUnknown::Parse( const char* p, const TiXmlPosition* prevLocation )
+const char* TiXmlUnknown::Parse( const char* p, const TiXmlCursor* prevLocation )
 {
 	TiXmlDocument* document = GetDocument();
 	p = SkipWhiteSpace( p );
@@ -772,7 +772,7 @@ void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 #endif
 
 
-const char* TiXmlComment::Parse( const char* p, const TiXmlPosition* prevLocation )
+const char* TiXmlComment::Parse( const char* p, const TiXmlCursor* prevLocation )
 {
 	TiXmlDocument* document = GetDocument();
 	value = "";
@@ -794,7 +794,7 @@ const char* TiXmlComment::Parse( const char* p, const TiXmlPosition* prevLocatio
 }
 
 
-const char* TiXmlAttribute::Parse( const char* p, const TiXmlPosition* prevLocation )
+const char* TiXmlAttribute::Parse( const char* p, const TiXmlCursor* prevLocation )
 {
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p ) return 0;
@@ -874,7 +874,7 @@ void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 }
 #endif
 
-const char* TiXmlText::Parse( const char* p, const TiXmlPosition* prevPosition )
+const char* TiXmlText::Parse( const char* p, const TiXmlCursor* prevPosition )
 {
 	value = "";
 	location.Stamp( p, prevPosition, TabSize() );
@@ -906,7 +906,7 @@ void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 }
 #endif
 
-const char* TiXmlDeclaration::Parse( const char* p, const TiXmlPosition* prevPosition )
+const char* TiXmlDeclaration::Parse( const char* p, const TiXmlCursor* prevPosition )
 {
 	p = SkipWhiteSpace( p );
 	// Find the beginning, find the end, and look for
@@ -937,19 +937,19 @@ const char* TiXmlDeclaration::Parse( const char* p, const TiXmlPosition* prevPos
 		if ( StringEqual( p, "version", true ) )
 		{
 			TiXmlAttribute attrib;
-			p = attrib.Parse( p, prevPosition );		
+			p = attrib.Parse( p, &location );		
 			version = attrib.Value();
 		}
 		else if ( StringEqual( p, "encoding", true ) )
 		{
 			TiXmlAttribute attrib;
-			p = attrib.Parse( p, prevPosition );		
+			p = attrib.Parse( p, &location );		
 			encoding = attrib.Value();
 		}
 		else if ( StringEqual( p, "standalone", true ) )
 		{
 			TiXmlAttribute attrib;
-			p = attrib.Parse( p, prevPosition );		
+			p = attrib.Parse( p, &location );		
 			standalone = attrib.Value();
 		}
 		else
