@@ -60,57 +60,82 @@ const char* TiXmlBase::ReadName( const char* p, std::string* name )
 }
 
 
-/*
-bool TiXmlBase::ParseIStream( std::istream* in )
+TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] = 
 {
-//	int braceCount = 0;
-	int c;
+	{ "&amp",  4, '&' },
+	{ "&lt",   3, '<' },
+	{ "&gt",   3, '>' },
+	{ "&quot", 5, '\"' },
+	{ "&apos", 5, '\'' }
+};
 
-	std::string buffer;
-	buffer.reserve( 500 );
 
-	if ( !in ) 
+const char* TiXmlBase::GetEntity( const char* in, char* value )
+{
+	assert( in );
+	for( int i=0; i<NUM_ENTITY; ++i )
 	{
-		return false;
+		if ( strncmp( in, entity[i].str, entity[i].strLength ) == 0 )
+		{
+			*value = entity[i].chr;
+			return ( in + entity[i].strLength );
+		}
 	}
-
-	// Make sure we have the opening '<'
-//	c = in->peek();
-//	if ( c != '<' ) 
-//	{
-//		return false;
-//	}
-//
-//	// We have the opening brace
-	while ( c != std::char_traits<char>::eof() )
-	{
-		buffer += c;
-		c = in->get();
-//		if      ( c == '<' )	++braceCount;
-//		else if ( c == '>' )	--braceCount;
-	}
-
-	Parse( buffer.c_str() );
-	return true;
+	// Technically, this should be an error, but be forgiving.
+	*value = *in;
+	return ( in + 1 );
 }
-*/
 
 
-const char* TiXmlBase::ReadText( const char* p, std::string* text, bool ignoreWhiteSpace, const char* endTag )
+const char* TiXmlBase::ReadText(	const char* p, std::string* text, 
+									bool ignoreWhiteSpace, 
+									int numEndTag, const char* endTag[], bool endOnWhite )
 {
+	const int MAXENDTAG = 16;
+	assert( numEndTag < MAXENDTAG );
 	*text = "";
-//	text->reserve( 256 );	// Avoid a bunch of small allocations in the beginning. Give ourselves some memory.
-	int endTagLen = strlen( endTag );
+	int i;
+
+	int endTagLen[MAXENDTAG];
+	for ( i = 0; i<numEndTag; ++i )
+	{
+		endTagLen[i] = strlen( endTag[i] );
+	}
+
+	// If there can be multiple ends, find the nearest.
+	char* end = 0;
+	char* q;
+	for( i=0; i<numEndTag; ++i )
+	{
+		if ( q = strstr( p, endTag[i] ) )
+		{
+			if ( end )
+			{
+				if ( q < end ) 
+					end = q;
+			}
+			else
+			{
+				end = q;
+			}
+		}	
+	}
+
+	if ( !end )
+	{
+		return 0;
+	}
 
 	if ( !ignoreWhiteSpace )
 	{
 		// Keep all the white space, if we have a document, and it is set to
 		// keep the white space.
 
-		while ( *p && strncmp( p, endTag, endTagLen ) )
+		while ( *p && p < end )
 		{
-			text->append( p, 1 );
-			++p;
+			char c;
+			p = GetChar( p, &c );
+			text->append( &c, 1 );
 		}
 	}
 	else
@@ -119,16 +144,24 @@ const char* TiXmlBase::ReadText( const char* p, std::string* text, bool ignoreWh
 
 		// Remove leading white space:
 		p = SkipWhiteSpace( p );
-		while (		*p 
-				&&	strncmp( p, endTag, endTagLen ) )
+		while (	*p && p < end ) 
 		{
 			if ( *p == '\r' || *p == '\n' )
 			{
 				whitespace = true;
+				++p;
 			}
 			else if ( isspace( *p ) )
 			{
-				whitespace = true;
+				if ( endOnWhite )
+				{
+					break;
+				}
+				else
+				{
+					whitespace = true;
+					++p;
+				}
 			}
 			else
 			{
@@ -139,15 +172,16 @@ const char* TiXmlBase::ReadText( const char* p, std::string* text, bool ignoreWh
 					text->append( " ", 1 );
 					whitespace = false;
 				}
-				text->append( p, 1 );
+				char c;
+				p = GetChar( p, &c );
+				text->append( &c, 1 );
 			}
-			++p;
 		}
-		// Keep white space before the '<' 
-		if ( whitespace )
-		{
-			text->append( " ", 1 );
-		}
+//		// Keep white space before the '<' 
+//		if ( whitespace )
+//		{
+//			text->append( " ", 1 );
+//		}
 	}
 	return p;
 }
@@ -158,8 +192,14 @@ const char* TiXmlDocument::Parse( const char* start )
 	// Parse away, at the document level. Since a document
 	// contains nothing but other tags, most of what happens
 	// here is skipping white space.
+	//
+
+// Not yet implemented:
+//	// Parsing ends when we hit a second declaration,
+//	// or don't hit an opening tag.
 	
 	const char* p = start;
+//	bool declarationFound = false;
 
  	p = SkipWhiteSpace( p );
 	if ( !p || !*p )
@@ -176,11 +216,17 @@ const char* TiXmlDocument::Parse( const char* start )
 		}
 		else
 		{
-			TiXmlNode* node = IdentifyAndParse( p, &p );
+			TiXmlNode* node = Identify( p );
 			if ( node )
 			{
+				p = node->Parse( p );
 				LinkEndChild( node );
-			}				
+			}		
+			else
+			{
+				p = 0;
+				break;
+			}		
 		}
 		p = SkipWhiteSpace( p );
 	}
@@ -188,11 +234,15 @@ const char* TiXmlDocument::Parse( const char* start )
 }
 
 
-TiXmlNode* TiXmlNode::IdentifyAndParse( const char* start, const char** past )
+TiXmlNode* TiXmlNode::Identify( const char* p )
 {
-	const char* p = start;
+	p = SkipWhiteSpace( p );
 	TiXmlNode* returnNode = 0;
-	assert( *p == '<' );
+
+	if( !p || *p != '<' )
+	{
+		return 0;
+	}
 
 	TiXmlDocument* doc = GetDocument();
 	const char* q = SkipWhiteSpace( p+1 );
@@ -200,6 +250,7 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char* start, const char** past )
 	// What is this thing? 
 	// - Elements start with a letter or underscore, but xml is reserved.
 	// - Comments: <!--
+	// - Decleration: <?xml
 	// - Everthing else is unknown to tinyxml.
 	//
 	if ( 	   tolower( *(q+0) ) == '?'
@@ -240,7 +291,7 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char* start, const char** past )
 	{
 		// Set the parent, so it can report errors
 		returnNode->parent = this;
-		p = returnNode->Parse( p );
+		//p = returnNode->Parse( p );
 	}
 	else
 	{
@@ -248,13 +299,13 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char* start, const char** past )
 			doc->SetError( TIXML_ERROR_OUT_OF_MEMORY );
 		p = 0;
 	}
-	*past = p;
 	return returnNode;
 }
 
 
 const char* TiXmlElement::Parse( const char* p )
 {
+	p = SkipWhiteSpace( p );
 	TiXmlDocument* document = GetDocument();
 	//p = SkipWhiteSpace( p );
 	if ( !p || !*p || *p != '<' )
@@ -378,22 +429,10 @@ const char* TiXmlElement::ReadValue( const char* p )
 			}
 			else
 			{
-// 				TiXmlElement* element = new TiXmlElement( "" );
-// 
-// 				if ( element )
-// 				{
-// 					p = element->Parse( p+1 );
-// 					if ( p )
-// 						LinkEndChild( element );
-// 				}
-// 				else
-// 				{
-// 					if ( document ) document->SetError( ERROR_OUT_OF_MEMORY );
-// 					return 0;
-// 				}
-				TiXmlNode* node = IdentifyAndParse( p, &p );
+				TiXmlNode* node = Identify( p );
 				if ( node )
 				{
+					p = node->Parse( p );
 					LinkEndChild( node );
 				}				
 				else
@@ -409,6 +448,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 
 const char* TiXmlUnknown::Parse( const char* p )
 {
+	p = SkipWhiteSpace( p );
 	const char* end = strchr( p, '>' );
 	if ( !end )
 	{
@@ -420,7 +460,6 @@ const char* TiXmlUnknown::Parse( const char* p )
 	else
 	{
 		value = std::string( p, end-p );
-// 		value.resize( end - p );
 		return end + 1;			// return just past the '>'
 	}
 }
@@ -428,6 +467,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 
 const char* TiXmlComment::Parse( const char* p )
 {
+	p = SkipWhiteSpace( p );
 	assert(    *(p+0) == '<' 
 	        && *(p+1) == '!' 
 			&& *(p+2) == '-' 
@@ -451,32 +491,13 @@ const char* TiXmlComment::Parse( const char* p )
 		if ( doc && !doc->IgnoreWhiteSpace() )
 			ignoreWhite = false;
 
-		p = ReadText( start, &value, ignoreWhite, "-->" ); 
+		const char* end[1] = { "-->" };
+		p = ReadText( start, &value, ignoreWhite, 1, end, false ); 
 
-		/*
-		// Assemble the comment, removing the white space.
-		bool whiteSpace = false;
-
-		const char* q;
-		for( q=start; q<end; q++ )
+		if ( !p )
 		{
-			if ( isspace( *q ) )
-			{
-				if ( !whiteSpace )
-				{
-					value += ' ';
-					whiteSpace = true;
-				}
-			}
-			else
-			{
-				value += *q;
-				whiteSpace = false;
-			}
-		}				
-// 		value = std::string( start, end-start );
-		*/
-
+			return 0;
+		}
 		return p + 3;			// return just past the '>'
 	}
 }
@@ -484,6 +505,7 @@ const char* TiXmlComment::Parse( const char* p )
 
 const char* TiXmlAttribute::Parse( const char* p )
 {
+	p = SkipWhiteSpace( p );
 	// Read the name, the '=' and the value.
 	p = ReadName( p, &name );
 	if ( !p )
@@ -505,35 +527,46 @@ const char* TiXmlAttribute::Parse( const char* p )
 		return 0;
 	}
 	
-	const char* end = 0;
-	const char* start = p+1;
-	const char* past = 0;
+//	const char* end = 0;
+//	const char* start = p+1;
+//	const char* past = 0;
+//
+	const char* end[8];
 
 	if ( *p == '\'' )
 	{
-		end = strchr( start, '\'' );
-		past = end+1;
+//		end = strchr( start, '\'' );
+//		past = end+1;
+		end[0] = "\'";
+		p = ReadText( p+1, &value, false, 1, end, false );
+		if ( p ) p = p + 1;	// get past the end '
 	}
 	else if ( *p == '"' )
 	{
-		end = strchr( start, '"' );
-		past = end+1;
+//		end = strchr( start, '"' );
+//		past = end+1;
+		end[0] = "\"";
+		p = ReadText( p+1, &value, false, 1, end, false );
+		if ( p ) p = p + 1;	// get past the end "
 	}
 	else
 	{
 		// All attribute values should be in single or double quotes.
 		// But this is such a common error that the parser will try
 		// its best, even without them.
-		start--;
-		for ( end = start; *end; end++ )
-		{
-			if ( isspace( *end ) || *end == '/' || *end == '>' )
-				break;
-		}
-		past = end;
+//		start--;
+//		for ( end = start; *end; end++ )
+//		{
+//			if ( isspace( *end ) || *end == '/' || *end == '>' )
+//				break;
+//		}
+//		past = end;
+		end[0] = "/";
+		end[1] = ">";
+		p = ReadText( p, &value, false, 2, end, true );
 	}
-	value = std::string( start, end-start );
-	return past;
+//	value = std::string( start, end-start );
+	return p;
 }
 
 
@@ -547,64 +580,24 @@ const char* TiXmlText::Parse( const char* p )
 	if ( doc && !doc->IgnoreWhiteSpace() )
 		ignoreWhite = false;
 
-	p = ReadText( p, &value, ignoreWhite, "<" );
+	const char* end[1] = { "<" };
+	p = ReadText( p, &value, ignoreWhite, 1, end, false );
 
-/*
-	if ( doc && !doc->IgnoreWhiteSpace() )
-	{
-		// Keep all the white space, if we have a document, and it is set to
-		// keep the white space.
-
-		while ( *p && *p != '<' )
-		{
-			value += *p;
-			++p;
-		}
-	}
-	else
-	{
-	bool whitespace = false;
-
-	// Remove leading white space:
-	p = SkipWhiteSpace( p );
-	while ( *p && *p != '<' )
-	{
-		if ( *p == '\r' || *p == '\n' )
-		{
-			whitespace = true;
-		}
-		else if ( isspace( *p ) )
-		{
-			whitespace = true;
-		}
-		else
-		{
-			// If we've found whitespace, add it before the
-			// new character. Any whitespace just becomes a space.
-			if ( whitespace )
-			{
-				value += ' ';
-				whitespace = false;
-			}
-			value += *p;
-		}
-			++p;
-	}
-	// Keep white space before the '<' 
-	if ( whitespace )
-		value += ' ';
-	}
-*/
 	return p;
 }
 
 
 const char* TiXmlDeclaration::Parse( const char* p )
 {
+	p = SkipWhiteSpace( p );
 	// Find the beginning, find the end, and look for
 	// the stuff in-between.
 	const char* start = p+5;
 	const char* end  = strstr( start, "?>" );
+
+	version = "";
+	encoding = "";
+	standalone = "";
 
 	// Be nice to the user:
 	if ( !end )

@@ -76,12 +76,26 @@ class TiXmlBase
 	/**	All TinyXml classes can print themselves to a filestream.
 		This is a formatted print, and will insert tabs and newlines.
 		For an unformatted stream, use the << operator.
+
+		This function is the most efficient print function.
 	*/
  	virtual void Print( std::ostream* stream, int depth ) const = 0;
 
 	/** An output stream operator, for every class. Note that this outputs
 		without any newlines or formatting, as opposed to Print(), which
 		includes tabs and new lines.
+
+		The operator<< and operator>> are not completely symmetric. Writing
+		a node to a stream is very well defined. You'll get a nice stream
+		of output, without any extra whitespace or newlines. 
+		
+		But reading is not as well defined. (As it always is.) If you create
+		a TiXmlElement (for example) and read that from an input stream,
+		the text needs to define an element or junk will result. This is
+		true of all input streams, but it's worth keeping in mind.
+
+		A TiXmlDocument will read nodes until it encounters another
+		documentent declaration, or does not find an opening '<'.
 	*/
 	friend std::ostream& operator<< ( std::ostream& out, const TiXmlBase& base )
 	{
@@ -89,10 +103,12 @@ class TiXmlBase
 		return out;
 	}
 
-	/**	An input stream operator, for every class. Note that without a way
-		to identify the class to be parsed, this is of somewhat limited use.
-	*/
-	friend std::istream& operator>> ( std::istream& in, TiXmlBase& base );
+//	/**	An input stream operator, for every class. 
+//		Not yet implemented.
+//
+//		See the notes for operator<< about the symmetry issue.
+//	*/
+//	friend std::istream& operator>> ( std::istream& in, TiXmlBase& base );
 
   protected:
 	/*	General parsing helper method. Takes a pointer in,
@@ -110,18 +126,32 @@ class TiXmlBase
 	/*	Reads text, either skipping or leaving the whitespace as is.
 		
 	*/
-	static const char* ReadText( const char* p, std::string* text, bool ignoreWhiteSpace, const char* endTag );
-
-	// Pull the stream out into a buffer, that can be used for the parsing.
-	// Really, the whole thing should use the input streams...but a lot of
-	// code is invested in parsing character pointers.
-	//
-	// Normally, this pulls one tag out of the stream and parses it.
-	// However, for the document, it pulls in a bunch of tags, and the method is 
-	// over ridden.
-//	virtual bool ParseIStream( std::istream* in );
+	static const char* ReadText(	const char* p,				// where to start
+									std::string* text,			// the string read
+									bool ignoreWhiteSpace,		// whether to keep the white space
+									int	 numEndTag,				// how many end tags there are
+									const char** endTag,		// array of "tails"
+									bool endOnWhite );			// additional end condition: stop on white space. (Only valid if not ignoring whitespace, of course)
 
 	virtual const char* Parse( const char* in ) = 0;
+
+	static const char* GetEntity( const char* in, char* value );
+
+	/*	Get a character, while interpreting entities.
+	*/
+	inline static const char* GetChar( const char* in, char* value ){	assert( in );
+																		if ( *in == '&' ) 
+																		{
+																			return GetEntity( in, value );
+																		}
+																		else 
+																		{
+																			*value = *in;
+																			return ( in + 1 );
+																		}
+																	}
+
+//	static const char* PutChar( const char* in, 
 
 	enum
 	{
@@ -143,6 +173,19 @@ class TiXmlBase
 		TIXML_ERROR_STRING_COUNT
 	};
 	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
+
+  private:
+	struct Entity
+	{
+		const char* str;
+		int			strLength;
+		int			chr;
+	};
+	enum
+	{
+		NUM_ENTITY = 5
+	};
+	static Entity entity[ NUM_ENTITY ];
 };
 
 
@@ -299,11 +342,8 @@ class TiXmlNode : public TiXmlBase
 	// The node is passed in by ownership. This object will delete it.
 	TiXmlNode* LinkEndChild( TiXmlNode* addThis );
 
-	// Figure out what is at *p, and parse it. Return a node if
-	// successful, and update p.
-	// start	Input, where to start parsing.
-	// past		The end of parsing.
-	TiXmlNode* IdentifyAndParse( const char* start, const char** past );
+	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
+	TiXmlNode* Identify( const char* start );
 
 	void CopyToClone( TiXmlNode* target ) const	{ target->value = value; }
 
@@ -647,16 +687,22 @@ class TiXmlDocument : public TiXmlNode
 		prefer the ErrorId, this function will fetch it.
 	*/
 	const int ErrorId()	const				{ return errorId; }
-
-	/// Write the document to a file -- usually invoked by SaveFile.
-
-	/// Dump the document to standard out.
-	void Print() const								{ Print( stdout ); }
+  
 	/// Print the document to an ostream -- preserve the tabbing.
 	void Print( std::ostream* stream, int depth = 0 ) const;
-	/// Print
+
+	/** Dump the document to standard out. */
+	void Print() const								{ Print( stdout ); }
+
+	/** Print to a c-stream. 
+	
+		Note this is somewhat less efficient, in
+		terms of both memory and speed, than the ostream print.
+	*/
 	void Print( FILE* cfile ) const;
-  
+
+
+
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 	
@@ -665,7 +711,6 @@ class TiXmlDocument : public TiXmlNode
 									errorId = err;
 									errorDesc = errorString[ errorId ]; }
   protected:
-//	virtual bool ParseIStream( std::istream* in );
 
   private:
 	bool error;

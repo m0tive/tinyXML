@@ -618,11 +618,14 @@ void TiXmlDocument::Print( std::ostream* stream, int depth ) const
 	for ( node=FirstChild(); node; node=node->NextSibling() )
 	{
 		node->Print( stream, depth );
-// 		fprintf( fp, "\n" );
 		if ( depth >= 0 )				// -1 is a special value for unformatted output
 		{
-			(*stream) << "\n";
+			(*stream) << "\n";			// Newlines for formatted output.
 		}
+	}
+	if ( depth < 0 )
+	{
+		(*stream) << " ";			// Minimal white space for stream output.
 	}
 }
 
@@ -633,13 +636,6 @@ void TiXmlDocument::Print( FILE* cfile ) const
  	Print( &out, 0 );
 	fprintf( cfile, "%s", out.str().c_str() );
 }
-
-
-//bool TiXmlDocument::ParseIStream( std::istream* in )
-//{
-//	// FIXME
-//	return false;	
-//}
 
 
 TiXmlAttribute* TiXmlAttribute::Next() const
@@ -675,33 +671,37 @@ void TiXmlAttribute::Print( std::ostream* stream, int depth ) const
 
 void TiXmlAttribute::SetIntValue( int value )
 {
-	// FIXME
-	//std::ostream stream(  );
-	//stream << value;
-	//SetValue( v );
+	std::string s;
+	std::ostringstream stream( s );
+	stream << value;
+	SetValue( stream.str() );
 }
 
 
 void TiXmlAttribute::SetDoubleValue( double value )
 {
-	// FIXME
-	//std::string v;
-	//v << value;
-	//SetValue( v );
+	std::string s;
+	std::ostringstream stream( s );
+	stream << value;
+	SetValue( stream.str() );
 }
 
 
-const int     TiXmlAttribute::IntValue() const
+const int TiXmlAttribute::IntValue() const
 {
-	// FIXME
-	return 0;
+	int v;
+	std::istringstream string( value );
+	string >> v;
+	return v;
 }
 
 
 const double  TiXmlAttribute::DoubleValue() const
 {
-	// FIXME
-	return 0.0;
+	double v;
+	std::istringstream string( value );
+	string >> v;
+	return v;
 }
 
 
