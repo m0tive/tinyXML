@@ -1,0 +1,15 @@
+rm ./distlin/*.*
+rm ./distlin/docs/*.*
+rm ./docs/*.*
+
+doxygen dox
+
+cp readme.txt ./distlin/README
+cp *.cpp ./distlin
+cp *.h ./distlin
+cp makefile ./distlin
+cp test0.xml ./distlin
+cp test1.xml ./distlin
+
+cp ./docs/*.* ./distlin/docs
+
