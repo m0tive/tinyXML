@@ -593,6 +593,26 @@ const char * TiXmlElement::Attribute( const char * name, double* d ) const
 }
 
 
+int TiXmlElement::QueryIntAttribute( const char* name, int* ival ) const
+{
+	TiXmlAttribute* node = attributeSet.Find( name );
+	if ( !node )
+		return TIXML_NO_ATTRIBUTE;
+
+	return node->QueryIntValue( ival );
+}
+
+
+int TiXmlElement::QueryDoubleAttribute( const char* name, double* dval ) const
+{
+	TiXmlAttribute* node = attributeSet.Find( name );
+	if ( !node )
+		return TIXML_NO_ATTRIBUTE;
+
+	return node->QueryDoubleValue( dval );
+}
+
+
 void TiXmlElement::SetAttribute( const char * name, int val )
 {	
 	char buf[64];
@@ -951,6 +971,20 @@ void TiXmlAttribute::StreamOut( TIXML_OSTREAM * stream ) const
 		PutString( value, stream );
 		(*stream) << "\"";
 	}
+}
+
+int TiXmlAttribute::QueryIntValue( int* ival ) const
+{
+	if ( sscanf( value.c_str(), "%d", ival ) == 1 )
+		return TIXML_SUCCESS;
+	return TIXML_WRONG_TYPE;
+}
+
+int TiXmlAttribute::QueryDoubleValue( double* dval ) const
+{
+	if ( sscanf( value.c_str(), "%lf", dval ) == 1 )
+		return TIXML_SUCCESS;
+	return TIXML_WRONG_TYPE;
 }
 
 void TiXmlAttribute::SetIntValue( int _value )

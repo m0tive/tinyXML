@@ -84,6 +84,13 @@ struct TiXmlPosition
 	void Stamp( const char* now, const TiXmlPosition* prev, int tabsize );
 };
 
+// Only used by Attribute::Query functions
+enum 
+{ 
+	TIXML_SUCCESS,
+	TIXML_NO_ATTRIBUTE,
+	TIXML_WRONG_TYPE
+};
 
 /** TiXmlBase is a base class for every class in TinyXml.
 	It does little except to establish that TinyXml classes
@@ -581,6 +588,19 @@ public:
 	const int       IntValue() const;									///< Return the value of this attribute, converted to an integer.
 	const double	DoubleValue() const;								///< Return the value of this attribute, converted to a double.
 
+	/** QueryIntValue examines the value string. It is an alternative to the
+		IntValue() method with richer error checking.
+		If the value is an integer, it is stored in 'value' and 
+		the call returns TIXML_SUCCESS. If it is not
+		an integer, it returns TIXML_WRONG_TYPE.
+
+		A specialized but useful call. Note that for success it returns 0,
+		which is the opposite of almost all other TinyXml calls.
+	*/
+	int QueryIntValue( int* value ) const;
+	/// QueryDoubleValue examines the value string. See QueryIntValue().
+	int QueryDoubleValue( double* value ) const;
+
 	void SetName( const char* _name )	{ name = _name; }				///< Set the name of this attribute.
 	void SetValue( const char* _value )	{ value = _value; }				///< Set the value.
 
@@ -706,8 +726,16 @@ public:
 	*/
 	const char* Attribute( const char* name, double* d ) const;
 
-	// fixme
-	bool GetIntAttribute( const char* name, int* value, int* errorCode );
+	/** QueryIntAttribute examines the attribute - it is an alternative to the
+		Attribute() method with richer error checking.
+		If the attribute is an integer, it is stored in 'value' and 
+		the call returns TIXML_SUCCESS. If it is not
+		an integer, it returns TIXML_WRONG_TYPE. If the attribute
+		does not exist, then TIXML_NO_ATTRIBUTE is returned.
+	*/	
+	int QueryIntAttribute( const char* name, int* value ) const;
+	/// QueryDoubleAttribute examines the attribute - see QueryIntAttribute().
+	int QueryDoubleAttribute( const char* name, double* value ) const;
 
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.
