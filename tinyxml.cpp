@@ -36,53 +36,72 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_OSTREAM* stream )
 
 void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 {
-    // Scan for the all important '&'
-	unsigned int i=0, j=0;
+	int i=0, j=0;
 
-	while ( i < str.length() )
+	while( i<(int)str.length() )
 	{
-		unsigned next = str.find( '&', i );
+		int c = str[i];
 
-		if ( next == TIXML_STRING::npos )
-		{
-			outString->append( &str.at( i ), str.length() - i );
-			return;
-   		}
-
-		// We found an entity.
-		if ( next - i > 0 )
-			outString->append( &str.at( i ), next - i );
-		i = next;
-
-		// Check for the special "&#x" entitity
-		if (    i < str.length() - 2
-		     && str[i] == '&'
+		if (    c == '&' 
+		     && i < ( (int)str.length() - 2 )
 			 && str[i+1] == '#'
 			 && str[i+2] == 'x' )
 		{
-			outString->append( str.c_str() + i, 1 );
+			// Hexadecimal character reference.
+			// Pass through unchanged.
+			// &#xA9;	-- copyright symbol, for example.
+			while ( i<(int)str.length() )
+			{
+				outString->append( str.c_str() + i, 1 );
+				++i;
+				if ( str[i] == ';' )
+					break;
+			}
+		}
+		else if ( c == '&' )
+		{
+			outString->append( entity[0].str, entity[0].strLength );
+			++i;
+		}
+		else if ( c == '<' )
+		{
+			outString->append( entity[1].str, entity[1].strLength );
+			++i;
+		}
+		else if ( c == '>' )
+		{
+			outString->append( entity[2].str, entity[2].strLength );
+			++i;
+		}
+		else if ( c == '\"' )
+		{
+			outString->append( entity[3].str, entity[3].strLength );
+			++i;
+		}
+		else if ( c == '\'' )
+		{
+			outString->append( entity[4].str, entity[4].strLength );
+			++i;
+		}
+		else if ( c < 32 || c > 127 )
+		{
+			// Easy pass at non-alpha/numeric/symbol
+			char buf[ 32 ];
+			sprintf( buf, "&#x%02X;", (unsigned) ( c & 0xff ) );
+			outString->append( buf, strlen( buf ) );
+			++i;
 		}
 		else
 		{
-			for ( j=0; j<NUM_ENTITY; ++j )
-			{
-				if ( str[i] == entity[j].chr )
-				{
-					outString->append( entity[j].str, entity[j].strLength );
-					break;
-				}
-			}
-			if ( j == NUM_ENTITY )
-			{
-				outString->append( str.c_str() + i, 1 );
-			}
+			char realc = (char) c;
+			outString->append( &realc, 1 );
+			++i;
 		}
-		++i;
 	}
 }
 
 
-// Strange class for a bug fix. Search for STL_STRING_BUG
+// <-- Strange class for a bug fix. Search for STL_STRING_BUG
 TiXmlBase::StringToBuffer::StringToBuffer( const TIXML_STRING& str )
 {
 	buffer = new char[ str.length()+1 ];
@@ -97,6 +116,7 @@ TiXmlBase::StringToBuffer::~StringToBuffer()
 {
 	delete [] buffer;
 }
+// End strange bug fix. -->
 
 
 TiXmlNode::TiXmlNode( NodeType _type )
@@ -774,11 +794,17 @@ TiXmlAttribute* TiXmlAttribute::Previous() const
 
 void TiXmlAttribute::Print( FILE* cfile, int /*depth*/ ) const
 {
+	TIXML_STRING n, v;
+
+	PutString( Name(), &n );
+	PutString( Value(), &v );
+
 	if (value.find ('\"') == TIXML_STRING::npos)
-		fprintf (cfile, "%s=\"%s\"", Name (), Value ());
+		fprintf (cfile, "%s=\"%s\"", n.c_str(), v.c_str() );
 	else
-		fprintf (cfile, "%s='%s'", Name (), Value ());
+		fprintf (cfile, "%s='%s'", n.c_str(), v.c_str() );
 }
+
 
 void TiXmlAttribute::StreamOut( TIXML_OSTREAM * stream ) const
 {

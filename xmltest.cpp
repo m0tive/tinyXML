@@ -430,6 +430,49 @@ int main()
 		//XmlTest( "Long filename. ", true, loadOkay );
 	}
 
+	{
+		// Entities not being written correctly.
+		// From Lynn Allen
+
+		const char* passages =
+			"<?xml version=\"1.0\" standalone=\"no\" ?>"
+			"<passages count=\"006\" formatversion=\"20020620\">"
+				"<psg context=\"Line 5 has &quot;quotation marks&quot; and &apos;apostrophe marks&apos;."
+				" It also has &lt;, &gt;, and &amp;, as well as a fake &#xA9;.\"> </psg>"
+			"</passages>";
+
+		TiXmlDocument doc( "passages.xml" );
+		doc.Parse( passages );
+		TiXmlElement* psg = doc.RootElement()->FirstChildElement();
+		const char* context = psg->Attribute( "context" );
+
+		XmlTest( "Entity transformation: read. ",
+					"Line 5 has \"quotation marks\" and 'apostrophe marks'."
+					" It also has <, >, and &, as well as a fake \xA9.",
+					context,
+					true );
+
+		FILE* textfile = fopen( "textfile.txt", "w" );
+		if ( textfile )
+		{
+			psg->Print( textfile, 0 );
+			fclose( textfile );
+		}
+		textfile = fopen( "textfile.txt", "r" );
+		assert( textfile );
+		if ( textfile )
+		{
+			char buf[ 1024 ];
+			fgets( buf, 1024, textfile );
+			XmlTest( "Entity transformation: write. ",
+								"<psg context=\'Line 5 has &quot;quotation marks&quot; and &apos;apostrophe marks&apos;."
+								" It also has &lt;, &gt;, and &amp;, as well as a fake &#xA9;.' />",
+								buf,
+								true );
+		}
+		fclose( textfile );
+	}
+
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }

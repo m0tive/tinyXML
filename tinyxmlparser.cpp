@@ -27,6 +27,9 @@ distribution.
 
 //#define DEBUG_PARSER
 
+// Note tha "PutString" hardcodes the same list. This
+// is less flexible than it appears. Changing the entries
+// or order will break putstring.	
 TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] = 
 {
 	{ "&amp;",  5, '&' },
@@ -116,10 +119,19 @@ const char* TiXmlBase::GetEntity( const char* p, char* value )
 	int i;
 
 	// Ignore the &#x entities.
-	if ( strncmp( "&#x", p, 3 ) == 0 )
+	if (    strncmp( "&#x", p, 3 ) == 0 
+	     && *(p+3) 
+		 && *(p+4) )
 	{
-		*value = *p;
-		return p+1;
+		*value = 0;
+		
+		if ( isalpha( *(p+3) ) ) *value += ( tolower( *(p+3) ) - 'a' + 10 ) * 16;
+		else				     *value += ( *(p+3) - '0' ) * 16;
+
+		if ( isalpha( *(p+4) ) ) *value += ( tolower( *(p+4) ) - 'a' + 10 );
+		else				     *value += ( *(p+4) - '0' );
+
+		return p+6;
 	}
 
 	// Now try to match it.
