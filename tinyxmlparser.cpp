@@ -56,12 +56,6 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 }
 
 
-/*static*/ bool TiXmlBase::IsWhiteSpace( int c )
-{
-	return ( isspace( c ) || c == '\n' || c == '\r' );
-}
-
-
 /*static*/ bool TiXmlBase::StreamWhiteSpace( std::istream* in, std::string* tag )
 {
 	for( ;; )
@@ -253,7 +247,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 }
 
 
-void TiXmlDocument::Stream( std::istream* in, std::string* tag )
+void TiXmlDocument::StreamIn( std::istream* in, std::string* tag )
 {
 	// The basic issue with a document is that we don't know what we're
 	// streaming. Read something presumed to be a tag (and hope), then
@@ -286,7 +280,7 @@ void TiXmlDocument::Stream( std::istream* in, std::string* tag )
 
 			if ( node )
 			{
-				node->Stream( in, tag );
+				node->StreamIn( in, tag );
 				bool isElement = node->ToElement() != 0;
 				delete node;
 				node = 0;
@@ -418,7 +412,7 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 }
 
 
-void TiXmlElement::Stream( std::istream* in, std::string* tag )
+void TiXmlElement::StreamIn( std::istream* in, std::string* tag )
 {
 	// We're called with some amount of pre-parsing. That is, some of "this"
 	// element is in "tag". Go ahead and stream to the closing ">"
@@ -456,8 +450,8 @@ void TiXmlElement::Stream( std::istream* in, std::string* tag )
 			if ( in->peek() != '<' )
 			{
 				// Yep, text.
-				TiXmlText text;
-				text.Stream( in, tag );
+				TiXmlText text( "" );
+				text.StreamIn( in, tag );
 
 				// What follows text is a closing tag or another node.
 				// Go around again and figure it out.
@@ -511,7 +505,7 @@ void TiXmlElement::Stream( std::istream* in, std::string* tag )
 				TiXmlNode* node = Identify( tagloc );
 				if ( !node )
 					return;
-				node->Stream( in, tag );
+				node->StreamIn( in, tag );
 				delete node;
 				node = 0;
 
@@ -629,7 +623,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 		if ( *p != '<' )
 		{
 			// Take what we have, make a text element.
-			TiXmlText* textNode = new TiXmlText();
+			TiXmlText* textNode = new TiXmlText( "" );
 
 			if ( !textNode )
 			{
@@ -677,7 +671,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 }
 
 
-void TiXmlUnknown::Stream( std::istream* in, std::string* tag )
+void TiXmlUnknown::StreamIn( std::istream* in, std::string* tag )
 {
 	while ( in->good() )
 	{
@@ -721,7 +715,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 }
 
 
-void TiXmlComment::Stream( std::istream* in, std::string* tag )
+void TiXmlComment::StreamIn( std::istream* in, std::string* tag )
 {
 	while ( in->good() )
 	{
@@ -818,7 +812,7 @@ const char* TiXmlAttribute::Parse( const char* p )
 }
 
 
-void TiXmlText::Stream( std::istream* in, std::string* tag )
+void TiXmlText::StreamIn( std::istream* in, std::string* tag )
 {
 	while ( in->good() )
 	{
@@ -836,11 +830,10 @@ void TiXmlText::Stream( std::istream* in, std::string* tag )
 const char* TiXmlText::Parse( const char* p )
 {
 	value = "";
-//	value.reserve( 256 );	// Avoid a bunch of small allocations in the beginning. Give ourselves some memory.
 
 	TiXmlDocument* doc = GetDocument();
 	bool ignoreWhite = true;
-	if ( doc && !doc->IgnoreWhiteSpace() ) ignoreWhite = false;
+//	if ( doc && !doc->IgnoreWhiteSpace() ) ignoreWhite = false;
 
 	const char* end = "<";
 	p = ReadText( p, &value, ignoreWhite, end, false );
@@ -850,7 +843,7 @@ const char* TiXmlText::Parse( const char* p )
 }
 
 
-void TiXmlDeclaration::Stream( std::istream* in, std::string* tag )
+void TiXmlDeclaration::StreamIn( std::istream* in, std::string* tag )
 {
 	while ( in->good() )
 	{

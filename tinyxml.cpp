@@ -207,6 +207,7 @@ TiXmlNode* TiXmlNode::ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& wit
 		firstChild = node;
 
 	delete replaceThis;
+	node->parent = this;
 	return node;
 }
 
@@ -585,13 +586,13 @@ TiXmlNode* TiXmlElement::Clone() const
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 	error = false;
-	ignoreWhiteSpace = true;
+//	ignoreWhiteSpace = true;
 }
 
 
 TiXmlDocument::TiXmlDocument( const std::string& documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	ignoreWhiteSpace = true;
+//	ignoreWhiteSpace = true;
 	value = documentName;
 	error = false;
 }
@@ -707,20 +708,6 @@ void TiXmlDocument::StreamOut( std::ostream* out ) const
 		if ( node->ToElement() )
 			break;
 	}
-}
-
-
-TiXmlElement* TiXmlDocument::RootElement() const
-{
-	TiXmlNode* node;
-	for ( node=FirstChild(); node; node=node->NextSibling() )
-	{	
-		if ( node->ToElement() )
-		{
-			return node->ToElement();
-		}
-	}
-	return 0;
 }
 
 
@@ -861,7 +848,7 @@ void TiXmlText::StreamOut( std::ostream* stream ) const
 TiXmlNode* TiXmlText::Clone() const
 {	
 	TiXmlText* clone = 0;
-	clone = new TiXmlText();
+	clone = new TiXmlText( "" );
 	
 	if ( !clone )
 		return 0;

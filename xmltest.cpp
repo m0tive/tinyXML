@@ -153,8 +153,7 @@ int main()
 	item.SetAttribute( "priority", "1" );
 	item.SetAttribute( "distance", "far" );
 
-	TiXmlText text;
-	text.SetValue( "Talk to:" );
+	TiXmlText text( "Talk to:" );
 
 	TiXmlElement meeting1( "Meeting" );
 	meeting1.SetAttribute( "where", "School" );
