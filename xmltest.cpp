@@ -42,7 +42,7 @@ int main()
 		"<ToDo>\n"
 		"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
 		"<Item priority=\"2\" distance='none'> Do bills   </Item>"
-		"<Item priority=\"2\" distance='far back'> Look for Evil Dinosaurs! </Item>"
+		"<Item priority=\"2\" distance='far &amp; back'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
 	/*	What the todo list should look like after processing.
@@ -194,24 +194,6 @@ int main()
 	outputStream << doc;
 
 	XmlTest( "Output stream correct.", string( demoEnd ), outputStream.str(), true );
-//	{
-//		// Find the mismatch. This can be tedious to debug.
-//		const char* p = outputStream.str().c_str();
-//		const char* q = demoEnd;
-//		int k=0;
-//		for( ; *p && *q; ++p, ++q, ++k )
-//		{
-//			if ( *p != *q )
-//			{
-//				break;
-//			}
-//		}
-//		cout << "String mismatch at byte " << k << "\n";
-//		if ( *q )
-//			cout << "Expected:" << q << endl;
-//		if ( *p )
-//			cout << "Found   :" << p << endl;
-//	}
 
 	node = doc.RootElement();
 	XmlTest( "Root element exists.", true, ( node != 0 && node->ToElement() ) );	
@@ -287,7 +269,7 @@ int main()
 
 
 	cout << "\n** Parsing. **\n";
-	istringstream parse0( "<Element attribute0='foo0' attribute1= noquotes attribute2 = '&gt;' />" );
+	istringstream parse0( "<Element0 attribute0='foo0' attribute1= noquotes attribute2 = '&gt;' />" );
 	TiXmlElement element0( "default" );
 	parse0 >> element0;
 
@@ -296,7 +278,33 @@ int main()
 	XmlTest( "Reads incorrectly formatted 'attribute1=noquotes'.", string( "noquotes" ), *( element0.Attribute( "attribute1" ) ) );
 	XmlTest( "Read attribute with entity value '>'.", string( ">" ), *( element0.Attribute( "attribute2" ) ) );
 
+
+//	TiXmlBase::SetCondenseWhiteSpace( false );
+//
+//	istringstream parse1( "<start>This  is    \ntext</start>" );
+//	TiXmlElement text1( "text" );
+//	parse1 >> text1;
+//
+//	XmlTest( "Condense white space OFF.", string( "This  is    \ntext" ),
+//										  text1.FirstChild()->Value() );
+//							
 	
+	cout << "\n** Streaming. **\n";
+
+	// Round trip check: stream in, then stream back out to verify. The stream
+	// out has already been checked, above.
+
+	string inputString = demoStart;
+	istringstream inputStringStream( demoStart );
+	TiXmlDocument document0;
+
+	inputStringStream >> document0;
+
+	ostringstream outputStream0( ostringstream::out );
+	outputStream0 << document0;
+
+	XmlTest( "Stream round trip correct.", string( demoEnd ), outputStream0.str(), true );
+
 	return 0;
 }
 

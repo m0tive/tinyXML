@@ -27,6 +27,10 @@ distribution.
 #include "tinyxml.h"
 using namespace std;
 
+
+bool TiXmlBase::condenseWhiteSpace = true;
+
+
 void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 {
 	// fixme: is there a better (speed) way to do this?
@@ -457,7 +461,8 @@ void TiXmlElement::Print( std::ostream* stream, int depth ) const
 	for ( attrib = attributeSet.First(); attrib; attrib = attrib->Next() )
 	{	
 		(*stream) << " ";
-		(*stream) << (*attrib);
+		//(*stream) << (*attrib); Not supported for attrib.
+		attrib->Print( stream, -1 );
 	}
 
 	// If this node has children, give it a closing tag. Else

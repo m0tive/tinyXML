@@ -92,61 +92,33 @@ class TiXmlBase
 	*/
  	virtual void Print( std::ostream* stream, int depth ) const = 0;
 
-	/** An output stream operator, for every class. Note that this outputs
-		without any newlines or formatting, as opposed to Print(), which
-		includes tabs and new lines.
-
-		The operator<< and operator>> are not completely symmetric. Writing
-		a node to a stream is very well defined. You'll get a nice stream
-		of output, without any extra whitespace or newlines. 
-		
-		But reading is not as well defined. (As it always is.) If you create
-		a TiXmlElement (for example) and read that from an input stream,
-		the text needs to define an element or junk will result. This is
-		true of all input streams, but it's worth keeping in mind.
-
-		A TiXmlDocument will read nodes until it encounters another
-		documentent declaration, or does not find an opening '<'.
+	/**	The world does not agree on whether white space should be kept or
+		not. In order to make everyone happy, these global, static functions
+		are provided to set whether or not TinyXml will condense all white space
+		into a single space or not. The default is to condense. Note changing these
+		values in not thread safe.
 	*/
-	friend std::ostream& operator<< ( std::ostream& out, const TiXmlBase& base )
-	{
-		base.Print( &out, -1 );
-		return out;
-	}
-
-	friend std::istream& operator>> ( std::istream& in, TiXmlBase& base )
-	{
-		std::string tag;
-		if ( StreamChunkToString( &in, &tag ) )
-		{
-			base.Parse( tag.c_str() );
-		}
-		return in;
-	}
+	static void SetCondenseWhiteSpace( bool condense )		{ condenseWhiteSpace = condense; }
+	static bool IsWhiteSpaceCondensed()						{ return condenseWhiteSpace; }
 
   protected:
-	/*	Take everything from an opening '<' to the ending '>' and
-		put it in a string. The opeing and closing '<>' will not
-		be copied to the string.
-	*/
-	// FIXME: count the< < >>> embedded brackets!
-	static bool StreamChunkToString( std::istream* in, std::string* str );
-
-	/*	General parsing helper method. Takes a pointer in,
-		skips all the white space it finds, and returns a pointer
-		to the first non-whitespace data.
-	*/
-//	static bool SkipWhiteSpace( std::istream* in );
-
-	/*	Same as above, works on char pointers.
+	/*	Skips white space (space, tab, newlines, CR, etc.)
 	*/
 	static const char* SkipWhiteSpace( const char* );
+	static bool StreamWhiteSpace( std::istream* in, std::string* tag );
+	static bool IsWhiteSpace( int c );
+
+	/*	Read to the specified character.
+		Returns true if the character found and no error.
+	*/
+	static bool StreamTo( std::istream* in, int character, std::string* tag );
 
 	/*	Reads an XML name into the string provided. Returns
 		a pointer just past the last character of the name, 
 		or 0 if the function has an error.
 	*/
 	static const char* ReadName( const char*, std::string* name );
+	static bool ReadName( std::istream* in, std::string* name );
 
 	/*	Reads text. Returns a pointer past the given end tag.
 		Wickedly complex options, but it keeps the (sensitive) code in one place.
@@ -155,7 +127,7 @@ class TiXmlBase
 									std::string* text,			// the string read
 									bool ignoreWhiteSpace,		// whether to keep the white space
 									const char* endTag,			// what ends this text
-									bool ignoreCase );
+									bool ignoreCase );			// whether to ignore case in the end tag
 
 	virtual const char* Parse( const char* p ) = 0;
 
@@ -223,6 +195,7 @@ class TiXmlBase
 
 	};
 	static Entity entity[ NUM_ENTITY ];
+	static bool condenseWhiteSpace;
 };
 
 
@@ -235,6 +208,42 @@ class TiXmlBase
 class TiXmlNode : public TiXmlBase
 {
   public:
+
+	/** An output stream operator, for every class. Note that this outputs
+		without any newlines or formatting, as opposed to Print(), which
+		includes tabs and new lines.
+
+		The operator<< and operator>> are not completely symmetric. Writing
+		a node to a stream is very well defined. You'll get a nice stream
+		of output, without any extra whitespace or newlines. 
+		
+		But reading is not as well defined. (As it always is.) If you create
+		a TiXmlElement (for example) and read that from an input stream,
+		the text needs to define an element or junk will result. This is
+		true of all input streams, but it's worth keeping in mind.
+
+		A TiXmlDocument will read nodes until it encounters another
+		documentent declaration, or does not find an opening '<'.
+	*/
+	friend std::ostream& operator<< ( std::ostream& out, const TiXmlNode& base )
+	{
+		base.Print( &out, -1 );
+		return out;
+	}
+
+	/** An input stream operator, for every class. Tolerant of newlines and
+		formatting, but doesn't expect them.
+	*/
+	friend std::istream& operator>> ( std::istream& in, TiXmlNode& base )
+	{
+		std::string tag;
+		tag.reserve( 1000 );
+		base.Stream( &in, &tag );
+		
+		base.Parse( tag.c_str() );
+		return in;
+	}
+
 	/** The types of XML nodes supported by TinyXml. (All the
 		unsupported types are picked up by UNKNOWN.)
 	*/
@@ -382,6 +391,9 @@ class TiXmlNode : public TiXmlBase
 
 	virtual TiXmlNode* Clone() const = 0;
 
+	// The real work of the input operator.
+	virtual void Stream( std::istream* in, std::string* tag ) = 0;
+
   protected:
 	TiXmlNode( NodeType type );
 
@@ -460,6 +472,9 @@ class TiXmlAttribute : public TiXmlBase
 	// Set the document pointer so the attribute can report errors.
 	void SetDocument( TiXmlDocument* doc )	{ document = doc; }
 
+//	// [internal use] 
+//	virtual void Stream( std::istream* in, std::string* tag );
+//
   private:
 	TiXmlDocument*	document;	// A pointer back to a document, for error reporting.
 	std::string		name;
@@ -548,6 +563,9 @@ class TiXmlElement : public TiXmlNode
 	// [internal use] 
  	virtual void Print( std::ostream* stream, int depth ) const;
 
+	// [internal use] 
+	virtual void Stream( std::istream* in, std::string* tag );
+
   protected:
 	/*	[internal use] 
 		Attribtue parsing starts: next char past '<'
@@ -560,6 +578,7 @@ class TiXmlElement : public TiXmlNode
 		This should terminate with the current end tag.
 	*/
 	const char* ReadValue( const char* in );
+	bool ReadValue( std::istream* in );
 
   private:
 	TiXmlAttributeSet attributeSet;
@@ -579,6 +598,9 @@ class TiXmlComment : public TiXmlNode
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
  	virtual void Print( std::ostream* stream, int depth ) const;
+
+	// [internal use] 
+	virtual void Stream( std::istream* in, std::string* tag );
 
   protected:
 	/*	[internal use] 
@@ -610,6 +632,9 @@ class TiXmlText : public TiXmlNode
 						 returns: next char past '>'
 	*/	
 	virtual const char* Parse( const char* p );
+
+	// [internal use]
+	virtual void Stream( std::istream* in, std::string* tag );
 };
 
 
@@ -651,6 +676,9 @@ class TiXmlDeclaration : public TiXmlNode
 	// [internal use] 
  	virtual void Print( std::ostream* stream, int depth ) const;
 
+	// [internal use] 
+	virtual void Stream( std::istream* in, std::string* tag );
+
   protected:
 	//	[internal use] 
 	//	Attribtue parsing starts: next char past '<'
@@ -680,6 +708,9 @@ class TiXmlUnknown : public TiXmlNode
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 	
  	virtual void Print( std::ostream* stream, int depth ) const;
+
+	// [internal use] 
+	virtual void Stream( std::istream* in, std::string* tag );
 
   protected:
 	/*	[internal use] 
@@ -762,6 +793,9 @@ class TiXmlDocument : public TiXmlNode
 									error   = true; 
 									errorId = err;
 									errorDesc = errorString[ errorId ]; }
+	// [internal use] 
+	virtual void Stream( std::istream* in, std::string* tag );
+
   protected:
 
   private:
