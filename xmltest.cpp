@@ -425,6 +425,7 @@ int main()
 	{
 		TiXmlDocument doc( "midsummerNightsDreamWithAVeryLongFilenameToConfuseTheStringHandlingRoutines.xml" );
 		bool loadOkay = doc.LoadFile();
+		loadOkay = true;	// get rid of compiler warning.
 		// Won't pass on non-dev systems. Just a "no crash" check.
 		//XmlTest( "Long filename. ", true, loadOkay );
 	}
