@@ -464,7 +464,7 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 			StreamWhiteSpace( in, tag );
 
 			// Do we have text?
-			if ( in->peek() != '<' )
+			if ( in->good() && in->peek() != '<' ) 
 			{
 				// Yep, text.
 				TiXmlText text( "" );
