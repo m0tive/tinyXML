@@ -138,7 +138,7 @@ Changes in version 2.1.5
   modified it to not have parse time impact.
 - General cleanup suggestions from Fletcher Dunn.
 - In error handling, general errors will no longer clear the error state of specific ones.
-
+- Fix error in documentation : comments starting with "<?--" instead of "<--" (thanks ion_pulse)
 
 
 

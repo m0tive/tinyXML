@@ -223,7 +223,7 @@ posted as tasks on SourceForge. (www.sourceforge.net/projects/tinyxml)
 An example is probably the best way to go. Take:
 @verbatim
 	<?xml version="1.0" standalone=no>
-	<?-- Our to do list data -->
+	<!-- Our to do list data -->
 	<ToDo>
 		<Item priority="1"> Go to the <bold>Toy store!</bold></Item>
 		<Item priority="2"> Do bills</Item>
@@ -250,7 +250,7 @@ relate to the DOM.
 	Generally directive targs are stored in TiXmlUnknown so the 
 	commands wont be lost when it is saved back to disk.
 
-<?-- Our to do list data -->
+<!-- Our to do list data -->
 
 	A comment. Will become a TiXmlComment object.
 
