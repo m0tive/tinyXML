@@ -22,7 +22,7 @@ int main()
 		"<ToDo>\n"
 		"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
 		"<Item priority=\"2\" distance='none'> Do bills   </Item>"
-		"<Item priority=\"2\" distance='far &amp; back'> Look for Evil Dinosaurs! </Item>"
+		"<Item priority=\"2\" distance='far back'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
 	/* What the todo list should look like after processing.
@@ -78,7 +78,7 @@ int main()
 	TiXmlElement* todoElement = 0;
 	TiXmlElement* itemElement = 0;
 
-//	exit(0);
+	exit(0);
 	// --------------------------------------------------------
 	// An example of changing existing attributes, and removing
 	// an element from the document.

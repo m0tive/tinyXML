@@ -268,21 +268,13 @@ const char* TiXmlDocument::Parse( const char* p )
 
 	// Parsing ends when we read the end of the root element, or
 	// we don't find an opening '<'
-	//
-	
+
+	bool rootElementFound = false;	
 
 	if ( !p || !*p  || !( p = SkipWhiteSpace( p ) ) )
 	{
-		// If we are empty, this is an error, else it's just the end.
-//		if ( NoChildren() )
-//		{
-			SetError( TIXML_ERROR_DOCUMENT_EMPTY );
-			return false;
-//		}
-//		else
-//		{
-//			return true;
-//		}
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY );
+		return false;
 	}
 	
 	while ( p && *p )
@@ -301,7 +293,32 @@ const char* TiXmlDocument::Parse( const char* p )
 		{
 			TiXmlNode* node = Identify( p );
 			if ( node )
-			{					
+			{				
+				if ( node->Type() == ELEMENT )
+				{
+					if ( rootElementFound )
+					{
+						// A second root element is technically not allowed. But
+						// assume it is a second document.
+						delete node;
+						break;
+					}
+					else
+					{
+						rootElementFound = true;
+					}
+				}
+				else
+				{
+					// We found something that wasn't an element.
+					if ( rootElementFound )
+					{
+						// Again, just assume the document is done.
+						delete node;
+						break;
+					}
+				}
+				
 				p = node->Parse( p );
 				LinkEndChild( node );
 			}		
@@ -507,7 +524,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 				return 0;
 			}
 
-			p = textNode->Parse( p );
+			textNode->SetValue( text );
 
 			if ( !textNode->Blank() )
 				LinkEndChild( textNode );

@@ -459,6 +459,7 @@ void TiXmlElement::Print( std::ostream* stream, int depth ) const
 		(*stream) << " ";
 		(*stream) << (*attrib);
 	}
+
 	// If this node has children, give it a closing tag. Else
 	// make it an empty tag.
 	TiXmlNode* node;
@@ -471,13 +472,11 @@ void TiXmlElement::Print( std::ostream* stream, int depth ) const
 	 		if (	depth >= 0				// -1 is a special value for unformatted output
 				 && !node->ToText() )
 			{
-				//fprintf( fp, "\n" );
 				if ( depth >= 0 )
 				{
 					(*stream) << "\n";
 				}
 			}
-			//node->Print( fp, depth+1 );
 			if ( depth >= 0 )
 				node->Print( stream, depth+1 ); 
 			else
@@ -558,23 +557,22 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 	Clear();
 	value = filename;
 	
-	ifstream file;
-	file.open( filename.c_str(), std::ios::in );
+	FILE* file = fopen( filename.c_str(), "r" );
 
-	if ( file.is_open() )
+	if ( file )
 	{
 		// If we have a file, assume it is all one big XML file, and read it in.
 		// The document parser may decide the document ends sooner than the entire file, however.
 		std::string data;
 
-		const int BUF_SIZE = 64;
+		const int BUF_SIZE = 256;
 		char buf[BUF_SIZE];
-		while( file.good() )
+
+		while( fgets( buf, BUF_SIZE, file ) )
 		{
-			file.get( buf, BUF_SIZE-1 );
-			assert( strlen( buf ) < BUF_SIZE );
 			data += buf;
 		}
+		fclose( file );
 
 		Parse( data.c_str() );
 		if (  !Error() )
