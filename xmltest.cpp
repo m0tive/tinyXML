@@ -564,6 +564,8 @@ int main()
 	XmlTest ( "Condense white space OFF.", "This  is    \ntext",
 				text1.FirstChild()->Value(),
 				true );
+
+	TiXmlBase::SetCondenseWhiteSpace( true );
 #endif
 
 	//////////////////////////////////////////////////////
@@ -744,18 +746,47 @@ int main()
 	}
 
 	{
-		// [ 935500 ] uninitialized pointer?
-		// Missing copy constructors. Actually, the bug was that this would crash the code.
-		// Now it won't compile.
-//		TiXmlElement copied = ReturnCopy();
-//		copied.Print( stdout, 0 );
-//
-//		TiXmlElement ele( "element" );
-//		TiXmlElement eleCopy( ele );
-//		TiXmlElement eleAssign( "assign" );
-//		eleAssign = eleCopy;
-	}
+		// [ 870502 ] White space issues
+		TiXmlDocument doc;
+		TiXmlText* text;
+		TiXmlHandle docH( &doc );
+	
+		const char* doctype0 = "<element> This has leading and trailing space </element>";
+		const char* doctype1 = "<element>This has  internal space</element>";
+		const char* doctype2 = "<element> This has leading, trailing, and  internal space </element>";
 
+		TiXmlBase::SetCondenseWhiteSpace( false );
+		doc.Clear();
+		doc.Parse( doctype0 );
+		text = docH.FirstChildElement( "element" ).Child( 0 ).Text();
+		XmlTest( "White space kept.", " This has leading and trailing space ", text->Value() );
+
+		doc.Clear();
+		doc.Parse( doctype1 );
+		text = docH.FirstChildElement( "element" ).Child( 0 ).Text();
+		XmlTest( "White space kept.", "This has  internal space", text->Value() );
+
+		doc.Clear();
+		doc.Parse( doctype2 );
+		text = docH.FirstChildElement( "element" ).Child( 0 ).Text();
+		XmlTest( "White space kept.", " This has leading, trailing, and  internal space ", text->Value() );
+
+		TiXmlBase::SetCondenseWhiteSpace( true );
+		doc.Clear();
+		doc.Parse( doctype0 );
+		text = docH.FirstChildElement( "element" ).Child( 0 ).Text();
+		XmlTest( "White space condensed.", "This has leading and trailing space", text->Value() );
+
+		doc.Clear();
+		doc.Parse( doctype1 );
+		text = docH.FirstChildElement( "element" ).Child( 0 ).Text();
+		XmlTest( "White space condensed.", "This has internal space", text->Value() );
+
+		doc.Clear();
+		doc.Parse( doctype2 );
+		text = docH.FirstChildElement( "element" ).Child( 0 ).Text();
+		XmlTest( "White space condensed.", "This has leading, trailing, and internal space", text->Value() );
+	}
 
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );

@@ -222,7 +222,7 @@ void TiXmlParsingData::Stamp( const char* now )
 			case (char)(0xef):
 				if ( *(p+1) && *(p+2) )
 				{
-					// In these cases, don't advance the columnt. These are
+					// In these cases, don't advance the column. These are
 					// 0-width spaces.
 					if ( *(p+1)==(char)(0xbb) && *(p+2)==(char)(0xbf) )
 						p += 3;	
@@ -267,6 +267,21 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 			 && *(p+2)==(char) 0xbf )
 		{
 			p += 3;
+			continue;
+		}
+		else if(*(p+0)==(char) 0xef
+			 && *(p+1)==(char) 0xbf
+			 && *(p+2)==(char) 0xbe )
+		{
+			p += 3;
+			continue;
+		}
+		else if(*(p+0)==(char) 0xef
+			 && *(p+1)==(char) 0xbf
+			 && *(p+2)==(char) 0xbf )
+		{
+			p += 3;
+			continue;
 		}
 
 		if ( IsWhiteSpace( *p ) || *p == '\n' || *p =='\r' )		// Still using old rules for white space.
@@ -971,6 +986,7 @@ const char* TiXmlElement::ReadValue( const char* p, TiXmlParsingData* data )
 {
 	TiXmlDocument* document = GetDocument();
 
+	const char* pWithWhiteSpace = p;
 	// Read in text and elements in any order.
 	p = SkipWhiteSpace( p );
 	while ( p && *p )
@@ -986,7 +1002,16 @@ const char* TiXmlElement::ReadValue( const char* p, TiXmlParsingData* data )
 				    return 0;
 			}
 
-			p = textNode->Parse( p, data );
+			if ( TiXmlBase::IsWhiteSpaceCondensed() )
+			{
+				p = textNode->Parse( p, data );
+			}
+			else
+			{
+				// Special case: we want to keep the white space
+				// so that leading spaces aren't removed.
+				p = textNode->Parse( pWithWhiteSpace, data );
+			}
 
 			if ( !textNode->Blank() )
 				LinkEndChild( textNode );
