@@ -73,7 +73,10 @@ class TiXmlString
     }
 
     // Return the length of a TiXmlString
-    unsigned length () const;
+    unsigned length () const
+	{
+		return ( allocated ) ? current_length : 0;
+	}
 
     // TiXmlString = operator
     void operator = (const char * content);

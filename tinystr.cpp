@@ -242,13 +242,13 @@ void TiXmlString::append( const char * suffix )
 //    return (! strcmp (c_str (), compare . c_str ()));
 //}
 
-unsigned TiXmlString::length () const
-{
-    if (allocated)
-        // return strlen (cstring);
-        return current_length;
-    return 0;
-}
+//unsigned TiXmlString::length () const
+//{
+//    if (allocated)
+//        // return strlen (cstring);
+//        return current_length;
+//    return 0;
+//}
 
 
 unsigned TiXmlString::find (char tofind, unsigned offset) const
