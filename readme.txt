@@ -27,10 +27,10 @@ http://www.w3.org/TR/2004/REC-xml-20040204/</a>. An intro to XML
 
 There are different ways to access and interact with XML data.
 TinyXml uses a Document Object Model (DOM), meaning the XML data is parsed
-into a tree objects that can be browsed and manipulated, and then 
-written back to disk. You can also construct an XML document from
-scratch with C++ objects and write this to disk (or another output
-stream.)
+into a C++ objects that can be browsed and manipulated, and then 
+written to disk or another output stream. You can also construct an XML document from
+scratch with C++ objects and write this to disk or another output
+stream.
 
 TinyXml is designed to be easy and fast to learn. It is two headers 
 and four cpp files. Simply add these to your project and off you go. 
@@ -59,9 +59,11 @@ complete XML needs, TinyXml is not the parser for you.
 
 The following DTD syntax will not parse at this time in TinyXml:
 
+@verbatim
 	<!DOCTYPE Archiv [
 	 <!ELEMENT Comment (#PCDATA)>
 	]>
+@endverbatim
 
 because TinyXml sees this as a !DOCTYPE node with an illegally 
 embedded !ELEMENT node. This may be addressed in the future.
@@ -125,23 +127,26 @@ TinyXml will assume Legacy Mode until one of the following occurs:
 		 TinyXml will read it as Legacy Mode. In legacy mode, TinyXml will 
 		 work as it did before. It's not clear what that mode does exactly, but 
 		 old content should keep working.</li>
+	<li> Until one of the above criteria is met, TinyXml runs in Legacy Mode.</li>
 </ol>
 
 What happens if the encoding is incorrectly set or detected? TinyXml will try
 to read and pass through text seen as improperly encoded. You may get some strange
-results or mangled characters, however. In this case, you may want to force
-TinyXml to the correct mode.
+results or mangled characters. You may want to force TinyXml to the correct mode.
 
 <b> You may force TinyXml to Legacy Mode by using LoadFile( TIXML_ENCODING_LEGACY ) or
 LoadFile( filename, TIXML_ENCODING_LEGACY ). You may force it to use legacy mode all
-the time by setting TIXML_DEFAULT_ENCODING = TIXML_ENCODING_LEGACY.</b>
+the time by setting TIXML_DEFAULT_ENCODING = TIXML_ENCODING_LEGACY. Likewise, you may 
+force it to TIXML_ENCODING_UTF8 with the same technique.</b>
 
 For English users, using English XML, UTF-8 is the same as low-ASCII. You
 don't need to be aware of UTF-8 or change your code in any way. You can think
 of UTF-8 as a "superset" of ASCII.
 
-UTF-8 is not a double byte format. TinyXml does not use or directly support 
-wchar, TCHAR, or Microsofts _UNICODE at this time.
+UTF-8 is not a double byte format - but it is a standard encoding of Unicode!
+TinyXml does not use or directly support wchar, TCHAR, or Microsofts _UNICODE at this time. 
+It is common to see the term "Unicode" improperly refer to UTF-16, a wide byte encoding
+of unicode. This is a source of confusion.
 
 For "high-ascii" languages - everything not English, pretty much - TinyXml can
 handle all languages, at the same time, as long as the XML is encoded
@@ -193,9 +198,7 @@ of TinyXml "preserved" character entities, but the newer versions will translate
 them into characters.
 
 Additionally, any character can be specified by its Unicode code point:
-The syntax "&#xA0;" or "&#160;" are both to the non-breaking space characher. Note
-that these will generally not be preserved on output: TinyXml will write the
-space to the output stream, not the character reference.
+The syntax "&#xA0;" or "&#160;" are both to the non-breaking space characher.
 
 
 <h3> Streams </h3>
