@@ -1,15 +1,14 @@
-rm ./distlin/*.*
-rm ./distlin/docs/*.*
+rm ./tinyxml_unix/*.*
+rm ./tinyxml_unix/docs/*.*
 rm ./docs/*.*
 
 doxygen dox
 
-cp readme.txt ./distlin/README
-cp *.cpp ./distlin
-cp *.h ./distlin
-cp makefile ./distlin
-cp test0.xml ./distlin
-cp test1.xml ./distlin
-
-cp ./docs/*.* ./distlin/docs
-
+mkdir tinyxml_unix
+cp readme.txt ./tinyxml_unix/README
+cp *.cpp ./tinyxml_unix
+cp *.h ./tinyxml_unix
+cp makefile ./tinyxml_unix
+cp test0.xml ./tinyxml_unix
+cp test1.xml ./tinyxml_unix
+cp ./docs/*.* ./tinyxml_unix/docs

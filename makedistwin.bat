@@ -1,16 +1,17 @@
-del .\dist\*.*
+del .\tinyxml_win\*.*
 del .\docs\*.*
 
 doxygen dox
+mkdir tinyxml_win
 
-copy readme.txt dist
-copy *.cpp dist
-copy *.h dist
-copy *.dsp dist
-copy test0.xml dist
-copy test1.xml dist
-copy test2.xml dist
+copy readme.txt tinyxml_win
+copy *.cpp tinyxml_win
+copy *.h tinyxml_win
+copy *.dsp tinyxml_win
+copy test0.xml tinyxml_win
+copy test1.xml tinyxml_win
+copy test2.xml tinyxml_win
 
-mkdir .\dist\docs
-copy docs .\dist\docs
+mkdir .\tinyxml_win\docs
+copy docs .\tinyxml_win\docs
 
