@@ -95,3 +95,7 @@ Continuing OptionalSTL-branch (May 3rd, 2002)
 - #define TIXML_USE_STL implemented
 - still to do : modify gnu makefile
 - still to do : deal with Attribute function that returns std::string *
+- still to do : fix "fail" bug in stl version
+- still to do : TiXmlInStream never gets used. (It's pure abstract. It wouldn't link if it did.)
+	#ifdef it out?
+- still to do : document / clean up API so that users won't be scared away by TIXML_ #defines
