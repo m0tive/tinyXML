@@ -107,3 +107,7 @@ Changes in version 2.1.3
 - Urivan Saaib pointed out a compiler conflict, where the C headers define
   the isblank macro, which was wiping out the TiXmlString::isblank() method.
   The method was unused and has been removed.
+
+Changes in version 2.1.4
+- Reworked the entity code. Entities were not correctly surving round trip input and output.
+  Will now automatically create entities for high ascii in output.
