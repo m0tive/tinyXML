@@ -111,7 +111,9 @@ class TiXmlString
     }
 
     // Checks if a TiXmlString contains only whitespace (same rules as isspace)
-    bool isblank () const;
+	// Not actually used in tinyxml. Conflicts with a C macro, "isblank",
+	// which is a problem. Commenting out. -lee
+//    bool isblank () const;
 
     // single char extraction
     const char& at (unsigned index) const
