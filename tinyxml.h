@@ -1067,8 +1067,7 @@ public:
 
 		The tab size is required for calculating the location of nodes. If not
 		set, the default of 4 is used. The tabsize is set per document. Setting
-		the tabsize to 0 disables row/column tracking (which has a minor performance
-		cost.)
+		the tabsize to 0 disables row/column tracking.
 
 		Note that row and column tracking is not supported when using operator>>.
 

@@ -62,6 +62,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "echoDebug"
 # PROP Intermediate_Dir "echoDebug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
 # ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "TIXML_USE_STL" /FR /YX /FD /GZ /c
@@ -82,7 +83,7 @@ LINK32=link.exe
 # Name "echo - Win32 Debug"
 # Begin Source File
 
-SOURCE=.\echo.cpp
+SOURCE=.\xmltester\bugtest.cpp
 # End Source File
 # Begin Source File
 

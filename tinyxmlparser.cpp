@@ -701,8 +701,11 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data )
 	}
 
 //	TiXmlParsingData data( p, prevData );
-	data->Stamp( p );
-	location = data->Cursor();
+	if ( data )
+	{
+		data->Stamp( p );
+		location = data->Cursor();
+	}
 
 	if ( *p != '<' )
 	{
@@ -890,9 +893,11 @@ const char* TiXmlUnknown::Parse( const char* p, TiXmlParsingData* data )
 	p = SkipWhiteSpace( p );
 
 //	TiXmlParsingData data( p, prevData );
-	data->Stamp( p );
-	location = data->Cursor();
-
+	if ( data )
+	{
+		data->Stamp( p );
+		location = data->Cursor();
+	}
 	if ( !p || !*p || *p != '<' )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_PARSING_UNKNOWN, p, data );
@@ -944,9 +949,11 @@ const char* TiXmlComment::Parse( const char* p, TiXmlParsingData* data )
 	p = SkipWhiteSpace( p );
 
 //	TiXmlParsingData data( p, prevData );
-	data->Stamp( p );
-	location = data->Cursor();
-
+	if ( data )
+	{
+		data->Stamp( p );
+		location = data->Cursor();
+	}
 	const char* startTag = "<!--";
 	const char* endTag   = "-->";
 
@@ -971,9 +978,11 @@ const char* TiXmlAttribute::Parse( const char* p, TiXmlParsingData* data )
 		tabsize = document->TabSize();
 
 //	TiXmlParsingData data( p, prevData );
-	data->Stamp( p );
-	location = data->Cursor();
-
+	if ( data )
+	{
+		data->Stamp( p );
+		location = data->Cursor();
+	}
 	// Read the name, the '=' and the value.
 	const char* pErr = p;
 	p = ReadName( p, &name );
@@ -1047,9 +1056,11 @@ const char* TiXmlText::Parse( const char* p, TiXmlParsingData* data )
 {
 	value = "";
 //	TiXmlParsingData data( p, prevData );
-	data->Stamp( p );
-	location = data->Cursor();
-
+	if ( data )
+	{
+		data->Stamp( p );
+		location = data->Cursor();
+	}
 	bool ignoreWhite = true;
 
 	const char* end = "<";
@@ -1088,9 +1099,11 @@ const char* TiXmlDeclaration::Parse( const char* p, TiXmlParsingData* data )
 		return 0;
 	}
 //	TiXmlParsingData data( p, prevData );
-	data->Stamp( p );
-	location = data->Cursor();
-
+	if ( data )
+	{
+		data->Stamp( p );
+		location = data->Cursor();
+	}
 	p += 5;
 
 	version = "";
