@@ -859,8 +859,14 @@ public:
 	bool SaveFile( const char * filename ) const;
 
 	#ifdef TIXML_USE_STL
-	bool LoadFile( const std::string& filename );			///< STL std::string version.
-	bool SaveFile( const std::string& filename ) const;		///< STL std::string version.
+	bool LoadFile( const std::string& filename )			///< STL std::string version.
+	{
+		return LoadFile (filename . c_str ());
+	}
+	bool SaveFile( const std::string& filename ) const		///< STL std::string version.
+	{
+		return SaveFile (filename . c_str ());
+	}
 	#endif
 
 	/// Parse the given null terminated block of xml data.
