@@ -263,8 +263,8 @@ int main()
 	// Walk all the top level nodes of the document.
 	count = 0;
 	for( node = doc.FirstChild();
-	node;
-	node = node->NextSibling() )
+		 node;
+		 node = node->NextSibling() )
 	{
 		count++;
 	}
@@ -272,8 +272,8 @@ int main()
 
 	count = 0;
 	for( node = doc.LastChild();
-	node;
-	node = node->PreviousSibling() )
+		 node;
+		 node = node->PreviousSibling() )
 	{
 		count++;
 	}
@@ -283,8 +283,8 @@ int main()
 	// using a different sytax.
 	count = 0;
 	for( node = doc.IterateChildren( 0 );
-	node;
-	node = doc.IterateChildren( node ) )
+		 node;
+		 node = doc.IterateChildren( node ) )
 	{
 		count++;
 	}
@@ -293,8 +293,8 @@ int main()
 	// Walk all the elements in a node.
 	count = 0;
 	for( element = todoElement->FirstChildElement();
-	element;
-	element = element->NextSiblingElement() )
+		 element;
+		 element = element->NextSiblingElement() )
 	{
 		count++;
 	}
@@ -304,8 +304,8 @@ int main()
 	// Walk all the elements in a node by value.
 	count = 0;
 	for( node = todoElement->FirstChild( "Item" );
-	node;
-	node = node->NextSibling( "Item" ) )
+		 node;
+		 node = node->NextSibling( "Item" ) )
 	{
 		count++;
 	}
@@ -313,8 +313,8 @@ int main()
 
 	count = 0;
 	for( node = todoElement->LastChild( "Item" );
-	node;
-	node = node->PreviousSibling( "Item" ) )
+		 node;
+		 node = node->PreviousSibling( "Item" ) )
 	{
 		count++;
 	}

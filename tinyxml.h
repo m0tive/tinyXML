@@ -167,16 +167,16 @@ protected:
 	static const char* GetEntity( const char* in, char* value );
 
 	// Get a character, while interpreting entities.
-	inline static const char* GetChar( const char* p, char* value )
+	inline static const char* GetChar( const char* p, char* _value )
 	{
 		assert( p );
 		if ( *p == '&' )
 		{
-			return GetEntity( p, value );
+			return GetEntity( p, _value );
 		}
 		else
 		{
-			*value = *p;
+			*_value = *p;
 			return p+1;
 		}
 	}
@@ -301,7 +301,7 @@ public:
 
 		The subclasses will wrap this function.
 	*/
-	const char * Value () const { return value.c_str (); }
+	const char * Value() const { return value.c_str (); }
 
 	/** Changes the value of the node. Defined as:
 		@verbatim
@@ -312,13 +312,13 @@ public:
 		Text:		the text string
 		@endverbatim
 	*/
-	void SetValue (const char * _value) { value = _value;}
+	void SetValue(const char * _value) { value = _value;}
 
     #ifdef TIXML_USE_STL
 	/// STL std::string form.
-	void SetValue( const std::string& value )    
+	void SetValue( const std::string& _value )    
 	{	  
-		StringToBuffer buf( value );
+		StringToBuffer buf( _value );
 		SetValue( buf.buffer ? buf.buffer : "" );    	
 	}	
 	#endif
@@ -336,8 +336,8 @@ public:
 	TiXmlNode* LastChild( const char * value ) const;			/// The last child of this node matching 'value'. Will be null if there are no children.
 
     #ifdef TIXML_USE_STL
-	TiXmlNode* FirstChild( const std::string& value ) const	{	return FirstChild (value.c_str ());	}	///< STL std::string form.
-	TiXmlNode* LastChild( const std::string& value ) const	{	return LastChild (value.c_str ());	}	///< STL std::string form.
+	TiXmlNode* FirstChild( const std::string& _value ) const	{	return FirstChild (_value.c_str ());	}	///< STL std::string form.
+	TiXmlNode* LastChild( const std::string& _value ) const		{	return LastChild (_value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/** An alternate way to walk the children of a node.
@@ -362,7 +362,7 @@ public:
 	TiXmlNode* IterateChildren( const char * value, TiXmlNode* previous ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous ) const	{	return IterateChildren (value.c_str (), previous);	}	///< STL std::string form.
+	TiXmlNode* IterateChildren( const std::string& _value, TiXmlNode* previous ) const	{	return IterateChildren (_value.c_str (), previous);	}	///< STL std::string form.
 	#endif
 
 	/** Add a new node related to this. Adds a child past the LastChild.
@@ -407,8 +407,8 @@ public:
 	TiXmlNode* PreviousSibling( const char * ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlNode* PreviousSibling( const std::string& value ) const	{	return PreviousSibling (value.c_str ());	}	///< STL std::string form.
-	TiXmlNode* NextSibling( const std::string& value) const	{	return NextSibling (value.c_str ());	}	///< STL std::string form.
+	TiXmlNode* PreviousSibling( const std::string& _value ) const	{	return PreviousSibling (_value.c_str ());	}	///< STL std::string form.
+	TiXmlNode* NextSibling( const std::string& _value) const		{	return NextSibling (_value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/// Navigate to a sibling node.
@@ -430,7 +430,7 @@ public:
 	TiXmlElement* NextSiblingElement( const char * ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlElement* NextSiblingElement( const std::string& value) const	{	return NextSiblingElement (value.c_str ());	}	///< STL std::string form.
+	TiXmlElement* NextSiblingElement( const std::string& _value) const	{	return NextSiblingElement (_value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/// Convenience function to get through elements.
@@ -440,7 +440,7 @@ public:
 	TiXmlElement* FirstChildElement( const char * value ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlElement* FirstChildElement( const std::string& value ) const	{	return FirstChildElement (value.c_str ());	}	///< STL std::string form.
+	TiXmlElement* FirstChildElement( const std::string& _value ) const	{	return FirstChildElement (_value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/// Query the type (as an enumerated value, above) of this node.
@@ -656,19 +656,19 @@ public:
 	const char* Attribute( const std::string& name, int* i ) const		{ return Attribute( name.c_str(), i ); }
 
 	/// STL std::string form.
-	void SetAttribute( const std::string& name, const std::string& value )	
+	void SetAttribute( const std::string& name, const std::string& _value )	
 	{	
 		StringToBuffer n( name );
-		StringToBuffer v( value );
+		StringToBuffer v( _value );
 		if ( n.buffer && v.buffer )
 			SetAttribute (n.buffer, v.buffer );	
 	}	
 	///< STL std::string form.
-	void SetAttribute( const std::string& name, int value )	
+	void SetAttribute( const std::string& name, int _value )	
 	{	
 		StringToBuffer n( name );
 		if ( n.buffer )
-			SetAttribute (n.buffer, value);	
+			SetAttribute (n.buffer, _value);	
 	}	
 	#endif
 
