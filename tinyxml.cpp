@@ -38,17 +38,28 @@ void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 
 	for( i=0; i<str.length(); ++i )
 	{
-		for ( j=0; j<NUM_ENTITY; ++j )
-		{
-			if ( str[i] == entity[j].chr )
-			{
-				stream->write( entity[j].str, entity[j].strLength );
-				break;
-			}
-		}
-		if ( j == NUM_ENTITY )
+		// Check for the special "&#x" entitity
+		if (    i < str.length() - 2
+		     && str[i] == '&' 
+			 && str[i+1] == '#' 
+			 && str[i+2] == 'x' )
 		{
 			stream->put( str[i] );
+		}
+		else
+		{
+			for ( j=0; j<NUM_ENTITY; ++j )
+			{
+				if ( str[i] == entity[j].chr )
+				{
+					stream->write( entity[j].str, entity[j].strLength );
+					break;
+				}
+			}
+			if ( j == NUM_ENTITY )
+			{
+				stream->put( str[i] );
+			}
 		}
 	}
 }

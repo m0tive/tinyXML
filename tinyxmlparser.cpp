@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2000 Lee Thomason (www.grinninglizard.com)
+Copyright (c) 2000-2002 Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied 
 warranty. In no event will the authors be held liable for any 
@@ -124,6 +124,13 @@ const char* TiXmlBase::GetEntity( const char* p, char* value )
 	string ent;
 	int i;
 
+	// Ignore the &#x entities.
+	if ( strncmp( "&#x", p, 3 ) == 0 )
+	{
+		*value = *p;
+		return p+1;
+	}
+
 	// Now try to match it.
 	for( i=0; i<NUM_ENTITY; ++i )
 	{
@@ -136,7 +143,6 @@ const char* TiXmlBase::GetEntity( const char* p, char* value )
 	}
 
 	// So it wasn't an entity, its unrecognized, or something like that.
-	// Pull one character, but put the rest back.
 	*value = *p;	// Don't put back the last one, since we return it!
 	return p+1;
 }
@@ -461,10 +467,11 @@ void TiXmlElement::Stream( std::istream* in, std::string* tag )
 			// We now have either a closing tag...or another node.
 			// We should be at a "<", regardless.
 			if ( !in->good() ) return;
+			assert( in->peek() == '<' );
+			int tagIndex = tag->length();
 
 			bool closingTag = false;
 			bool firstCharFound = false;
-			int tagIndex = tag->length() - 1;	// We already pulled the '<' from the stream.
 
 			for( ;; )
 			{

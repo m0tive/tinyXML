@@ -58,7 +58,7 @@ int main()
 		    "<Item priority=\"1\" distance=\"far\">Talk to:"
 		        "<Meeting where=\"School\">"
 		            "<Attendee name=\"Marple\" position=\"teacher\" />"
-		            "<Attendee name=\"Voo\" position=\"counselor\" />"
+		            "<Attendee name=\"Vo&#x82;\" position=\"counselor\" />"
 		        "</Meeting>"
 		        "<Meeting where=\"Lunch\" />"
 		    "</Item>"
@@ -157,7 +157,7 @@ int main()
 	attendee1.SetAttribute( "position", "teacher" );
 
 	TiXmlElement attendee2( "Attendee" );
-	attendee2.SetAttribute( "name", "Voo" );
+	attendee2.SetAttribute( "name", "Vo&#x82;" );
 	attendee2.SetAttribute( "position", "counselor" );
 
 	// Assemble the nodes we've created:
@@ -189,6 +189,7 @@ int main()
 	int count = 0;
 	TiXmlElement*	element;
 
+	//////////////////////////////////////////////////////
 	cout << "** Basic structure. **\n";
 	ostringstream outputStream( ostringstream::out );
 	outputStream << doc;
@@ -206,6 +207,7 @@ int main()
 	XmlTest( "Value is 'Go to the'.", string( "Go to the" ), node->Value() );
 
 
+	//////////////////////////////////////////////////////
 	cout << "\n** Iterators. **" << "\n";
 	// Walk all the top level nodes of the document.
 	count = 0;
@@ -268,34 +270,24 @@ int main()
 	XmlTest( "'Item' children of the 'ToDo' element, using Last/Previous.", 3, count );
 
 
+	//////////////////////////////////////////////////////
 	cout << "\n** Parsing. **\n";
 	istringstream parse0( "<Element0 attribute0='foo0' attribute1= noquotes attribute2 = '&gt;' />" );
 	TiXmlElement element0( "default" );
 	parse0 >> element0;
 
-	XmlTest( "Element parsed, value is 'Element'.", string( "Element" ), element0.Value() );
+	XmlTest( "Element parsed, value is 'Element0'.", string( "Element0" ), element0.Value() );
 	XmlTest( "Reads attribute 'attribute0=\"foo0\"'.", string( "foo0" ), *( element0.Attribute( "attribute0" ) ) );
 	XmlTest( "Reads incorrectly formatted 'attribute1=noquotes'.", string( "noquotes" ), *( element0.Attribute( "attribute1" ) ) );
 	XmlTest( "Read attribute with entity value '>'.", string( ">" ), *( element0.Attribute( "attribute2" ) ) );
 
-
-//	TiXmlBase::SetCondenseWhiteSpace( false );
-//
-//	istringstream parse1( "<start>This  is    \ntext</start>" );
-//	TiXmlElement text1( "text" );
-//	parse1 >> text1;
-//
-//	XmlTest( "Condense white space OFF.", string( "This  is    \ntext" ),
-//										  text1.FirstChild()->Value() );
-//							
-	
+	//////////////////////////////////////////////////////
 	cout << "\n** Streaming. **\n";
 
 	// Round trip check: stream in, then stream back out to verify. The stream
-	// out has already been checked, above.
+	// out has already been checked, above. We use the output
 
-	string inputString = demoStart;
-	istringstream inputStringStream( demoStart );
+	istringstream inputStringStream( outputStream.str() );
 	TiXmlDocument document0;
 
 	inputStringStream >> document0;
@@ -305,6 +297,19 @@ int main()
 
 	XmlTest( "Stream round trip correct.", string( demoEnd ), outputStream0.str(), true );
 
+	//////////////////////////////////////////////////////
+	cout << "\n** Parsing, no Condense Whitespace **\n";
+	TiXmlBase::SetCondenseWhiteSpace( false );
+
+	istringstream parse1( "<start>This  is    \ntext</start>" );
+	TiXmlElement text1( "text" );
+	parse1 >> text1;
+
+	XmlTest( "Condense white space OFF.", string( "This  is    \ntext" ),
+										  text1.FirstChild()->Value(),
+										  true );
+							
+	
 	return 0;
 }
 
