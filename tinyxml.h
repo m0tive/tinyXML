@@ -122,8 +122,8 @@ class TiXmlBase
 	*/
 	static bool ReadName( std::istream* in, std::string* name );
 
-	/*	Reads text, either skipping or leaving the whitespace as is.
-		
+	/*	Reads text.
+		Wickedly complex options, but it keeps the (sensitive) code in one place.
 	*/
 	static bool ReadText(	std::istream* in,			// where to start
 							std::string* text,			// the string read
@@ -201,7 +201,7 @@ class TiXmlBase
 	enum
 	{
 		NUM_ENTITY = 5,
-		MAX_ENTITY_LENGTH = 5
+		MAX_ENTITY_LENGTH = 6
 
 	};
 	static Entity entity[ NUM_ENTITY ];
@@ -530,6 +530,10 @@ class TiXmlElement : public TiXmlNode
 						 returns: next char past '>'
 	*/	
 	virtual bool Parse( std::istream* in );
+	/*	[internal use]
+		Reads the "value" of the element -- another element, or text.
+		This should terminate with the current end tag.
+	*/
 	bool ReadValue( std::istream* in );
 
   private:

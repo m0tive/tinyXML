@@ -86,11 +86,11 @@ bool TiXmlBase::ReadName( istream* in, string* name )
 
 TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] = 
 {
-	{ "&amp",  4, '&' },
-	{ "&lt",   3, '<' },
-	{ "&gt",   3, '>' },
-	{ "&quot", 5, '\"' },
-	{ "&apos", 5, '\'' }
+	{ "&amp;",  4, '&' },
+	{ "&lt;",   3, '<' },
+	{ "&gt;",   3, '>' },
+	{ "&quot;", 5, '\"' },
+	{ "&apos;", 5, '\'' }
 };
 
 
@@ -118,7 +118,7 @@ void TiXmlBase::GetEntity( istream* in, int* value )
 	for( i=0; i<NUM_ENTITY; ++i )
 	{
 		//if ( strncmp( in, entity[i].str, entity[i].strLength ) == 0 )
-		if ( ent == entity[i].str )
+		if ( ent.compare( entity[i].str ) == 0 )
 		{
 			*value = entity[i].chr;
 			return;
@@ -148,7 +148,8 @@ bool TiXmlBase::StreamEqual( istream* in, int numEndTag, const char** endTag, bo
 
 	for( i=0; i<numEndTag; ++i )
 	{
-		if ( in->peek() == *endTag[i] )
+		int c = in->peek();
+		if ( c == *endTag[i] )
 		{
 			// First letters match.
 			string str;
@@ -157,14 +158,20 @@ bool TiXmlBase::StreamEqual( istream* in, int numEndTag, const char** endTag, bo
 			int j;
 			for( j=0; j<len; ++j )
 			{
-				int c = in->get();
+				c = in->get();
 				if ( c < 0 ) break;
 
 				str += (char) c;
 				if ( caseInsensitive )
-					if ( tolower( c ) != tolower( *( endTag[i] + i ) ) ) break;
+				{
+					if ( tolower( c ) != tolower( *( endTag[i] + j ) ) ) 
+						break;
+				}
 				else
-					if ( c != *( endTag[i] + i ) ) break;
+				{
+					if ( c != *( endTag[i] + j ) ) 
+						break;
+				}
 			}
 			if ( j == len )
 			{
@@ -174,7 +181,10 @@ bool TiXmlBase::StreamEqual( istream* in, int numEndTag, const char** endTag, bo
 
 			// Push back the str to the buffer.
 			for( j=str.length()-1; j>=0; --j )
+			{
 				in->putback( str[j] );
+				assert( in->good() );
+			}
 
 			// If we have a match, return out, else check the next tag.
 			if ( match )
@@ -185,7 +195,8 @@ bool TiXmlBase::StreamEqual( istream* in, int numEndTag, const char** endTag, bo
 }
 
 
-bool TiXmlBase::ReadText(	istream* in, string* text, 
+bool TiXmlBase::ReadText(	istream* in, 
+							string* text, 
 							bool ignoreWhiteSpace, 
 							int numEndTag, const char* endTag[], bool caseInsensitive,
 							bool endOnWhite )
@@ -212,7 +223,8 @@ bool TiXmlBase::ReadText(	istream* in, string* text,
 
 		// Remove leading white space:
 		SkipWhiteSpace( in );
-		while (	in->good() && !StreamEqual( in, numEndTag, endTag, caseInsensitive ) )
+		while (	   ( in->peek() > 0 )
+				&& !StreamEqual( in, numEndTag, endTag, caseInsensitive ) )
 		{
 			if ( in->peek() == '\r' || in->peek() == '\n' )
 			{
@@ -254,7 +266,8 @@ bool TiXmlBase::ReadText(	istream* in, string* text,
 //		}
 	}
 //	return p;
-	return ( in->good() );
+	//assert( in->good() );
+	return true;
 }
 
 
@@ -329,7 +342,6 @@ TiXmlNode* TiXmlNode::Identify( istream* in )
 	}
 
 	TiXmlDocument* doc = GetDocument();
-	in->get();							// get past the '<'
 	SkipWhiteSpace( in );
 
 	if ( !in->good() )
@@ -347,8 +359,13 @@ TiXmlNode* TiXmlNode::Identify( istream* in )
 //			&& tolower( *(q+2) ) == 'm'
 //			&& tolower( *(q+3) ) == 'l' )
 //	{
-	const char* xmlHeader[] = { "?xml" };
-	const char* commentHeader[] = { "!--" };
+	const char* xmlHeader[] = { "<?xml" };
+	const char* commentHeader[] = { "<!--" };
+
+	int c = in->get();		// the current character,
+	int nextC = in->get();	// the next character:
+	in->putback( nextC );	// And we put them back. The information is for look-ahead.
+	in->putback( c );
 
 	if ( StreamEqual( in, 1, xmlHeader, true ) )
 	{
@@ -357,8 +374,8 @@ TiXmlNode* TiXmlNode::Identify( istream* in )
 		#endif
 		returnNode = new TiXmlDeclaration();
 	}
-	else if (    isalpha( in->peek() ) 
-			  || in->peek() == '_' )
+	else if (    isalpha( nextC ) 
+			  || nextC == '_' )
 	{
 		#ifdef DEBUG_PARSER
 			printf( "XML parsing Element\n" );
@@ -431,11 +448,14 @@ bool TiXmlElement::Parse( istream* in )
 			if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
 			return false;
 		}
-		if ( in->peek() == '/' )
+		int c = in->peek();
+
+		if ( c == '/' )
 		{
 			in->get();		// get the '/'
 			// Empty tag.
-			if ( in->peek()  != '>' )
+			c = in->peek();
+			if ( c  != '>' )
 			{
 				if ( document ) document->SetError( TIXML_ERROR_PARSING_EMPTY );		
 				return false;;
@@ -443,7 +463,7 @@ bool TiXmlElement::Parse( istream* in )
 			in->get();		// get the '>'
 			return true;
 		}
-		else if ( in->peek() == '>' )
+		else if ( c == '>' )
 		{
 			// Done with attributes (if there were any.)
 			// Read the value -- which can include other
@@ -531,7 +551,6 @@ bool TiXmlElement::ReadValue( istream* in )
 			// Have we hit a new element or an end tag?
 			if ( StreamEqual( in, "</", false ) )
 			{
-				in->ignore( 2 );
 				return true;
 			}
 			else
@@ -602,23 +621,35 @@ bool TiXmlComment::Parse( istream* in )
 	}
 	
 	in->ignore( 4 );
+	const char* endTag[1];
+	endTag[0] = "-->";
+
+	ReadText( in, &value, true, 1, endTag, false, false );
+
+	if ( StreamEqual( in, endTag[0], false ) )
+	{
+		in->ignore( 3 );
+		return true;
+	}
+	return false;
+
 	// Find the end, copy the parts between to the value of
 	// this object, and return.
-	int c;
-	while( in->good() && !StreamEqual( in, "-->", false ) )
-	{
-		GetChar( in, &c );
-		value += c;
-	}
-
-	if ( !in->good() )
-	{
-		if ( document )	document->SetError( TIXML_ERROR_PARSING_COMMENT );
-		return false;
-	}
-
-	in->ignore( 3 );		// the '-->'
-	return in->good();
+//	int c;
+//	while( in->good() && !StreamEqual( in, "-->", false ) )
+//	{
+//		GetChar( in, &c );
+//		value += c;
+//	}
+//
+//	if ( !in->good() )
+//	{
+//		if ( document )	document->SetError( TIXML_ERROR_PARSING_COMMENT );
+//		return false;
+//	}
+//
+//	in->ignore( 3 );		// the '-->'
+//	return in->good();
 
 //	else
 //	{
@@ -735,6 +766,8 @@ bool TiXmlDeclaration::Parse( istream* in )
 			in->ignore( 1 );
 			return true;
 		}
+
+		SkipWhiteSpace( in );
 		if ( StreamEqual( in, "version", true ) )
 		{
 			in->ignore( 7 );
@@ -758,6 +791,12 @@ bool TiXmlDeclaration::Parse( istream* in )
 			TiXmlAttribute attrib;
 			attrib.Parse( in );		
 			standalone = attrib.Value();
+		}
+		else
+		{
+			// Read over whatever it is.
+			while( in->good() && in->peek() != '>' && !isspace( in->peek() ) )
+				in->get();
 		}
 	}
 	return false;		// didn't find end tag

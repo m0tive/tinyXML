@@ -79,6 +79,7 @@ int main()
 	TiXmlElement* todoElement = 0;
 	TiXmlElement* itemElement = 0;
 
+//	exit(0);
 	// --------------------------------------------------------
 	// An example of changing existing attributes, and removing
 	// an element from the document.
