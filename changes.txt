@@ -179,3 +179,7 @@ Changes in version 2.1.5
 - Bug 1035218 fixed - documentation errors. Xunji Luo
 - Other bug fixes have accumulated and been fixed on the way as well; my apologies to
   authors not credited!
+- Big fix / addition is to correctly return const values. TinyXml could basically
+  remove const in a method like this: TiXmlElement* Foo() const, where the returned element
+  was a pointer to internal data. That is now: const TiXmlElement* Foo() const and
+  TiXmlElement* Foo().
