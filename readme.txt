@@ -127,6 +127,10 @@ is in a Western code page, so that Print() or printf() cannot correctly display
 the file. This is not a bug in TinyXml - just an OS issue. No data is lost or 
 destroyed by TinyXml. The console just doesn't render UTF-8.
 
+What happens if another encoding is sent to TinyXml to parse? TinyXml will try
+to read and pass through text seen as improperly encoded. You may get some strange
+results or mangled characters, however.
+
 
 <h3> Entities </h3>
 TinyXml recognizes the pre-defined "character entities", meaning special

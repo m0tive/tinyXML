@@ -42,7 +42,8 @@ TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] =
 // Bunch of unicode info at:
 //		http://www.unicode.org/faq/utf_bom.html
 // Including the basic of this table, which determines the #bytes in the
-// sequence from the lead byte. 0 placed for invalid sequences.
+// sequence from the lead byte. 1 placed for invalid sequences --
+// although the result will be junk, pass it through as much as possible.
 // Beware of the non-characters in UTF-8:	
 //				ef bb bf (Microsoft "lead bytes")
 //				ef bf be
@@ -61,14 +62,14 @@ const int TiXmlBase::utf8ByteTable[256] =
 		1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	// 0x50
 		1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	// 0x60
 		1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	// 0x70	End of ASCII range
-		0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	// 0x80 0x80 to 0xc1 invalid
-		0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	// 0x90 
-		0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	// 0xa0 
-		0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	// 0xb0 
-		0,	0,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	// 0xc0 0xc2 to 0xdf 2 byte
+		1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	// 0x80 0x80 to 0xc1 invalid
+		1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	// 0x90 
+		1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	// 0xa0 
+		1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	// 0xb0 
+		1,	1,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	// 0xc0 0xc2 to 0xdf 2 byte
 		2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	2,	// 0xd0
 		3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	// 0xe0 0xe0 to 0xef 3 byte
-		4,	4,	4,	4,	4,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0	// 0xf0 0xf0 to 0xf4 4 byte, 0xf5 and higher invalid
+		4,	4,	4,	4,	4,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1,	1	// 0xf0 0xf0 to 0xf4 4 byte, 0xf5 and higher invalid
 };
 
 
@@ -304,8 +305,10 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 		if ( !in->good() ) return false;
 
 		int c = in->peek();
-		if ( !IsWhiteSpace( c ) )
+		// At this scope, we can't get to a document. So fail silently.
+		if ( !IsWhiteSpace( c ) || c <= 0 )
 			return true;
+
 		*tag += (char) in->get();
 	}
 }
@@ -318,6 +321,8 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 		int c = in->peek();
 		if ( c == character )
 			return true;
+		if ( c <= 0 )		// Silent failure: can't get document at this scope
+			return false;
 
 		in->get();
 		*tag += (char) c;
@@ -566,6 +571,11 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 		while ( in->good() && in->peek() != '>' )
 		{
 			int c = in->get();
+			if ( c <= 0 )
+			{
+				SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+				break;
+			}
 			(*tag) += (char) c;
 		}
 
@@ -768,6 +778,13 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 	while( in->good() )
 	{
 		int c = in->get();
+		if ( c <= 0 )
+		{
+			TiXmlDocument* document = GetDocument();
+			if ( document )
+				document->SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+			return;
+		}
 		(*tag) += (char) c ;
 		
 		if ( c == '>' )
@@ -822,6 +839,13 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 					return;
 
 				int c = in->peek();
+				if ( c <= 0 )
+				{
+					TiXmlDocument* document = GetDocument();
+					if ( document )
+						document->SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+					return;
+				}
 				
 				if ( c == '>' )
 					break;
@@ -840,7 +864,17 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 			// If it was not, the streaming will be done by the tag.
 			if ( closingTag )
 			{
+				if ( !in->good() )
+					return;
+
 				int c = in->get();
+				if ( c <= 0 )
+				{
+					TiXmlDocument* document = GetDocument();
+					if ( document )
+						document->SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+					return;
+				}
 				assert( c == '>' );
 				*tag += (char) c;
 
@@ -1061,6 +1095,13 @@ void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	while ( in->good() )
 	{
 		int c = in->get();	
+		if ( c <= 0 )
+		{
+			TiXmlDocument* document = GetDocument();
+			if ( document )
+				document->SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+			return;
+		}
 		(*tag) += (char) c;
 
 		if ( c == '>' )
@@ -1113,6 +1154,14 @@ void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	while ( in->good() )
 	{
 		int c = in->get();	
+		if ( c <= 0 )
+		{
+			TiXmlDocument* document = GetDocument();
+			if ( document )
+				document->SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+			return;
+		}
+
 		(*tag) += (char) c;
 
 		if ( c == '>' 
@@ -1231,6 +1280,13 @@ void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 		int c = in->peek();	
 		if ( c == '<' )
 			return;
+		if ( c <= 0 )
+		{
+			TiXmlDocument* document = GetDocument();
+			if ( document )
+				document->SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+			return;
+		}
 
 		(*tag) += (char) c;
 		in->get();
@@ -1262,6 +1318,13 @@ void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	while ( in->good() )
 	{
 		int c = in->get();
+		if ( c <= 0 )
+		{
+			TiXmlDocument* document = GetDocument();
+			if ( document )
+				document->SetError( TIXML_ERROR_EMBEDDED_NULL, 0, 0 );
+			return;
+		}
 		(*tag) += (char) c;
 
 		if ( c == '>' )

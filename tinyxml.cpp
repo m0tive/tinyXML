@@ -688,6 +688,17 @@ TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode
 	ClearError();
 }
 
+
+#ifdef TIXML_USE_STL
+TiXmlDocument::TiXmlDocument( const std::string& documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
+{
+	tabsize = 4;
+    value = documentName;
+	ClearError();
+}
+#endif
+
+
 bool TiXmlDocument::LoadFile()
 {
 	// See STL_STRING_BUG below.

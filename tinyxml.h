@@ -122,7 +122,7 @@ class TiXmlBase
 	friend class TiXmlDocument;
 
 public:
-	TiXmlBase()								{userData = 0;}
+	TiXmlBase()	:	userData(0) {}
 	virtual ~TiXmlBase()					{}
 
 	/**	All TinyXml classes can print themselves to a filestream.
@@ -273,6 +273,7 @@ protected:
 		TIXML_ERROR_PARSING_COMMENT,
 		TIXML_ERROR_PARSING_DECLARATION,
 		TIXML_ERROR_DOCUMENT_EMPTY,
+		TIXML_ERROR_EMBEDDED_NULL,
 
 		TIXML_ERROR_STRING_COUNT
 	};
@@ -828,7 +829,7 @@ public:
 	TiXmlAttribute* FirstAttribute() const	{ return attributeSet.First(); }		///< Access the first attribute in this element.
 	TiXmlAttribute* LastAttribute()	const 	{ return attributeSet.Last(); }		///< Access the last attribute in this element.
 
-	// [internal use] Creates a new Element and returs it.
+	// [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	// [internal use]
 
@@ -1063,12 +1064,7 @@ public:
 
 	#ifdef TIXML_USE_STL
 	/// Constructor.
-	TiXmlDocument( const std::string& documentName ) :
-	    TiXmlNode( TiXmlNode::DOCUMENT )
-	{
-        value = documentName;
-		error = false;
-	}
+	TiXmlDocument( const std::string& documentName );
 	#endif
 
 	virtual ~TiXmlDocument() {}

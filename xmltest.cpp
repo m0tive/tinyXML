@@ -800,6 +800,34 @@ int main()
 		XmlTest( "Parsing repeated attributes.", "blue", doc.FirstChildElement( "element" )->Attribute( "attr" ) );
 	}
 
+	{
+		// Embedded null in stream.
+		const char* doctype = "<element att\0r='red' attr='blue' />";
+
+		TiXmlDocument doc;
+		doc.Parse( doctype );
+		XmlTest( "Embedded null throws error.", true, doc.Error() );
+
+		#ifdef TIXML_USE_STL
+		istringstream strm( doctype );
+		doc.Clear();
+		doc.ClearError();
+		strm >> doc;
+		XmlTest( "Embedded null throws error.", true, doc.Error() );
+		#endif
+	}
+
+	{
+		// Bad encoding.
+		// TinyXML reads *everything* as UTF-8. The "encoding" flag is ignored.
+		const char* doctype = "<?xml version='1.0' encoding='ISO-8859-1'?><!--\x88-->";
+
+		TiXmlDocument doc;
+		doc.Parse( doctype );
+		// It should pass through.
+		XmlTest( "Pass through bad text encoding.", false, doc.Error() );
+	}
+
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );
 	QueryPerformanceFrequency( (LARGE_INTEGER*) (&freq) );
