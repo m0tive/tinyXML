@@ -610,29 +610,29 @@ int main()
 		{
             fputs("<?xml version='1.0'?><a.elem xmi.version='2.0'/>", textfile);
             fclose(textfile);
-            TiXmlDocument doc;
+
+			TiXmlDocument doc;
             doc.LoadFile( "test5.xml" );
             XmlTest( "dot in element attributes and names", doc.Error(), 0);
 		}
-		fclose( textfile );
     }
 
-	{ 
+	{
 		FILE* textfile = fopen( "test6.xml", "w" );
 		if ( textfile )
 		{
             fputs("<element><Name>1.1 Start easy ignore fin thickness&#xA;</Name></element>", textfile );
             fclose(textfile);
+
             TiXmlDocument doc;
             bool result = doc.LoadFile( "test6.xml" );
             XmlTest( "Entity with one digit.", result, true );
 
 			TiXmlText* text = doc.FirstChildElement()->FirstChildElement()->FirstChild()->ToText();
-			XmlTest( "Entity with one digit.", 
+			XmlTest( "Entity with one digit.",
 						text->Value(), "1.1 Start easy ignore fin thickness\n" );
 		}
-		fclose( textfile );
-    }		
+    }
 
 
 	#if defined( WIN32 ) && defined( TUNE )
