@@ -14,10 +14,10 @@ not claim that you wrote the original software. If you use this
 software in a product, an acknowledgment in the product documentation 
 would be appreciated but is not required.
 
-2. Altered source versions must be plainly marked as such, and 
+2. Altered source versions must be plainly marked as such, and
 must not be misrepresented as being the original software.
 
-3. This notice may not be removed or altered from any source 
+3. This notice may not be removed or altered from any source
 distribution.
 */
 
@@ -30,7 +30,7 @@ using namespace std;
 void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 {
 	// fixme: is there a better (speed) way to do this?
-	int i, j;
+	unsigned int i, j;
 
 	for( i=0; i<str.length(); ++i )
 	{
@@ -561,11 +561,18 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 
 	if ( file )
 	{
+		// Get the file size, so we can pre-allocate the string. HUGE speed impact.
+		long length = 0;
+		fseek( file, 0, SEEK_END );
+		length = ftell( file );
+		fseek( file, 0, SEEK_SET );
+
 		// If we have a file, assume it is all one big XML file, and read it in.
 		// The document parser may decide the document ends sooner than the entire file, however.
 		std::string data;
+		data.reserve( length );
 
-		const int BUF_SIZE = 256;
+		const int BUF_SIZE = 2048;
 		char buf[BUF_SIZE];
 
 		while( fgets( buf, BUF_SIZE, file ) )
@@ -629,10 +636,10 @@ void TiXmlDocument::Print( std::ostream* stream, int depth ) const
 			(*stream) << "\n";			// Newlines for formatted output.
 		}
 	}
-	if ( depth < 0 )
-	{
-		(*stream) << " ";			// Minimal white space for stream output.
-	}
+//	if ( depth < 0 )
+//	{
+//		(*stream) << " ";			// Minimal white space for stream output.
+//	}
 }
 
 
@@ -641,6 +648,20 @@ void TiXmlDocument::Print( FILE* cfile ) const
 	std::ostringstream out (std::ostringstream::out);
  	Print( &out, 0 );
 	fprintf( cfile, "%s", out.str().c_str() );
+}
+
+
+TiXmlElement* TiXmlDocument::RootElement() const
+{
+	TiXmlNode* node;
+	for ( node=FirstChild(); node; node=node->NextSibling() )
+	{	
+		if ( node->ToElement() )
+		{
+			return node->ToElement();
+		}
+	}
+	return 0;
 }
 
 

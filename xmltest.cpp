@@ -2,6 +2,26 @@
 #include <iostream>
 #include <sstream>
 #include <strstream>
+using namespace std;
+
+// Utility functions:
+template< class T >
+bool XmlTest( const char* testString, T expected, T found, bool noEcho = false )
+{
+	if ( expected == found ) 
+		cout << "[pass]";
+	else
+		cout << "[fail]";
+
+	if ( noEcho )
+		cout << " " << testString;
+	else
+		cout << " " << testString << " [" << expected << "][" <<  found << "]";
+	cout << "\n";
+
+	return ( expected == found );
+}
+
 
 //
 // This file demonstrates some basic functionality of TinyXml.
@@ -25,26 +45,26 @@ int main()
 		"<Item priority=\"2\" distance='far back'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
-	/* What the todo list should look like after processing.
-
-		<?xml version="1.0" standalone="no" ?>
-		<!-- Our to do list data -->
-		<ToDo>
-		    <Item priority="2" distance="close"> Go to the
-		        <bold>Toy store!
-		        </bold>
-		    </Item>
-		    <Item priority="1" distance="far"> Talk to:
-		        <Meeting where="School">
-		            <Attendee name="Marple" position="teacher" />
-		            <Attendee name="Voo" position="counselor" />
-		        </Meeting>
-		        <Meeting where="Lunch" />
-		    </Item>
-		    <Item priority="2" distance="here"> Do bills
-		    </Item>
-		</ToDo>
-	*/
+	/*	What the todo list should look like after processing.
+		In stream (no formatting) representation. */
+	const char* demoEnd = 
+		"<?xml version=\"1.0\" standalone=\"no\" ?>"
+		"<!--Our to do list data-->"
+		"<ToDo>"
+		    "<Item priority=\"2\" distance=\"close\">Go to the"
+		        "<bold>Toy store!"
+		        "</bold>"
+		    "</Item>"
+		    "<Item priority=\"1\" distance=\"far\">Talk to:"
+		        "<Meeting where=\"School\">"
+		            "<Attendee name=\"Marple\" position=\"teacher\" />"
+		            "<Attendee name=\"Voo\" position=\"counselor\" />"
+		        "</Meeting>"
+		        "<Meeting where=\"Lunch\" />"
+		    "</Item>"
+		    "<Item priority=\"2\" distance=\"here\">Do bills"
+		    "</Item>"
+		"</ToDo>";
 
 	// The example parses from the character string (above):
 
@@ -78,7 +98,7 @@ int main()
 	TiXmlElement* todoElement = 0;
 	TiXmlElement* itemElement = 0;
 
-	exit(0);
+	//exit(0);
 	// --------------------------------------------------------
 	// An example of changing existing attributes, and removing
 	// an element from the document.
@@ -160,16 +180,51 @@ int main()
 	doc.Print( stdout );
 
 	printf( "** Demo doc processed to stream: ** \n\n" );
-	std::cout << doc << std::endl << std::endl;
+	cout << doc << endl << endl;
 
 	// --------------------------------------------------------
-	// Different ways to walk the XML document.
+	// Different tests...do we have what we expect?
 	// --------------------------------------------------------
 
-	printf( "** Test of node walking: ** \n\n" );
 	int count = 0;
 	TiXmlElement*	element;
 
+	cout << "** Basic structure. **\n";
+	ostringstream outputStream( ostringstream::out );
+	outputStream << doc;
+
+	XmlTest( "Output stream correct.", string( demoEnd ), outputStream.str(), true );
+//	{
+//		// Find the mismatch. This can be tedious to debug.
+//		const char* p = outputStream.str().c_str();
+//		const char* q = demoEnd;
+//		int k=0;
+//		for( ; *p && *q; ++p, ++q, ++k )
+//		{
+//			if ( *p != *q )
+//			{
+//				break;
+//			}
+//		}
+//		cout << "String mismatch at byte " << k << "\n";
+//		if ( *q )
+//			cout << "Expected:" << q << endl;
+//		if ( *p )
+//			cout << "Found   :" << p << endl;
+//	}
+
+	node = doc.RootElement();
+	XmlTest( "Root element exists.", true, ( node != 0 && node->ToElement() ) );	
+	XmlTest( "Root element value is 'ToDo'.", string( "ToDo" ), node->Value() );
+	node = node->FirstChild();
+	XmlTest( "First child exists.", true, ( node != 0 && node->ToElement() ) );
+	XmlTest( "Value is 'Item'.", string( "Item" ), node->Value() );
+	node = node->FirstChild();
+	XmlTest( "First child exists.", true, ( node != 0 && node->ToText() ) );
+	XmlTest( "Value is 'Go to the'.", string( "Go to the" ), node->Value() );
+
+
+	cout << "\n** Iterators. **" << "\n";
 	// Walk all the top level nodes of the document.
 	count = 0;
 	for( node = doc.FirstChild();
@@ -178,8 +233,16 @@ int main()
 	{
 		count++;
 	}
-	printf( "The document contains %d top level nodes. (3)\n", count );
+	XmlTest( "Top level nodes, using First / Next.", 3, count );
 
+	count = 0;
+	for( node = doc.LastChild();
+		 node;
+		 node = node->PreviousSibling() )
+	{
+		count++;
+	}
+	XmlTest( "Top level nodes, using Last / Previous.", 3, count );
 
 	// Walk all the top level nodes of the document,
 	// using a different sytax.
@@ -190,8 +253,7 @@ int main()
 	{
 		count++;
 	}
-	printf( "The document contains %d top level nodes. (3)\n", count );
-
+	XmlTest( "Top level nodes, using IterateChildren.", 3, count );
 
 	// Walk all the elements in a node.
 	count = 0;
@@ -201,8 +263,8 @@ int main()
 	{
 		count++;
 	}
-	printf( "The 'ToDo' element contains %d elements. (3)\n", count );
-
+	XmlTest( "Children of the 'ToDo' element, using First / Next.",
+			 3, count );
 
 	// Walk all the elements in a node by value.
 	count = 0;
@@ -212,18 +274,29 @@ int main()
 	{
 		count++;
 	}
-	printf( "The 'ToDo' element contains %d nodes with the value of 'Item'. (3)\n", count );
+	XmlTest( "'Item' children of the 'ToDo' element, using First/Next.", 3, count );
+
+	count = 0;
+	for( node = todoElement->LastChild( "Item" );
+		 node;
+		 node = node->PreviousSibling( "Item" ) )
+	{
+		count++;
+	}
+	XmlTest( "'Item' children of the 'ToDo' element, using Last/Previous.", 3, count );
+
+
+	cout << "\n** Parsing. **\n";
+	istringstream parse0( "<Element attribute0='foo0' attribute1= noquotes attribute2 = '&gt;' />" );
+	TiXmlElement element0( "default" );
+	parse0 >> element0;
+
+	XmlTest( "Element parsed, value is 'Element'.", string( "Element" ), element0.Value() );
+	XmlTest( "Reads attribute 'attribute0=\"foo0\"'.", string( "foo0" ), *( element0.Attribute( "attribute0" ) ) );
+	XmlTest( "Reads incorrectly formatted 'attribute1=noquotes'.", string( "noquotes" ), *( element0.Attribute( "attribute1" ) ) );
+	XmlTest( "Read attribute with entity value '>'.", string( ">" ), *( element0.Attribute( "attribute2" ) ) );
+
 	
-
-	std::cout << "\n";
-	std::string buffer = "<B>This is &lt;text&gt; in an element</B>";
-	std::istringstream strm( buffer );
-
-	TiXmlElement streamTestElement( "invalid" );
-	strm >> streamTestElement;
-
-	
-
 	return 0;
 }
 

@@ -10,7 +10,7 @@ purpose, including commercial applications, and to alter it and
 redistribute it freely, subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must 
-not claim that you wrote the original software. If you use this 
+not claim that you wrote the original software. If you use this
 software in a product, an acknowledgment in the product documentation 
 would be appreciated but is not required.
 
@@ -25,6 +25,18 @@ distribution.
 #include <ctype.h>
 #include <strstream>
 using namespace std;
+
+#define DEBUG_PARSER
+
+TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] = 
+{
+	{ "&amp;",  5, '&' },
+	{ "&lt;",   4, '<' },
+	{ "&gt;",   4, '>' },
+	{ "&quot;", 6, '\"' },
+	{ "&apos;", 6, '\'' }
+};
+
 
 
 bool TiXmlBase::StreamChunkToString( std::istream* in, std::string* str )
@@ -101,36 +113,23 @@ const char* TiXmlBase::ReadName( const char* p, string* name )
 }
 
 
-TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] = 
-{
-	{ "&amp;",  5, '&' },
-	{ "&lt;",   4, '<' },
-	{ "&gt;",   4, '>' },
-	{ "&quot;", 6, '\"' },
-	{ "&apos;", 6, '\'' }
-};
-
-
 const char* TiXmlBase::GetEntity( const char* p, char* value )
 {
 	// Presume an entity, and pull it out.
-	int pulled = 0;
 	string ent;
-	char c = 0;
 	int i;
 
 	// Now try to match it.
 	for( i=0; i<NUM_ENTITY; ++i )
 	{
-		std::string s = entity[i].str;
-		if ( ent.compare( s ) == 0 )
+		if ( strncmp( entity[i].str, p, entity[i].strLength ) == 0 )
 		{
-			assert( s.length() == entity[i].strLength );
+			assert( strlen( entity[i].str ) == entity[i].strLength );
 			*value = entity[i].chr;
 			return ( p + entity[i].strLength );
 		}
 	}
-	
+
 	// So it wasn't an entity, its unrecognized, or something like that.
 	// Pull one character, but put the rest back.
 	*value = *p;	// Don't put back the last one, since we return it!
@@ -138,55 +137,45 @@ const char* TiXmlBase::GetEntity( const char* p, char* value )
 }
 
 
-int TiXmlBase::dcount = 0;
-
-bool TiXmlBase::StringEqual( const char* p, int numEndTag, const char** endTag, bool ignoreCase, int* advance )
+bool TiXmlBase::StringEqual( const char* p,
+							 const char* tag,
+							 bool ignoreCase )
 {
-	*advance = 0;
-
 	assert( p );
 	if ( !p || !*p )
 	{
 		assert( 0 );
 		return false;
 	}
-	int i;
-	bool match = false;
 
-	for( i=0; i<numEndTag; ++i )
+    if ( tolower( *p ) == tolower( *tag ) )
 	{
-		if ( tolower( *p ) == tolower( *endTag[i] ) )
+		const char* q = p;
+
+		if (ignoreCase)
 		{
-			const char* q = p;
-			const char* tag = endTag[i];
-
-			if (ignoreCase)
+			while ( *q && *tag && *q == *tag )
 			{
-				while ( *q && *tag && *q == *tag )
-				{
-					++q;
-					++tag;
-				}
-
-				if ( *tag == 0 )		// Have we found the end of the tag, and everything equal?
-				{
-					*advance = strlen( endTag[i] );
-					return true;
-				}
+				++q;
+				++tag;
 			}
-			else
-			{
-				while ( *q && *tag && tolower( *q ) == tolower( *tag ) )
-				{
-					++q;
-					++tag;
-				}
 
-				if ( *tag == 0 )
-				{
-					*advance = strlen( endTag[i] );
-					return true;
-				}
+			if ( *tag == 0 )		// Have we found the end of the tag, and everything equal?
+			{
+				return true;
+			}
+		}
+		else
+		{
+			while ( *q && *tag && tolower( *q ) == tolower( *tag ) )
+			{
+				++q;
+				++tag;
+			}
+
+			if ( *tag == 0 )
+			{
+				return true;
 			}
 		}
 	}
@@ -197,17 +186,17 @@ bool TiXmlBase::StringEqual( const char* p, int numEndTag, const char** endTag, 
 const char* TiXmlBase::ReadText(	const char* p, 
 									string* text, 
 									bool ignoreWhiteSpace, 
-									int numEndTag, const char* endTag[], bool caseInsensitive,
-									bool endOnWhite )
+									const char* endTag, 
+									bool caseInsensitive )
 {
 	*text = "";
-	int advance = 0;
 
 	if ( !ignoreWhiteSpace )
 	{
 		// Keep all the white space.
 		while (	   p && *p
-				&& !StringEqual( p, numEndTag, endTag, caseInsensitive, &advance ) )
+				&& !StringEqual( p, endTag, caseInsensitive )
+			  )
 		{
 			char c;
 			p = GetChar( p, &c );
@@ -221,7 +210,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 		// Remove leading white space:
 		p = SkipWhiteSpace( p );
 		while (	   p && *p
-				&& !StringEqual( p, numEndTag, endTag, caseInsensitive, &advance ) )
+				&& !StringEqual( p, endTag, caseInsensitive ) )
 		{
 			if ( *p == '\r' || *p == '\n' )
 			{
@@ -230,15 +219,8 @@ const char* TiXmlBase::ReadText(	const char* p,
 			}
 			else if ( isspace( *p ) )
 			{
-				if ( endOnWhite )
-				{
-					break;
-				}
-				else
-				{
-					whitespace = true;
-					++p;
-				}
+				whitespace = true;
+				++p;
 			}
 			else
 			{
@@ -255,7 +237,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 			}
 		}
 	}
-	return p + advance;
+	return p + strlen( endTag );
 }
 
 
@@ -359,14 +341,13 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 	// - Everthing else is unknown to tinyxml.
 	//
 
-	const char* xmlHeader[] = { "<?xml" };
-	const char* commentHeader[] = { "<!--" };
-	int advance;
+	const char* xmlHeader = { "<?xml" };
+	const char* commentHeader = { "<!--" };
 
-	if ( StringEqual( p, 1, xmlHeader, true, &advance ) )
+	if ( StringEqual( p, xmlHeader, true ) )
 	{
 		#ifdef DEBUG_PARSER
-			printf( "XML parsing Declaration\n" );
+			TIXML_LOG( "XML parsing Declaration\n" );
 		#endif
 		returnNode = new TiXmlDeclaration();
 	}
@@ -374,21 +355,21 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 			  || *(p+1) == '_' )
 	{
 		#ifdef DEBUG_PARSER
-			printf( "XML parsing Element\n" );
+			TIXML_LOG( "XML parsing Element\n" );
 		#endif
 		returnNode = new TiXmlElement( "" );
 	}
-	else if ( StringEqual( p, 1, commentHeader, false, &advance ) )
+	else if ( StringEqual( p, commentHeader, false ) )
 	{
 		#ifdef DEBUG_PARSER
-			printf( "XML parsing Comment\n" );
+			TIXML_LOG( "XML parsing Comment\n" );
 		#endif
 		returnNode = new TiXmlComment();
 	}
 	else
 	{
 		#ifdef DEBUG_PARSER
-			printf( "XML parsing Unknown\n" );
+			TIXML_LOG( "XML parsing Unknown\n" );
 		#endif
 		returnNode = new TiXmlUnknown();
 	}
@@ -465,10 +446,9 @@ const char* TiXmlElement::Parse( const char* p )
 				return 0;
 
 			// We should find the end tag now
-			int length;
-			if ( StringEqual( p, endTag.c_str(), false, &length ) )
+			if ( StringEqual( p, endTag.c_str(), false ) )
 			{
-				p += length;
+				p += endTag.length();
 				return p;
 			}
 			else
@@ -504,16 +484,16 @@ const char* TiXmlElement::ReadValue( const char* p )
 	p = SkipWhiteSpace( p );
 	while ( p && *p )
 	{
-		string text;
-		while ( p && *p && *p != '<' )
-		{
-			text += (*p);
-			++p;
-		}
+//		string text;
+//		while ( p && *p && *p != '<' )
+//		{
+//			text += (*p);
+//			++p;
+//		}
+//
+//		p = SkipWhiteSpace( p );
 
-		p = SkipWhiteSpace( p );
-
-		if ( !text.empty() )
+		if ( *p != '<' )
 		{
 			// Take what we have, make a text element.
 			TiXmlText* textNode = new TiXmlText();
@@ -524,7 +504,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 				return 0;
 			}
 
-			textNode->SetValue( text );
+			p = textNode->Parse( p );
 
 			if ( !textNode->Blank() )
 				LinkEndChild( textNode );
@@ -535,8 +515,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 		{
 			// We hit a '<'
 			// Have we hit a new element or an end tag?
-			int len;
-			if ( StringEqual( p, "</", false, &len ) )
+			if ( StringEqual( p, "</", false ) )
 			{
 				return p;
 			}
@@ -587,6 +566,8 @@ const char* TiXmlUnknown::Parse( const char* p )
 	{
 		if ( document )	document->SetError( TIXML_ERROR_PARSING_UNKNOWN );
 	}
+	if ( *p == '>' )
+		return p+1;
 	return p;
 }
 
@@ -597,18 +578,16 @@ const char* TiXmlComment::Parse( const char* p )
 	value = "";
 
 	p = SkipWhiteSpace( p );
-	int len;
-	if ( !StringEqual( p, "<!--", false, &len ) )
+	const char* startTag = "<!--";
+	const char* endTag   = "-->";
+
+	if ( !StringEqual( p, startTag, false ) )
 	{
 		document->SetError( TIXML_ERROR_PARSING_COMMENT );
 		return 0;
 	}
-	assert( len == 4 );
-	p += len;
-	const char* endTag[1];
-	endTag[0] = "-->";
-
-	p = ReadText( p, &value, true, 1, endTag, false, false );
+	p += strlen( startTag );;
+	p = ReadText( p, &value, true, endTag, false );
 	return p;
 }
 
@@ -640,31 +619,33 @@ const char* TiXmlAttribute::Parse( const char* p )
 		return 0;
 	}
 	
-	const char* end[8];
+	const char* end;
 
 	if ( *p == '\'' )
 	{
 		++p;
-		end[0] = "\'";
-		p = ReadText( p, &value, false, 1, end, false, false );
-//		++p;	// get past the end '
+		end = "\'";
+		p = ReadText( p, &value, false, end, false );
 	}
 	else if ( *p == '"' )
 	{
 		++p;
-		end[0] = "\"";
-		p = ReadText( p, &value, false, 1, end, false, false );
-//		++p;	// get past the end "
+		end = "\"";
+		p = ReadText( p, &value, false, end, false );
 	}
 	else
 	{
 		// All attribute values should be in single or double quotes.
 		// But this is such a common error that the parser will try
 		// its best, even without them.
-		end[0] = "/";
-		end[1] = ">";
-		++p;
-		p = ReadText( p, &value, false, 2, end, false, true );
+		value = "";
+		while (    p && *p										// existence
+				&& !isspace( *p ) && *p != '\n' && *p != '\r'	// whitespace
+				&& *p != '/' && *p != '>' )						// tag end
+		{
+			value += *p;
+			++p;
+		}
 	}
 	return p;
 }
@@ -679,8 +660,11 @@ const char* TiXmlText::Parse( const char* p )
 	bool ignoreWhite = true;
 	if ( doc && !doc->IgnoreWhiteSpace() ) ignoreWhite = false;
 
-	const char* end[1] = { "<" };
-	return ReadText( p, &value, ignoreWhite, 1, end, false, false );
+	const char* end = "<";
+	p = ReadText( p, &value, ignoreWhite, end, false );
+	if ( p )
+		return p-1;	// don't truncate the '<'
+	return 0;
 }
 
 
@@ -690,8 +674,7 @@ const char* TiXmlDeclaration::Parse( const char* p )
 	// Find the beginning, find the end, and look for
 	// the stuff in-between.
 	TiXmlDocument* document = GetDocument();
-	int len;
-	if ( !p || !*p || !StringEqual( p, "<?xml", true, &len ) )
+	if ( !p || !*p || !StringEqual( p, "<?xml", true ) )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_PARSING_DECLARATION );
 		return 0;
@@ -714,22 +697,21 @@ const char* TiXmlDeclaration::Parse( const char* p )
 		}
 
 		p = SkipWhiteSpace( p );
-		int len;
-		if ( StringEqual( p, "version", true, &len ) )
+		if ( StringEqual( p, "version", true ) )
 		{
 //			p += 7;
 			TiXmlAttribute attrib;
 			p = attrib.Parse( p );		
 			version = attrib.Value();
 		}
-		else if ( StringEqual( p, "encoding", true, &len ) )
+		else if ( StringEqual( p, "encoding", true ) )
 		{
 //			p += 8;
 			TiXmlAttribute attrib;
 			p = attrib.Parse( p );		
 			encoding = attrib.Value();
 		}
-		else if ( StringEqual( p, "standalone", true, &len ) )
+		else if ( StringEqual( p, "standalone", true ) )
 		{
 //			p += 10;
 			TiXmlAttribute attrib;

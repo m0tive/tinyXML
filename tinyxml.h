@@ -14,7 +14,7 @@ not claim that you wrote the original software. If you use this
 software in a product, an acknowledgment in the product documentation 
 would be appreciated but is not required.
 
-2. Altered source versions must be plainly marked as such, and 
+2. Altered source versions must be plainly marked as such, and
 must not be misrepresented as being the original software.
 
 3. This notice may not be removed or altered from any source 
@@ -40,6 +40,17 @@ class TiXmlAttribute;
 class TiXmlText;
 class TiXmlDeclaration;
 
+// Help out windows:
+#if defined( _DEBUG ) && !defined( DEBUG )
+	#define DEBUG
+#endif
+
+#if defined( DEBUG ) && defined( _MSC_VER )
+	#include <windows.h>
+	#define TIXML_LOG OutputDebugString
+#else
+	#define TIXML_LOG printf
+#endif 
 
 /** TiXmlBase is a base class for every class in TinyXml.
 	It does little except to establish that TinyXml classes
@@ -143,10 +154,8 @@ class TiXmlBase
 	static const char* ReadText(	const char* in,				// where to start
 									std::string* text,			// the string read
 									bool ignoreWhiteSpace,		// whether to keep the white space
-									int	 numEndTag,				// how many end tags there are
-									const char** endTag,		// array of "tails"
-									bool caseInsensitiveEndTag,	
-									bool endOnWhite );			// additional end condition: stop on white space. (Only valid if not ignoring whitespace, of course)
+									const char* endTag,			// what ends this text
+									bool ignoreCase );
 
 	virtual const char* Parse( const char* p ) = 0;
 
@@ -175,19 +184,9 @@ class TiXmlBase
 
 	// Return true if the next characters in the stream are any of the endTag sequences.
 	bool static StringEqual(	const char* p, 
-								int numEndTag, const char** endTag, 
-								bool ignoreCase,
-								int* advance );
-	
-	bool static StringEqual(	const char* p,
-								const char* endTag,
-								bool ignoreCase,
-								int* advance )				{
-																	const char* end[1];
-																	end[0] = endTag;
-																	return StringEqual( p, 1, end, ignoreCase, advance );
-																}
-												
+								const char* endTag, 
+								bool ignoreCase );
+													
 
 	enum
 	{
@@ -213,9 +212,9 @@ class TiXmlBase
   private:
 	struct Entity
 	{
-		const char* str;
-		int			strLength;
-		int			chr;
+		const char*     str;
+		unsigned int	strLength;
+		int			    chr;
 	};
 	enum
 	{
@@ -224,7 +223,6 @@ class TiXmlBase
 
 	};
 	static Entity entity[ NUM_ENTITY ];
-	static int dcount;	// fixme debugging remove
 };
 
 
@@ -242,7 +240,13 @@ class TiXmlNode : public TiXmlBase
 	*/
 	enum NodeType 
 	{
-		DOCUMENT, ELEMENT, COMMENT, UNKNOWN, TEXT, DECLARATION, TYPECOUNT
+		DOCUMENT, 
+		ELEMENT, 
+		COMMENT, 
+		UNKNOWN, 
+		TEXT, 
+		DECLARATION, 
+		TYPECOUNT
 	};
 
 	virtual ~TiXmlNode();
@@ -748,7 +752,8 @@ class TiXmlDocument : public TiXmlNode
 	*/
 	void Print( FILE* cfile ) const;
 
-
+	/// Get the root element -- the only top level element -- of the document.
+	TiXmlElement* RootElement() const;
 
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
