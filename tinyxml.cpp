@@ -24,6 +24,7 @@ distribution.
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <ctype.h>
 #include "tinyxml.h"
 using namespace std;
 
@@ -149,8 +150,8 @@ TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 
 
 TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addThis )
-{
-	if ( beforeThis->parent != this )
+{	
+	if ( !beforeThis || beforeThis->parent != this )
 		return 0;
 	
 	TiXmlNode* node = addThis.Clone();
@@ -160,7 +161,15 @@ TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode&
 	
 	node->next = beforeThis;
 	node->prev = beforeThis->prev;
-	beforeThis->prev->next = node;
+	if ( beforeThis->prev )
+	{
+		beforeThis->prev->next = node;	
+	}
+	else
+	{
+		assert( firstChild == beforeThis );
+		firstChild = node;
+	}
 	beforeThis->prev = node;
 	return node;
 }
@@ -168,7 +177,7 @@ TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode&
 
 TiXmlNode* TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& addThis )
 {
-	if ( afterThis->parent != this )
+	if ( !afterThis || afterThis->parent != this )
 		return 0;
 	
 	TiXmlNode* node = addThis.Clone();
@@ -178,7 +187,15 @@ TiXmlNode* TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& a
 	
 	node->prev = afterThis;
 	node->next = afterThis->next;
-	afterThis->next->prev = node;
+	if ( afterThis->next )
+	{
+		afterThis->next->prev = node;
+	}
+	else
+	{
+		assert( lastChild == afterThis );
+		lastChild = node;
+	}
 	afterThis->next = node;
 	return node;
 }

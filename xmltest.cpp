@@ -308,6 +308,7 @@ int main()
 
 	XmlTest( "Stream round trip correct.", string( demoEnd ), outputStream0.str(), true );
 
+
 	//////////////////////////////////////////////////////
 	cout << "\n** Parsing, no Condense Whitespace **\n";
 	TiXmlBase::SetCondenseWhiteSpace( false );
@@ -320,7 +321,32 @@ int main()
 										  text1.FirstChild()->Value(),
 										  true );
 							
+	//////////////////////////////////////////////////////
+	cout << "\n** Bug regression tests **\n";
+
+	// InsertBeforeChild and InsertAfterChild causes crash.
+	{
+		TiXmlElement parent( "Parent" );
+		TiXmlElement childText0( "childText0" );
+		TiXmlElement childText1( "childText1" );
+		TiXmlNode* childNode0 = parent.InsertEndChild( childText0 );
+		TiXmlNode* childNode1 = parent.InsertBeforeChild( childNode0, childText1 );
+
+		XmlTest( "Test InsertBeforeChild on empty node.", ( childNode1 == parent.FirstChild() ), true );
+	}
+
+	{
+		// InsertBeforeChild and InsertAfterChild causes crash.
+		TiXmlElement parent( "Parent" );
+		TiXmlElement childText0( "childText0" );
+		TiXmlElement childText1( "childText1" );
+		TiXmlNode* childNode0 = parent.InsertEndChild( childText0 );
+		TiXmlNode* childNode1 = parent.InsertAfterChild( childNode0, childText1 );
+
+		XmlTest( "Test InsertAfterChild on empty node. ", ( childNode1 == parent.LastChild() ), true );
+	}
+
 	cout << endl << "Pass " << gPass << ", Fail " << gFail << endl;	
-	return 0;
+	return gFail;
 }
 
