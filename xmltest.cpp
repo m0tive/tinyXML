@@ -496,74 +496,80 @@ int main()
 	{
 		TiXmlDocument doc( "utf8test.xml" );
 		doc.LoadFile();
-
-		TiXmlHandle docH( &doc );
-		// Get the attribute "value" from the "Russian" element and check it.
-		TiXmlElement* element = docH.FirstChildElement( "document" ).FirstChildElement( "Russian" ).Element();
-		const char correctValue[] = {	(char)0xd1, (char)0x86, (char)0xd0, (char)0xb5, (char)0xd0, (char)0xbd, (char)0xd0, (char)0xbd, 
-										(char)0xd0, (char)0xbe, (char)0xd1, (char)0x81, (char)0xd1, (char)0x82, (char)0xd1, (char)0x8c, 0 };
-
-		XmlTest( "UTF-8: Russian value.", correctValue, element->Attribute( "value" ), true );
-		XmlTest( "UTF-8: Russian value row.", 4, element->Row() );
-		XmlTest( "UTF-8: Russian value column.", 5, element->Column() );
-
-		const char russianElementName[] = {	(char)0xd0, (char)0xa0, (char)0xd1, (char)0x83,
-											(char)0xd1, (char)0x81, (char)0xd1, (char)0x81,
-											(char)0xd0, (char)0xba, (char)0xd0, (char)0xb8,
-											(char)0xd0, (char)0xb9, 0 };
-		const char russianText[] = "<\xD0\xB8\xD0\xBC\xD0\xB5\xD0\xB5\xD1\x82>";
-
-		TiXmlText* text = docH.FirstChildElement( "document" ).FirstChildElement( russianElementName ).Child( 0 ).Text();
-		XmlTest( "UTF-8: Browsing russian element name.",
-				 russianText,
-				 text->Value(),
-				 true );
-		XmlTest( "UTF-8: Russian element name row.", 7, text->Row() );
-		XmlTest( "UTF-8: Russian element name column.", 47, text->Column() );
-
-		TiXmlDeclaration* dec = docH.Child( 0 ).Node()->ToDeclaration();
-		XmlTest( "UTF-8: Declaration column.", 1, dec->Column() );
-		XmlTest( "UTF-8: Document column.", 1, doc.Column() );
-
-		// Now try for a round trip.
-		doc.SaveFile( "utf8testout.xml" );
-
-		// Check the round trip.
-		char savedBuf[256];
-		char verifyBuf[256];
-		int okay = 1;
-
-		FILE* saved  = fopen( "utf8testout.xml", "r" );
-		FILE* verify = fopen( "utf8testverify.xml", "r" );
-		if ( saved && verify )
-		{
-			while ( fgets( verifyBuf, 256, verify ) )
-			{
-				fgets( savedBuf, 256, saved );
-				if ( strcmp( verifyBuf, savedBuf ) )
-				{
-					okay = 0;
-					break;
-				}
-			}
-			fclose( saved );
-			fclose( verify );
+		if ( doc.Error() && doc.ErrorId() == TiXmlBase::TIXML_ERROR_OPENING_FILE ) {
+			printf( "WARNING: File 'utf8test.xml' not found.\n"
+					"(Are you running the test from the wrong directory?)\n"
+				    "Could not test UTF-8 functionality.\n" );
 		}
-		XmlTest( "UTF-8: Verified multi-language round trip.", 1, okay );
+		else
+		{
+			TiXmlHandle docH( &doc );
+			// Get the attribute "value" from the "Russian" element and check it.
+			TiXmlElement* element = docH.FirstChildElement( "document" ).FirstChildElement( "Russian" ).Element();
+			const char correctValue[] = {	(char)0xd1, (char)0x86, (char)0xd0, (char)0xb5, (char)0xd0, (char)0xbd, (char)0xd0, (char)0xbd, 
+											(char)0xd0, (char)0xbe, (char)0xd1, (char)0x81, (char)0xd1, (char)0x82, (char)0xd1, (char)0x8c, 0 };
 
-		// On most Western machines, this is an element that contains
-		// the word "resume" with the correct accents, in a latin encoding.
-		// It will be something else comletely on non-wester machines,
-		// which is why TinyXml is switching to UTF-8.
-		const char latin[] = "<element>r\x82sum\x82</element>";
+			XmlTest( "UTF-8: Russian value.", correctValue, element->Attribute( "value" ), true );
+			XmlTest( "UTF-8: Russian value row.", 4, element->Row() );
+			XmlTest( "UTF-8: Russian value column.", 5, element->Column() );
 
-		TiXmlDocument latinDoc;
-		latinDoc.Parse( latin, 0, TIXML_ENCODING_LEGACY );
+			const char russianElementName[] = {	(char)0xd0, (char)0xa0, (char)0xd1, (char)0x83,
+												(char)0xd1, (char)0x81, (char)0xd1, (char)0x81,
+												(char)0xd0, (char)0xba, (char)0xd0, (char)0xb8,
+												(char)0xd0, (char)0xb9, 0 };
+			const char russianText[] = "<\xD0\xB8\xD0\xBC\xD0\xB5\xD0\xB5\xD1\x82>";
 
-		text = latinDoc.FirstChildElement()->FirstChild()->ToText();
-		XmlTest( "Legacy encoding: Verify text element.", "r\x82sum\x82", text->Value() );
-	}
-	
+			TiXmlText* text = docH.FirstChildElement( "document" ).FirstChildElement( russianElementName ).Child( 0 ).Text();
+			XmlTest( "UTF-8: Browsing russian element name.",
+					 russianText,
+					 text->Value(),
+					 true );
+			XmlTest( "UTF-8: Russian element name row.", 7, text->Row() );
+			XmlTest( "UTF-8: Russian element name column.", 47, text->Column() );
+
+			TiXmlDeclaration* dec = docH.Child( 0 ).Node()->ToDeclaration();
+			XmlTest( "UTF-8: Declaration column.", 1, dec->Column() );
+			XmlTest( "UTF-8: Document column.", 1, doc.Column() );
+
+			// Now try for a round trip.
+			doc.SaveFile( "utf8testout.xml" );
+
+			// Check the round trip.
+			char savedBuf[256];
+			char verifyBuf[256];
+			int okay = 1;
+
+			FILE* saved  = fopen( "utf8testout.xml", "r" );
+			FILE* verify = fopen( "utf8testverify.xml", "r" );
+			if ( saved && verify )
+			{
+				while ( fgets( verifyBuf, 256, verify ) )
+				{
+					fgets( savedBuf, 256, saved );
+					if ( strcmp( verifyBuf, savedBuf ) )
+					{
+						okay = 0;
+						break;
+					}
+				}
+				fclose( saved );
+				fclose( verify );
+			}
+			XmlTest( "UTF-8: Verified multi-language round trip.", 1, okay );
+
+			// On most Western machines, this is an element that contains
+			// the word "resume" with the correct accents, in a latin encoding.
+			// It will be something else comletely on non-wester machines,
+			// which is why TinyXml is switching to UTF-8.
+			const char latin[] = "<element>r\x82sum\x82</element>";
+
+			TiXmlDocument latinDoc;
+			latinDoc.Parse( latin, 0, TIXML_ENCODING_LEGACY );
+
+			text = latinDoc.FirstChildElement()->FirstChild()->ToText();
+			XmlTest( "Legacy encoding: Verify text element.", "r\x82sum\x82", text->Value() );
+		}
+	}		
 
 	//////////////////////
 	// Copy and assignment

@@ -101,7 +101,9 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 			// Below 32 is symbolic.
 			char buf[ 32 ];
 			sprintf( buf, "&#x%02X;", (unsigned) ( c & 0xff ) );
-			outString->append( buf, strlen( buf ) );
+			//*ME:	warning C4267: convert 'size_t' to 'int'
+			//*ME:	Int-Cast to make compiler happy ...
+			outString->append( buf, (int)strlen( buf ) );
 			++i;
 		}
 		else

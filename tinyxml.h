@@ -188,6 +188,27 @@ public:
 								TiXmlParsingData* data, 
 								TiXmlEncoding encoding /*= TIXML_ENCODING_UNKNOWN */ ) = 0;
 
+	enum
+	{
+		TIXML_NO_ERROR = 0,
+		TIXML_ERROR,
+		TIXML_ERROR_OPENING_FILE,
+		TIXML_ERROR_OUT_OF_MEMORY,
+		TIXML_ERROR_PARSING_ELEMENT,
+		TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME,
+		TIXML_ERROR_READING_ELEMENT_VALUE,
+		TIXML_ERROR_READING_ATTRIBUTES,
+		TIXML_ERROR_PARSING_EMPTY,
+		TIXML_ERROR_READING_END_TAG,
+		TIXML_ERROR_PARSING_UNKNOWN,
+		TIXML_ERROR_PARSING_COMMENT,
+		TIXML_ERROR_PARSING_DECLARATION,
+		TIXML_ERROR_DOCUMENT_EMPTY,
+		TIXML_ERROR_EMBEDDED_NULL,
+
+		TIXML_ERROR_STRING_COUNT
+	};
+
 protected:
 
 	// See STL_STRING_BUG
@@ -280,27 +301,6 @@ protected:
 								bool ignoreCase,
 								TiXmlEncoding encoding );
 
-
-	enum
-	{
-		TIXML_NO_ERROR = 0,
-		TIXML_ERROR,
-		TIXML_ERROR_OPENING_FILE,
-		TIXML_ERROR_OUT_OF_MEMORY,
-		TIXML_ERROR_PARSING_ELEMENT,
-		TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME,
-		TIXML_ERROR_READING_ELEMENT_VALUE,
-		TIXML_ERROR_READING_ATTRIBUTES,
-		TIXML_ERROR_PARSING_EMPTY,
-		TIXML_ERROR_READING_END_TAG,
-		TIXML_ERROR_PARSING_UNKNOWN,
-		TIXML_ERROR_PARSING_COMMENT,
-		TIXML_ERROR_PARSING_DECLARATION,
-		TIXML_ERROR_DOCUMENT_EMPTY,
-		TIXML_ERROR_EMBEDDED_NULL,
-
-		TIXML_ERROR_STRING_COUNT
-	};
 	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
 
 	TiXmlCursor location;
@@ -761,6 +761,11 @@ public:
 	TiXmlAttribute*	Find( const char * name ) const;
 
 private:
+//*ME:	Because of hidden/disabled copy-construktor in TiXmlAttribute (sentinel-element),
+//*ME:	this class must be also use a hidden/disabled copy-constructor !!!
+	TiXmlAttributeSet( const TiXmlAttributeSet& );	// not allowed
+	void operator=( const TiXmlAttributeSet& );	// not allowed (as TiXmlAttribute)
+
 	TiXmlAttribute sentinel;
 };
 
@@ -817,6 +822,13 @@ public:
 	int QueryIntAttribute( const char* name, int* value ) const;
 	/// QueryDoubleAttribute examines the attribute - see QueryIntAttribute().
 	int QueryDoubleAttribute( const char* name, double* value ) const;
+	/// QueryFloatAttribute examines the attribute - see QueryIntAttribute().
+	int QueryDoubleAttribute( const char* name, float* value ) const {
+		double d;
+		int result = QueryDoubleAttribute( name, &d );
+		*value = (float)d;
+		return result;
+	}
 
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.

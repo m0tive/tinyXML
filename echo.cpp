@@ -25,8 +25,12 @@ int main( int argc, char* argv[] )
 	
 	printf( "Load '%s' successful.\n", doc.Value() );
 
+
 #ifdef TIXML_USE_STL	
+	printf( "STL mode on.\n" );
 	doc.SaveFile( "echotest.stl.xml" );
+#else
+	printf( "STL mode OFF.\n" );
 #endif
 	doc.SaveFile( "echotest.xml" );
 
@@ -34,3 +38,4 @@ int main( int argc, char* argv[] )
 	
 	return 0;
 }
+

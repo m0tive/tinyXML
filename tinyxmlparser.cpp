@@ -418,7 +418,9 @@ const char* TiXmlBase::GetEntity( const char* p, char* value, int* length, TiXml
 	if ( *(p+1) && *(p+1) == '#' && *(p+2) )
 	{
 		unsigned long ucs = 0;
-		unsigned delta = 0;
+		//*ME:	warning C4244: convert '__w64 int' to 'unsigned'
+		//*ME:	Use size_t instead of unsigned (pointer-arithmetic)
+		size_t delta = 0;
 		unsigned mult = 1;
 
 		if ( *(p+2) == 'x' )
