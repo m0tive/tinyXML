@@ -34,6 +34,11 @@ distribution.
 #include <string.h>
 #include <assert.h>
 
+// #define TIXML_USE_STL  
+#ifdef TIXML_USE_STL  
+   #include <string>
+#endif
+
 #include "tinystr.h"
 
 class TiXmlDocument;
@@ -43,7 +48,6 @@ class TiXmlUnknown;
 class TiXmlAttribute;
 class TiXmlText;
 class TiXmlDeclaration;
-
 
 // Help out windows:
 #if defined( _DEBUG ) && !defined( DEBUG )
@@ -394,6 +398,59 @@ public:
 
 	virtual TiXmlNode* Clone() const = 0;
 
+   #ifdef TIXML_USE_STL
+	   friend std::ostream& operator<< ( std::ostream& _out, const TiXmlNode& base )
+      {
+         TiXmlOutStream out;
+         base . StreamOut (& out);
+         _out << out . c_str ();
+         return _out;
+      }
+	   friend std::istream& operator>> ( std::istream& in, TiXmlNode& base )
+      {
+         TiXmlInStreamStl xmlinstream (in);
+
+		   TiXmlString tag;
+		   tag.reserve( 8 * 1000 );
+		   base.StreamIn( &xmlinstream, &tag );
+		   
+		   base.Parse( tag.c_str() );
+		   return in;
+      }
+	   void SetValue( const std::string& value )
+      {
+         SetValue (value . c_str ());
+      }
+	   TiXmlNode* FirstChild( const std::string& value ) const
+      {
+         return FirstChild (value . c_str ());
+      }
+	   TiXmlNode* LastChild( const std::string& value ) const
+      {
+         return LastChild (value . c_str ());
+      }
+	   TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous ) const
+      {
+         return IterateChildren (value . c_str (), previous);
+      }
+	   TiXmlNode* PreviousSibling( const std::string& value ) const
+      {
+         return PreviousSibling (value . c_str ());
+      }
+	   TiXmlNode* NextSibling( const std::string& value) const
+      {
+         return NextSibling (value . c_str ());
+      }
+	   TiXmlElement* NextSiblingElement( const std::string& value) const
+      {
+         return NextSiblingElement (value . c_str ());
+      }
+	   TiXmlElement* FirstChildElement( const std::string& value ) const
+      {
+         return FirstChildElement (value . c_str ());
+      }
+   #endif
+
 protected:
 	TiXmlNode( NodeType type );
 
@@ -474,6 +531,22 @@ class TiXmlAttribute : public TiXmlBase
 	// [internal use]
 	// Set the document pointer so the attribute can report errors.
 	void SetDocument( TiXmlDocument* doc )	{ document = doc; }
+
+   #ifdef TIXML_USE_STL
+	   TiXmlAttribute( const std::string& _name, const std::string& _value )
+      {
+         name = _name . c_str ();
+         value = _value . c_str ();
+      }
+	   void SetName( const std::string& _name )
+      {
+         SetName (_name . c_str ());
+      }
+	   void SetValue( const std::string& _value )
+      {
+         SetValue (_value . c_str ());
+      }
+   #endif
 
   private:
 	TiXmlDocument*	document;	// A pointer back to a document, for error reporting.
@@ -559,6 +632,35 @@ class TiXmlElement : public TiXmlNode
 	// [internal use] 
    
  	virtual void Print( FILE* cfile, int depth ) const;
+
+   #ifdef TIXML_USE_STL
+   	TiXmlElement( const std::string& _value ) : 	TiXmlNode( TiXmlNode::ELEMENT )
+      {
+	      firstChild = lastChild = 0;
+	      value = _value . c_str ();
+      }
+	   const std::string* Attribute( const std::string& name ) const
+      {
+         // todo ?
+      }
+	   const std::string* Attribute( const std::string& name, int* i ) const
+      {
+         // todo ?
+      }
+	   void SetAttribute( const std::string& name, const std::string& value )
+      {
+         SetAttribute (name . c_str (), value . c_str ());
+      }
+	   void SetAttribute( const std::string& name, int value )
+      {
+         SetAttribute (name . c_str (), value);
+      }
+	   void RemoveAttribute( const std::string& name )
+      {
+         RemoveAttribute (name . c_str ());
+      }
+   #endif
+
 protected:
 
 	// Used to be public [internal use] 
@@ -617,6 +719,9 @@ public:
       SetValue( initValue );
    }
 	virtual ~TiXmlText() {}
+   #ifdef TIXML_USE_STL
+	   TiXmlText( const std::string& initValue );
+   #endif
 
 protected :
 	// [internal use] Creates a new Element and returns it.
@@ -673,6 +778,19 @@ class TiXmlDeclaration : public TiXmlNode
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
  	virtual void Print( FILE* cfile, int depth ) const;
+
+   #ifdef TIXML_USE_STL
+	   TiXmlDeclaration( 
+            const std::string& _version, 
+            const std::string& _encoding, 
+            const std::string& _standalone ) 
+	      : TiXmlNode( TiXmlNode::DECLARATION ) 
+      {
+         version = _version . c_str ();
+         encoding = _encoding . c_str ();
+         standalone = _standalone . c_str ();
+      }
+   #endif
 protected:
    // used to be public
 	virtual void StreamIn( TiXmlInStream * in, TiXmlString * tag );
@@ -776,6 +894,18 @@ class TiXmlDocument : public TiXmlNode
 									error   = true; 
 									errorId = err;
 									errorDesc = errorString[ errorId ]; }
+
+   #ifdef TIXML_USE_STL
+	   TiXmlDocument( const std::string& documentName ) :
+         TiXmlNode( TiXmlNode::DOCUMENT )
+      {
+	      error = false;
+      }
+      
+	   bool LoadFile( const std::string& filename );
+	   bool SaveFile( const std::string& filename ) const;
+   #endif
+
 protected :
 	virtual void StreamOut ( TiXmlOutStream * out) const;
 	// [internal use] 	

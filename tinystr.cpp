@@ -186,7 +186,7 @@ void TiXmlOutStream::write (const char * out, int length)
 // ========== TiXmlInStream member functions ==========
 
 /// TiXmlInStream constructor
-TiXmlInStream::TiXmlInStream (const char * instring) 
+TiXmlInStreamOwn::TiXmlInStreamOwn (const char * instring) : TiXmlInStream ()
 {
    cstring = NULL;
    consumer = NULL;
@@ -199,5 +199,3 @@ TiXmlInStream::TiXmlInStream (const char * instring)
       consumer = cstring;
    }
 }
-
-

@@ -981,4 +981,3 @@ TiXmlAttribute*	TiXmlAttributeSet::Find( const char * name ) const
 	}
 	return 0;
 }
-

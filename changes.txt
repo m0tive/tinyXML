@@ -90,3 +90,8 @@ Changes in OptionalSTL-branch
 - no usage of STL anymore
 - Still to do : modify gnu makefile
 - Still to do : add conditional conversion functions for users of STL
+
+Continuing OptionalSTL-branch (May 3rd, 2002)
+- #define TIXML_USE_STL implemented
+- still to do : modify gnu makefile
+- still to do : deal with Attribute function that returns std::string *

@@ -224,28 +224,47 @@ public :
 
 /**
    TiXmlInStream is an emulation of std::istream. \n
-   Only the operators that we need for TinyXML has been developped.
+   Only the operators that we need for TinyXML has been developped. \n
+   It is virtualized so as to be able to have a custom implementation and one that
+   consumes a std::istream, depending on the TIXML_USE_STL status
 */
-class TiXmlInStream 
+class TiXmlInStream
 {
 public :
-   TiXmlInStream (const char * instring);
+   TiXmlInStream () {} 
    /// TiXmlInStream destructor
-   ~ TiXmlInStream ()
+   virtual ~ TiXmlInStream () {}
+   /// Check if there are still some chars to consume
+   virtual bool good () const = 0;
+   /// Consume one char
+   virtual char get () = 0;
+   /// Check for the next char but don't consume it
+   virtual char peek () = 0;
+};
+
+/**
+   TiXmlInStreamOwn is the custom implementation of an input stream
+*/
+class TiXmlInStreamOwn : public TiXmlInStream
+{
+public :
+   TiXmlInStreamOwn::TiXmlInStreamOwn (const char * instring);
+   /// TiXmlInStream destructor
+   virtual ~ TiXmlInStreamOwn ()
    {
       if (valid && cstring)
          delete [] cstring;
    }
 
    /// Check if there are still some chars to consume
-   bool good () const
+   virtual bool good () const
    {
       if (! valid || ! * consumer)
          return false;
       return true;
    }
    /// Consume one char
-   char get ()
+   virtual char get ()
    {
       if (! good ())
          return 0;
@@ -253,7 +272,7 @@ public :
       return * (consumer - 1);
    }
    /// Check for the next char but don't consume it
-   char peek () const
+   virtual char peek () 
    {
       if (! good ())
          return 0;
@@ -267,5 +286,25 @@ protected :
    /// true if the string is valid
    bool valid;
 } ;
+
+#ifdef TIXML_USE_STL
+   /**
+      TiXmlInStreamStl is the implementation of an input stream that consumes every input
+      from the std::istream
+   */
+   class TiXmlInStreamStl : public TiXmlInStream 
+   {
+   public :
+      TiXmlInStreamStl (std::istream & _s) : s (_s), TiXmlInStream ()
+      {
+      }
+      virtual ~ TiXmlInStreamStl () {}
+      virtual bool good () const {return s . good ();}
+      virtual char get () {return s . get ();}
+      virtual char peek () {return s . peek ();}
+   protected :
+      std::istream s;
+   } ;
+#endif
 
 #endif
