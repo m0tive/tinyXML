@@ -26,8 +26,10 @@ distribution.
 #ifndef TINYXML_INCLUDED
 #define TINYXML_INCLUDED
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4530 )
 #pragma warning( disable : 4786 )
+#endif
 
 #include <ctype.h>
 #include <stdio.h>
@@ -693,10 +695,13 @@ public:
 	}
 	virtual ~TiXmlText() {}
 
-#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL
 	/// Constructor.
-	TiXmlText( const std::string& initValue );
-#endif
+	TiXmlText( const std::string& initValue ) : TiXmlNode (TiXmlNode::TEXT)
+	{
+		SetValue( initValue );
+	}
+	#endif
 
 protected :
 	// [internal use] Creates a new Element and returns it.
