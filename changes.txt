@@ -112,7 +112,7 @@ Changes in version 2.1.4
 - Reworked the entity code. Entities were not correctly surving round trip input and output.
   Will now automatically create entities for high ascii in output.
 
-Changes in version 2.1.5 (in progress)
+Changes in version 2.1.5
 - Bug fix by kylotan : infinite loop on some input (tinyxmlparser.cpp rev 1.27)
 - Contributed by Ivica Aracic (bytelord) : 1 new VC++ project to compile versions as static libraries (tinyxml_lib.dsp), 
   and an example usage in xmltest.dsp
@@ -129,5 +129,13 @@ Changes in version 2.1.5 (in progress)
 	- TinyXmlText had a protected Print. Odd.
 	- Made LinkEndChild public, with docs and appropriate warnings.
 	- Updated the docs.
+
+Changes in 2.1.6
+- Fixed an uninitialized pointer in the TiXmlAttributes
+- Fixed STL compilation problem in MinGW (and gcc 3?) - thanks Brian Yoder for finding this one
+- Fixed an syntax error in TiXmlDeclaration - thanks Brian Yoder
+
+
+
 
 

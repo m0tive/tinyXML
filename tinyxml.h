@@ -50,14 +50,13 @@ distribution.
 #endif
 
 // Uncomment the following definition for Apple's Project Builder 
-// #define TIXML_NEED_STREAM
+// #define TIXML_NEED_STREAM - seems to be the majority case. Now
+// standard.
 
 #ifdef TIXML_USE_STL
 	#include <string>
-    #ifdef TIXML_NEED_STREAM
-        #include <istream>
-        #include <ostream>
-    #endif
+ 	#include <istream>
+    #include <ostream>
 	#define TIXML_STRING	std::string
 	#define TIXML_ISTREAM	std::istream
 	#define TIXML_OSTREAM	std::ostream
@@ -188,7 +187,7 @@ protected:
 	static void PutString( const TIXML_STRING& str, TIXML_STRING* out );
 
 	// Return true if the next characters in the stream are any of the endTag sequences.
-	bool static StringEqual(	const char* p,
+	static bool StringEqual(	const char* p,
 								const char* endTag,
 								bool ignoreCase );
 
@@ -519,11 +518,13 @@ public:
 	{
 		name = _name;
 		value = _value;
+		document = 0;
+		prev = next = 0;
 	}
 	#endif
 
 	/// Construct an attribute with a name and value.
-	TiXmlAttribute( const char * _name, const char * _value ): name( _name ), value( _value ), prev( 0 ), next( 0 ) {}
+	TiXmlAttribute( const char * _name, const char * _value )	: name( _name ), value( _value ), prev( 0 ), next( 0 ), document( 0 ) {}
 	const char*		Name()  const		{ return name.c_str (); }		///< Return the name of this attribute.
 	const char*		Value() const		{ return value.c_str (); }		///< Return the value of this attribute.
 	const int       IntValue() const;									///< Return the value of this attribute, converted to an integer.
@@ -808,11 +809,10 @@ public:
 
 #ifdef TIXML_USE_STL
 	/// Constructor.
-	TiXmlDeclaration(
-						const std::string& _version,
+	TiXmlDeclaration(	const std::string& _version,
 						const std::string& _encoding,
 						const std::string& _standalone )
-					: TiXmlNode( TiXmlNode::DECLARATION )
+			: TiXmlNode( TiXmlNode::DECLARATION )
 	{
 		version = _version;
 		encoding = _encoding;
@@ -821,9 +821,9 @@ public:
 #endif
 
 	/// Construct.
-	TiXmlDeclaration::TiXmlDeclaration( const char * _version,
-										const char * _encoding,
-										const char * _standalone );
+	TiXmlDeclaration(	const char* _version,
+						const char* _encoding,
+						const char* _standalone );
 
 	virtual ~TiXmlDeclaration()	{}
 

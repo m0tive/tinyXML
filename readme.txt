@@ -337,8 +337,7 @@ we try to give credit due in the "changes.txt" file.
 
 TinyXml was originally written be Lee Thomason. (Often the "I" still
 in the documenation.) Lee reviews changes and releases new versions,
-but the project is on maintained and managed by Yves Berquin, with
-the help of the tinyXml community.
+with the help of Yves Berquin and the tinyXml community.
 
 We appreciate your suggestions, and would love to know if you 
 use TinyXml. Hopefully you will enjoy it and find it useful. 

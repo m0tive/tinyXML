@@ -8,7 +8,7 @@
 #ifdef TIXML_USE_STL
 	#include <iostream>
 	#include <sstream>
-	#include <strstream>
+	//#include <strstream>
 	using namespace std;
 #else
 	#include <stdio.h>
