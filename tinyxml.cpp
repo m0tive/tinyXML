@@ -140,8 +140,17 @@ TiXmlNode* TiXmlNode::ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& wit
 
 	node->next = replaceThis->next;
 	node->prev = replaceThis->prev;
-	replaceThis->next->prev = node;
-	replaceThis->prev->next = node;
+
+	if ( replaceThis->next )
+		replaceThis->next->prev = node;
+	else
+		lastChild = node;
+
+	if ( replaceThis->prev )
+		replaceThis->prev->next = node;
+	else
+		firstChild = node;
+
 	delete replaceThis;
 	return node;
 }

@@ -23,6 +23,7 @@ distribution.
 
 
 #include "tinyxml.h"
+#include <ctype.h>
 
 const char* TiXmlBase::SkipWhiteSpace( const char* p )
 {

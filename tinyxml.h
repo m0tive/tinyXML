@@ -76,7 +76,7 @@ class TiXmlBase
 	/*	All TinyXml classes can print themselves to a filestream.
 	*/
 	virtual void Print( FILE* fp, int depth )	= 0;
-  
+
   protected:
 	/*	General parsing helper method. Takes a pointer in,
 		skips all the white space it finds, and returns a pointer

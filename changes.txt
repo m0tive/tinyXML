@@ -51,3 +51,12 @@ Changes in version 1.2.3
   with #defines in OS headers. Thanks to Steve Lhomme.
 - Fixed a delete buf that should be a delete [] buf. 
   Thanks to Ephi Sinowitz.
+
+Changes in version 1.2.4
+- ReplaceChild() was almost guarenteed to fail. Should be fixed,
+  thanks to Joe Smith. Joe also pointed out that the Print() functions
+  should take stream references: I agree, and would like to overload
+  the Print() method to take either format, but Idon't want to do 
+  this in a dot release.
+- Some compilers seem to need an extra <ctype.h> include. Thanks
+  to Steve Lhomme for that.
