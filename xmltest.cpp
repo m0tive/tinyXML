@@ -1,136 +1,208 @@
 #include "tinyxml.h"
 
+//
 // This file demonstrates some basic functionality of TinyXml.
+// Note that the example is very contrived. It presumes you know
+// what is in the XML file. But it does test the basic operations,
+// and show how to add and remove nodes.
 //
 
 int main()
 {
-	const char* demotest = 
-		"<?xml version=\"1.0\" standalone='no'>"
-		"<!-- Our to do list data -->"
-		"<ToDo>"
+	//
+	// We start with the 'demoStart' todo list. Process it. And
+	// should hopefully end up with the todo list as illustrated.
+	//
+	const char* demoStart = 
+		"<?xml version=\"1.0\"  standalone='no' >\n"
+		"<!-- Our to do list \n data -->"
+		"<ToDo>\n"
 		"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
-		"<Item priority=\"2\" distance='none'> Do bills</Item>"
+		"<Item priority=\"2\" distance='none'> Do bills   </Item>"
+		"<Item priority=\"2\" distance='far'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
-	// The first example parses from the character string (above):
+	// What the todo list should look like after processing.
+	// (Written as a c-str in case you decide to play with diffs.)
+	/*
+	const char* demoEnd =
+		"<?xml version=\"1.0\" standalone=\"no\" ?>\n"
+		"<!-- Our to do list data -->\n"
+		"<ToDo>\n"
+		"    <Item priority=\"2\" distance=\"close\"> Go to the \n"
+		"        <bold>Toy store!\n"
+		"        </bold>\n"
+		"    </Item>\n"
+		"    <Item priority=\"1\" distance=\"far\"> Talk to:\n"
+		"        <Meeting where=\"School\">\n"
+		"            <Attendee name=\"Marple\" position=\"teacher\" />\n"
+		"            <Attendee name=\"Voo\" position=\"counselor\" />\n"
+		"        </Meeting>\n"
+		"        <Meeting where=\"Lunch\" />\n"
+		"    </Item>\n"
+		"    <Item priority=\"2\" distance=\"here\"> Do bills \n"
+		"    </Item>\n"
+		"</ToDo>\n";
+	*/
+
+	// The example parses from the character string (above):
+
+	{
+		// Write to a file and read it back, to check file I/O.
+
+		TiXmlDocument doc( "demotest.xml" );
+		doc.Parse( demoStart );
+
+		if ( doc.Error() )
+		{
+			printf( "Error in %s: %s\n", doc.Value().c_str(), doc.ErrorDesc().c_str() );
+			exit( 1 );
+		}
+		doc.SaveFile();
+	}
+
 	TiXmlDocument doc( "demotest.xml" );
-	doc.Parse( demotest );
+	doc.LoadFile();
 
-	if ( doc.Error() )
+	printf( "** Demo doc read from disk: ** \n\n" );
+	doc.Print( stdout );
+
+	TiXmlNode* node = 0;
+	TiXmlElement* todoElement = 0;
+	TiXmlElement* itemElement = 0;
+
+	// --------------------------------------------------------
+	// An example of changing existing attributes, and removing
+	// an element from the document.
+	// --------------------------------------------------------
+
+	// Get the "ToDo" element.
+	// It is a child of the document, and can be selected by name.
+	node = doc.FirstChild( "ToDo" );
+	assert( node );
+	todoElement = node->ToElement();
+	assert( todoElement  );
+
+	// Going to the toy store is now our second priority...
+	// So set the "priority" attribute of the first item in the list.
+	node = todoElement->FirstChild();
+	assert( node );
+	itemElement = node->ToElement();
+	assert( itemElement  );
+	itemElement->SetAttribute( "priority", 2 );
+
+	// Change the distance to "doing bills" from
+	// "none" to "here". It's the next sibling element.
+	itemElement = itemElement->NextSiblingElement();
+	itemElement->SetAttribute( "distance", "here" );
+
+	// Remove the "Look for Evil Dinosours!" item.
+	// It is 1 more sibling away. We ask the parent to remove
+	// a particular child.
+	itemElement = itemElement->NextSiblingElement();
+	todoElement->RemoveChild( itemElement );
+
+	itemElement = 0;
+
+	// --------------------------------------------------------
+	// What follows is an example of created elements and text
+	// nodes and adding them to the document.
+	// --------------------------------------------------------
+
+	// Add some meetings.
+	TiXmlElement item( "Item" );
+	item.SetAttribute( "priority", "1" );
+	item.SetAttribute( "distance", "far" );
+
+	TiXmlText text;
+	text.SetValue( "Talk to:" );
+
+	TiXmlElement meeting1( "Meeting" );
+	meeting1.SetAttribute( "where", "School" );
+
+	TiXmlElement meeting2( "Meeting" );
+	meeting2.SetAttribute( "where", "Lunch" );
+
+	TiXmlElement attendee1( "Attendee" );
+	attendee1.SetAttribute( "name", "Marple" );
+	attendee1.SetAttribute( "position", "teacher" );
+
+	TiXmlElement attendee2( "Attendee" );
+	attendee2.SetAttribute( "name", "Voo" );
+	attendee2.SetAttribute( "position", "counselor" );
+
+	// Assemble the nodes we've created:
+	meeting1.InsertEndChild( attendee1 );
+	meeting1.InsertEndChild( attendee2 );
+
+	item.InsertEndChild( text );
+	item.InsertEndChild( meeting1 );
+	item.InsertEndChild( meeting2 );
+
+	// And add the node to the existing list after the first child.
+	node = todoElement->FirstChild( "Item" );
+	assert( node );
+	itemElement = node->ToElement();
+	assert( itemElement );
+
+	todoElement->InsertAfterChild( itemElement, item );
+
+	printf( "\n** Demo doc processed: ** \n\n" );
+	doc.Print( stdout );
+
+	// --------------------------------------------------------
+	// Different ways to walk the XML document.
+	// --------------------------------------------------------
+
+	int count = 0;
+	TiXmlElement*	element;
+
+	// Walk all the top level nodes of the document.
+	count = 0;
+	for( node = doc.FirstChild();
+		 node;
+		 node = node->NextSibling() )
 	{
-		printf( "Error in %s: %s\n", doc.Value().c_str(), doc.ErrorDesc().c_str() );
+		count++;
 	}
-	else
+	printf( "The document contains %d top level nodes. (3)\n", count );
+
+
+	// Walk all the top level nodes of the document,
+	// using a different sytax.
+	count = 0;
+	for( node = doc.IterateChildren( 0 );
+		 node;
+		 node = doc.IterateChildren( node ) )
 	{
-		// Print should dump the character string back to the screen in
-		// properly formatted XML. A good test because the buffer is
-		// parsed to intermediate objects that then print themselves.
-		// Bugs in the intermediate objects will result in a bad print.
-		doc.Print();
-
-
-		// Print out the top level 'element' objects: 
-		TiXmlNode* node;
-		for ( node = doc.FirstChild(); node; node = node->NextSibling() )
-		{
-			if ( node->ToElement() )
-			{
-				printf( "Top level element '%s' found\n", node->Value().c_str() );
-			}
-			if ( node->ToDeclaration() )
-			{
-				printf( "Declaration found.\n" );
-				if ( !node->ToDeclaration()->Version().empty() )
-					printf( "  version=%s\n", node->ToDeclaration()->Version().c_str() );
-				if ( !node->ToDeclaration()->Standalone().empty() )
-					printf( "  standalone=%s\n", node->ToDeclaration()->Version().c_str() );
-				if ( !node->ToDeclaration()->Encoding().empty() )
-					printf( "  encoding=%s\n", node->ToDeclaration()->Version().c_str() );
-			}
-		}
-
-
-		// Print out the attributes of the 'item' element in the
-		// 'todo' element of the document.
-		node = doc.FirstChild();		// this should be the ?xml tag
-		assert( node );
-		node = node->NextSibling();		// this should be the comment
-		assert( node );
-		node = node->NextSibling();		// this should be the todo.
-
-		if ( node && node->Value() == "ToDo" )
-		{
-			// The first child node of "ToDo" should be the "Item"
-			// element -- but ask for "Item" specifically.
-			TiXmlNode* childNode = node->FirstChild( "Item" );
-			if ( childNode && childNode->ToElement() )
-			{
-				// Should indeed trivially cast to an element:
-				TiXmlElement*   element = childNode->ToElement();
-				printf( "\nChild '%s' of 'ToDo' found. Listing attributes:\n", childNode->Value().c_str()  );
-				
-				// Walk the attributes of the element and dump
-				// them to the screen:
-				TiXmlAttribute* attribute;
-				for( attribute = element->FirstAttribute(); 
-					 attribute;
-					 attribute = attribute->Next() )
-				{
-					printf( "    %s=%s\n", attribute->Name().c_str(), attribute->Value().c_str() );
-				}
-			}
-
-			// Test attribute stuff:
-			childNode = node->FirstChild( "Item" );
-			TiXmlElement*   element = childNode->ToElement();
-			element->SetAttribute( "distance", "near" );
-			element->SetAttribute( "size", "large" );
-			element->SetAttribute( "time", "medium" );
-			element->RemoveAttribute( "size" );
-			element->SetAttribute( "priority", 2 );
-
-			printf( "attributes test: distance=near time=medium priority=2\n" );
-			TiXmlAttribute* attribute;
-			for( attribute = element->FirstAttribute(); 
-				 attribute;
-				 attribute = attribute->Next() )
-			{
-				printf( "    %s=%s\n", attribute->Name().c_str(), attribute->Value().c_str() );
-			}
-
-			/*	This is another way to walk child nodes. Commented
-				out because it generates confusing output.
-
-			printf( "\nWalking the document:\n" );
-			TiXmlNode* child = 0;
-			while ( ( child = doc.IterateChildren( child ) ) != 0 )
-			{
-				printf( "  value: %s\n", child->Value().c_str() );
-			}
-			*/
-		}
+		count++;
 	}
+	printf( "The document contains %d top level nodes. (3)\n", count );
 
-	doc.SaveFile( "demotestout.xml" );
 
-	// Now we parse from a file, and save again, to check the output.
-	// The output should match the input, perhaps somewhat reformatted.
-	TiXmlDocument doc0( "test0.xml" );
-	doc0.LoadFile();
-	doc0.SaveFile( "test0out.xml" );
-	if ( doc0.Error() ) printf( "Error in doc0: %s\n", doc0.ErrorDesc().c_str() );
+	// Walk all the elements in a node.
+	count = 0;
+	for( element = todoElement->FirstChildElement();
+		 element;
+		 element = element->NextSiblingElement() )
+	{
+		count++;
+	}
+	printf( "The 'ToDo' element contains %d elements. (3)\n", count );
 
-	TiXmlDocument doc1( "test1.xml" );
-	doc1.LoadFile();
-	doc1.SaveFile( "test1out.xml" );
-	if ( doc1.Error() ) printf( "Error in doc1: %s\n", doc1.ErrorDesc().c_str() );
 
-	// The test2 file is generally testing bug fixes.
-	TiXmlDocument doc2( "test2.xml" );
-	doc2.LoadFile();
-	doc2.SaveFile( "test2out.xml" );
-	if ( doc2.Error() ) printf( "Error in doc2: %s\n", doc2.ErrorDesc().c_str() );
+	// Walk all the elements in a node by value.
+	count = 0;
+	for( node = todoElement->FirstChild( "Item" );
+		 node;
+		 node = node->NextSibling( "Item" ) )
+	{
+		count++;
+	}
+	printf( "The 'ToDo' element contains %d nodes with the value of 'Item'. (3)\n", count );
+	
+
+
 	return 0;
 }
 

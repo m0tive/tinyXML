@@ -84,10 +84,10 @@ const char* TiXmlDocument::Parse( const char* start )
 		}
 		else
 		{
-			TiXmlNode* node = IdentifyAndParse( &p, this );
+			TiXmlNode* node = IdentifyAndParse( &p );
 			if ( node )
 			{
-				InsertEndChild( node );
+				LinkEndChild( node );
 			}				
 		}
 		p = SkipWhiteSpace( p );
@@ -96,12 +96,12 @@ const char* TiXmlDocument::Parse( const char* start )
 }
 
 
-TiXmlNode* TiXmlNode::IdentifyAndParse( const char** where, TiXmlDocument* doc )
+TiXmlNode* TiXmlNode::IdentifyAndParse( const char** where )
 {
 	const char* p = *where;
 	TiXmlNode* returnNode = 0;
-
 	assert( *p == '<' );
+	TiXmlDocument* doc = GetDocument();
 
 	p = SkipWhiteSpace( p+1 );
 
@@ -115,37 +115,27 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char** where, TiXmlDocument* doc )
 			&& tolower( *(p+2) ) == 'm'
 			&& tolower( *(p+3) ) == 'l' )
 	{
-		if ( doc )
-			returnNode = doc->Factory()->CreateDeclaration( this, doc );
-		else			
-			returnNode = new TiXmlDeclaration( doc );
+		returnNode = new TiXmlDeclaration();
 	}
 	else if ( isalpha( *p ) || *p == '_' )
 	{
-		if ( doc )
-			returnNode = doc->Factory()->CreateElement( this, doc );
-		else			
-			returnNode = new TiXmlElement( doc );
+		returnNode = new TiXmlElement( "" );
 	}
 	else if (    *(p+0) == '!'
 			  && *(p+1) == '-'
 			  && *(p+2) == '-' )
 	{
-		if ( doc )
-			returnNode = doc->Factory()->CreateComment( this, doc );
-		else			
-			returnNode = new TiXmlComment( doc );
+		returnNode = new TiXmlComment();
 	}
 	else
 	{
-		if ( doc )
-			returnNode = doc->Factory()->CreateUnknown( this, doc );
-		else			
-			returnNode = new TiXmlUnknown( doc );
+		returnNode = new TiXmlUnknown();
 	}
 
 	if ( returnNode )
 	{
+		// Set the parent, so it can report errors
+		returnNode->parent = this;
 		p = returnNode->Parse( p );
 	}
 	else
@@ -161,6 +151,7 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char** where, TiXmlDocument* doc )
 
 const char* TiXmlElement::Parse( const char* p )
 {
+	TiXmlDocument* document = GetDocument();
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p )
 	{
@@ -224,7 +215,8 @@ const char* TiXmlElement::Parse( const char* p )
 		else
 		{
 			// Try to read an element:
-			TiXmlAttribute attrib( document );
+			TiXmlAttribute attrib;
+			attrib.SetDocument( document );
 			p = attrib.Parse( p );
 
 			if ( p )
@@ -239,6 +231,8 @@ const char* TiXmlElement::Parse( const char* p )
 
 const char* TiXmlElement::ReadValue( const char* p )
 {
+	TiXmlDocument* document = GetDocument();
+
 	// Read in text and elements in any order.
 	while ( p && *p )
 	{
@@ -254,12 +248,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 		if ( p != start )
 		{
 			// Take what we have, make a text element.
-			TiXmlText* text = 0;
-			if ( document )
-				text = document->Factory()->CreateText( this, document );
-			else
-				text = new TiXmlText( document );
-// 			text->document = document;
+			TiXmlText* text = new TiXmlText();
 
 			if ( !text )
 			{
@@ -268,7 +257,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 			}
 			text->Parse( start );
 			if ( !text->Blank() )
-				InsertEndChild( text );
+				LinkEndChild( text );
 			else
 				delete text;
 		} 
@@ -282,17 +271,13 @@ const char* TiXmlElement::ReadValue( const char* p )
 			}
 			else
 			{
-				TiXmlElement* element = 0;
-				if ( document )
-					element = document->Factory()->CreateElement( this, document );
-				else
-					element = new TiXmlElement( document );
+				TiXmlElement* element = new TiXmlElement( "" );
 
 				if ( element )
 				{
 					p = element->Parse( p+1 );
 					if ( p )
-						InsertEndChild( element );
+						LinkEndChild( element );
 				}
 				else
 				{
@@ -311,6 +296,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 	const char* end = strchr( p, '>' );
 	if ( !end )
 	{
+		TiXmlDocument* document = GetDocument();
 		if ( document )
 			document->SetError( ERROR_PARSING_UNKNOWN );
 		return 0;
@@ -334,13 +320,34 @@ const char* TiXmlComment::Parse( const char* p )
 	const char* end = strstr( p, "-->" );
 	if ( !end )
 	{
+		TiXmlDocument* document = GetDocument();
 		if ( document )
 			document->SetError( ERROR_PARSING_COMMENT );
 		return 0;
 	}
 	else
 	{
-		value = std::string( start, end-start );
+		// Assemble the comment, removing the white space.
+		bool whiteSpace = false;
+
+		const char* q;
+		for( q=start; q<end; q++ )
+		{
+			if ( isspace( *q ) )
+			{
+				if ( !whiteSpace )
+				{
+					value += ' ';
+					whiteSpace = true;
+				}
+			}
+			else
+			{
+				value += *q;
+				whiteSpace = false;
+			}
+		}				
+// 		value = std::string( start, end-start );
 		return end + 3;			// return just past the '>'
 	}
 }
@@ -457,6 +464,7 @@ const char* TiXmlDeclaration::Parse( const char* p )
 
 	if ( !end )
 	{
+		TiXmlDocument* document = GetDocument();
 		if ( document )
 			document->SetError( ERROR_PARSING_DECLARATION );
 		return 0;

@@ -39,7 +39,7 @@ class TiXmlUnknown;
 class TiXmlAttribute;
 class TiXmlText;
 class TiXmlDeclaration;
-class TiXmlFactory;
+// class TiXmlFactory;
 
 /** TiXmlBase is a base class for every class in TinyXml.
 	It does little except to establist that TinyXml classes
@@ -60,7 +60,7 @@ class TiXmlFactory;
 							Comment (leaf)
 							Unknown (leaf)
 
-	A Decleration contians: Attributes (not on tree)
+	A Decleration contains: Attributes (not on tree)
 	@endverbatim
 */
 class TiXmlBase
@@ -217,8 +217,31 @@ class TiXmlNode : public TiXmlBase
 	/// Navigate to a sibling node with the given 'value'.
 	TiXmlNode* NextSibling( const std::string& ) const;
 
+	/** Convenience function to get through elements. 
+		Calls NextSibling and ToElement. Will skip all non-Element
+		nodes. Returns 0 if there is not another element.
+	*/
+	TiXmlElement* NextSiblingElement() const;
+
+	/** Convenience function to get through elements. 
+		Calls NextSibling and ToElement. Will skip all non-Element
+		nodes. Returns 0 if there is not another element.
+	*/
+	TiXmlElement* NextSiblingElement( const std::string& ) const;
+
+	/// Convenience function to get through elements.
+	TiXmlElement* FirstChildElement()	const;
+	
+	/// Convenience function to get through elements.
+	TiXmlElement* FirstChildElement( const std::string& value ) const;
+
 	/// Query the type (as an enumerated value, above) of this node.
 	virtual int Type()	{ return type; }
+
+	/** Return a pointer to the Document this node lives in. 
+		Returns null if not in a document.
+	*/
+	TiXmlDocument* GetDocument() const;
 
 	TiXmlDocument* ToDocument()	const	{ return ( type == DOCUMENT ) ? (TiXmlDocument*) this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
 	TiXmlElement*  ToElement() const	{ return ( type == ELEMENT  ) ? (TiXmlElement*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
@@ -230,19 +253,19 @@ class TiXmlNode : public TiXmlBase
 	virtual TiXmlNode* Clone() const = 0;
 
   protected:
-	TiXmlNode( NodeType type, TiXmlDocument* doc );
+	TiXmlNode( NodeType type );
 	virtual const char* Parse( const char* ) = 0;
 
 	// The node is passed in by ownership. This object will delete it.
-	TiXmlNode* InsertEndChild( TiXmlNode* addThis );
+	TiXmlNode* LinkEndChild( TiXmlNode* addThis );
 
 	// Figure out what is at *p, and parse it. Return a node if
 	// successful, and update p.
-	TiXmlNode* IdentifyAndParse( const char** p, TiXmlDocument* doc );
+	TiXmlNode* IdentifyAndParse( const char** p );
 
 	void CopyToClone( TiXmlNode* target ) const	{ target->value = value; }
 
-	TiXmlDocument*	document;
+// 	TiXmlDocument*	document;
 	TiXmlNode*		parent;		
 	NodeType		type;
 	
@@ -262,6 +285,8 @@ class TiXmlNode : public TiXmlBase
 	@note The attributes are not TiXmlNodes, since they are not
 		  part of the XML document object model. There are other
 		  suggested ways to look at this problem.
+
+	@note Attributes have a parent
 */
 class TiXmlAttribute : public TiXmlBase
 {
@@ -269,7 +294,8 @@ class TiXmlAttribute : public TiXmlBase
 
   public:
 	/// Construct an empty attribute.
-	TiXmlAttribute( TiXmlDocument* doc = 0) : document( doc ), prev( 0 ), next( 0 )	{}
+	TiXmlAttribute() : prev( 0 ), next( 0 )	{}
+
 	/// Construct an attribute with a name and value.
 	TiXmlAttribute( const std::string& _name, const std::string& _value )	: name( _name ), value( _value ), prev( 0 ), next( 0 ) {}
 
@@ -293,11 +319,16 @@ class TiXmlAttribute : public TiXmlBase
 						 returns: the next char after the value end quote
 	*/	
 	const char* Parse( const char* );
+
 	// [internal use] 
 	virtual void Print( FILE* fp, int depth );
 
+	// [internal use]
+	// Set the document pointer so the attribute can report errors.
+	void SetDocument( TiXmlDocument* doc )	{ document = doc; }
+
   private:
-	TiXmlDocument*	document;
+	TiXmlDocument*	document;	// A pointer back to a document, for error reporting.
 	std::string		name;
 	std::string		value;
 
@@ -344,11 +375,8 @@ class TiXmlAttributeSet
 class TiXmlElement : public TiXmlNode
 {
   public:
-	/// Construct an empty element.
-	TiXmlElement( TiXmlDocument* doc = 0);
-
-	/// Construct an empty element.
-	TiXmlElement( const std::string& value, TiXmlDocument* doc = 0);
+	/// Construct an element.
+	TiXmlElement( const std::string& value );
 
 	virtual ~TiXmlElement();
 
@@ -405,7 +433,7 @@ class TiXmlComment : public TiXmlNode
 {
   public:
 	/// Constructs an empty comment.
-	TiXmlComment( TiXmlDocument* doc = 0) : TiXmlNode( TiXmlNode::COMMENT, doc ) {}
+	TiXmlComment() : TiXmlNode( TiXmlNode::COMMENT ) {}
 	virtual ~TiXmlComment()	{}
 
 	// [internal use] Creates a new Element and returs it.
@@ -427,7 +455,7 @@ class TiXmlComment : public TiXmlNode
 class TiXmlText : public TiXmlNode
 {
   public:
-	TiXmlText( TiXmlDocument* doc = 0)  : TiXmlNode( TiXmlNode::TEXT, doc ) {}
+	TiXmlText()  : TiXmlNode( TiXmlNode::TEXT ) {}
 	virtual ~TiXmlText() {}
 
 
@@ -463,13 +491,12 @@ class TiXmlDeclaration : public TiXmlNode
 {
   public:
 	/// Construct an empty declaration.
-	TiXmlDeclaration( TiXmlDocument* doc = 0)   : TiXmlNode( TiXmlNode::DECLARATION, doc ) {}
+	TiXmlDeclaration()   : TiXmlNode( TiXmlNode::DECLARATION ) {}
 
 	/// Construct.
 	TiXmlDeclaration( const std::string& version, 
 					  const std::string& encoding,
-					  const std::string& standalone,
-					  TiXmlDocument* doc = 0);
+					  const std::string& standalone );
 
 	virtual ~TiXmlDeclaration()	{}
 
@@ -507,7 +534,7 @@ class TiXmlDeclaration : public TiXmlNode
 class TiXmlUnknown : public TiXmlNode
 {
   public:
-	TiXmlUnknown( TiXmlDocument* doc = 0) : TiXmlNode( TiXmlNode::UNKNOWN, doc ) {}
+	TiXmlUnknown() : TiXmlNode( TiXmlNode::UNKNOWN ) {}
 	virtual ~TiXmlUnknown() {}
 
 	// [internal use] 	
@@ -524,26 +551,6 @@ class TiXmlUnknown : public TiXmlNode
 };
 
 
-/** Advanced feature.
-	If you want to use your own subclasses of Element, Text, Comment,
-	and Unknown, you need to override the methods of factory.
-	The first method call made on TiXmlDocument should be 
-	SetFactory.
-
-	NOTE: This class is experimental: there has not been much 
-		  testing and is subject to change.
-*/
-class TiXmlFactory
-{
-  public:
-	virtual TiXmlElement*	CreateElement( const TiXmlNode* parent, TiXmlDocument* doc )		{ return new TiXmlElement( doc ); }
-	virtual TiXmlText*		CreateText( const TiXmlNode* parent, TiXmlDocument* doc )			{ return new TiXmlText( doc ); }
-	virtual TiXmlComment*	CreateComment( const TiXmlNode* parent, TiXmlDocument* doc )		{ return new TiXmlComment( doc ); }
-	virtual TiXmlUnknown*	CreateUnknown( const TiXmlNode* parent, TiXmlDocument* doc )		{ return new TiXmlUnknown( doc ); }
-	virtual TiXmlDeclaration* CreateDeclaration( const TiXmlNode* parent, TiXmlDocument* doc )	{ return new TiXmlDeclaration( doc ); }
-};
-
-
 /** Always the top level node. A document binds together all the
 	XML pieces. It can be saved, loaded, and printed to the screen.
 	The 'value' of a document node is the xml file name.
@@ -556,15 +563,7 @@ class TiXmlDocument : public TiXmlNode
 	/// Create a document with a name. The name of the document is also the filename of the xml.
 	TiXmlDocument( const std::string& documentName );
 	
-	virtual ~TiXmlDocument() { delete factory; }
-
-	/** An advanced feature, Set Factory allows a 
-		user to subclass the TinyXml objects.
-		The factory class is passed in by ownership and will
-		be deleted by the document. This should be the first call
-		after the document is constructed.
-	*/
-	void SetFactory( TiXmlFactory* factory );
+	virtual ~TiXmlDocument() {}
 
 	/// Load a file using the current document value. Returns true if successful.
 	bool LoadFile();
@@ -591,16 +590,16 @@ class TiXmlDocument : public TiXmlNode
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 	
-	void SetError( int err ) {		assert( errorId > 0 && errorId < ERROR_STRING_COUNT );
+	void SetError( int err ) {		assert( err > 0 && err < ERROR_STRING_COUNT );
 									error   = true; 
 									errorId = err;
 									errorDesc = errorString[ errorId ]; }
 	// [internal use]
-	TiXmlFactory* Factory() const	{ return factory; }
+// 	TiXmlFactory* Factory() const	{ return factory; }
 
   private:
 
-	TiXmlFactory* factory;
+// 	TiXmlFactory* factory;
 	bool error;
 	int  errorId;	
 	std::string errorDesc;
