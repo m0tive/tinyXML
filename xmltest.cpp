@@ -1,6 +1,7 @@
 #include "tinyxml.h"
 #include <iostream>
 #include <sstream>
+#include <strstream>
 
 //
 // This file demonstrates some basic functionality of TinyXml.
@@ -51,7 +52,8 @@ int main()
 		// Write to a file and read it back, to check file I/O.
 
 		TiXmlDocument doc( "demotest.xml" );
-		doc.Parse( demoStart );
+		std::istrstream demoStartStream( demoStart, strlen( demoStart ) );
+		doc.Parse( &demoStartStream );
 
 		if ( doc.Error() )
 		{

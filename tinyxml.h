@@ -126,11 +126,12 @@ class TiXmlBase
 		
 	*/
 	static bool ReadText(	std::istream* in,			// where to start
-									std::string* text,			// the string read
-									bool ignoreWhiteSpace,		// whether to keep the white space
-									int	 numEndTag,				// how many end tags there are
-									const char** endTag,		// array of "tails"
-									bool endOnWhite );			// additional end condition: stop on white space. (Only valid if not ignoring whitespace, of course)
+							std::string* text,			// the string read
+							bool ignoreWhiteSpace,		// whether to keep the white space
+							int	 numEndTag,				// how many end tags there are
+							const char** endTag,		// array of "tails"
+							bool caseInsensitiveEndTag,	
+							bool endOnWhite );			// additional end condition: stop on white space. (Only valid if not ignoring whitespace, of course)
 
 	virtual bool Parse( std::istream* in ) = 0;
 
@@ -156,7 +157,18 @@ class TiXmlBase
 	static void PutString( const std::string& str, std::ostream* stream );
 
 	// Return true if the next characters in the stream are any of the endTag sequences.
-	bool StreamEqual( std::istream* in, int numEndTag, const char** endTag );
+	bool static StreamEqual(	std::istream* in, 
+								int numEndTag, const char** endTag, 
+								bool ignoreCase );
+	
+	bool static StreamEqual(	std::istream* in,
+								const char* endTag,
+								bool ignoreCase )				{
+																	const char* end[1];
+																	end[0] = endTag;
+																	return StreamEqual( in, 1, end, ignoreCase );
+																}
+												
 
 	enum
 	{
@@ -334,6 +346,9 @@ class TiXmlNode : public TiXmlBase
 	*/
 	TiXmlDocument* GetDocument() const;
 
+	/// Returns true if this node has no children.
+	bool NoChildren() const						{ return !firstChild; }
+
 	TiXmlDocument* ToDocument()	const		{ return ( this && type == DOCUMENT ) ? (TiXmlDocument*) this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
 	TiXmlElement*  ToElement() const		{ return ( this && type == ELEMENT  ) ? (TiXmlElement*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
 	TiXmlComment*  ToComment() const		{ return ( this && type == COMMENT  ) ? (TiXmlComment*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
@@ -350,7 +365,7 @@ class TiXmlNode : public TiXmlBase
 	TiXmlNode* LinkEndChild( TiXmlNode* addThis );
 
 	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
-	TiXmlNode* Identify( const char* start );
+	TiXmlNode* Identify( std::istream* start );
 
 	void CopyToClone( TiXmlNode* target ) const	{ target->value = value; }
 
