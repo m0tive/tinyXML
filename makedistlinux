@@ -27,7 +27,11 @@ cp tinystr.cpp tinyxml
 cp tinystr.h tinyxml
 cp tinyxml.h tinyxml
 cp tinyxml.dsp tinyxml
+cp tinyxml_lib.dsp tinyxml
+cp xmltest.dsp tinyxml
 recode lat1..ibmpc ./tinyxml/tinyxml.dsp
+recode lat1..ibmpc ./tinyxml/tinyxml_lib.dsp
+recode lat1..ibmpc ./tinyxml/xmltest.dsp
 
 mkdir ./tinyxml/docs
 cp ./docs/* ./tinyxml/docs
