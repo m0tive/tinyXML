@@ -26,7 +26,7 @@ distribution.
 #include <strstream>
 using namespace std;
 
-#define DEBUG_PARSER
+//#define DEBUG_PARSER
 
 TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] = 
 {
@@ -327,7 +327,7 @@ const char* TiXmlDocument::Parse( const char* p )
 	}
 	
 	while ( p && *p )
-	{	
+	{
 		TiXmlNode* node = Identify( p );
 		if ( node )
 		{				

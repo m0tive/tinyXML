@@ -9,9 +9,9 @@ Permission is granted to anyone to use this software for any
 purpose, including commercial applications, and to alter it and 
 redistribute it freely, subject to the following restrictions:
 
-1. The origin of this software must not be misrepresented; you must 
-not claim that you wrote the original software. If you use this 
-software in a product, an acknowledgment in the product documentation 
+1. The origin of this software must not be misrepresented; you must
+not claim that you wrote the original software. If you use this
+software in a product, an acknowledgment in the product documentation
 would be appreciated but is not required.
 
 2. Altered source versions must be plainly marked as such, and
@@ -33,15 +33,28 @@ bool TiXmlBase::condenseWhiteSpace = true;
 
 void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 {
-	// fixme: is there a better (speed) way to do this?
-	unsigned int i, j;
+	// Scan for the all important '&'
+	unsigned int i=0, j=0;
 
-	for( i=0; i<str.length(); ++i )
+	while ( i < str.length() )
 	{
+		unsigned next = str.find( '&', i );
+
+		if ( next == string::npos )
+		{
+			stream->write( &str.at( i ), str.length() - i );
+			return;
+   		}
+
+		// We found an entity.
+		if ( next - i > 0 )
+			stream->write( &str.at( i ), next - i );
+		i = next;
+
 		// Check for the special "&#x" entitity
 		if (    i < str.length() - 2
-		     && str[i] == '&' 
-			 && str[i+1] == '#' 
+		     && str[i] == '&'
+			 && str[i+1] == '#'
 			 && str[i+2] == 'x' )
 		{
 			stream->put( str[i] );
@@ -61,6 +74,7 @@ void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 				stream->put( str[i] );
 			}
 		}
+		++i;
 	}
 }
 
