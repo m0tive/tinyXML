@@ -487,6 +487,20 @@ const char * TiXmlElement::Attribute( const char * name, int* i ) const
 }
 
 
+const char * TiXmlElement::Attribute( const char * name, double* d ) const
+{
+	const char * s = Attribute( name );
+	if ( d )
+	{
+		if ( s )
+			*d = atof( s );
+		else
+			*d = 0;
+	}
+	return s;
+}
+
+
 void TiXmlElement::SetAttribute( const char * name, int val )
 {	
 	char buf[64];
@@ -512,7 +526,7 @@ void TiXmlElement::SetAttribute( const char * name, const char * _value )
 	else
 	{
 		TiXmlDocument* document = GetDocument();
-		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY );
+		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0 );
 	}
 }
 
@@ -625,15 +639,16 @@ TiXmlNode* TiXmlElement::Clone() const
 
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	error = false;
-	//	ignoreWhiteSpace = true;
+	m_startLocation = 0;
+	ClearError();
 }
 
 TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 	//	ignoreWhiteSpace = true;
 	value = documentName;
-	error = false;
+	m_startLocation = 0;
+	ClearError();
 }
 
 bool TiXmlDocument::LoadFile()
@@ -706,12 +721,13 @@ bool TiXmlDocument::LoadFile( const char* filename )
 		fclose( file );
 
 		Parse( data.c_str() );
+
 		if (  Error() )
             return false;
         else
 			return true;
 	}
-	SetError( TIXML_ERROR_OPENING_FILE );
+	SetError( TIXML_ERROR_OPENING_FILE, 0 );
 	return false;
 }
 
@@ -772,6 +788,86 @@ void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
 			break;
 	}
 }
+
+
+void TiXmlDocument::SetError( int err, const char* errorLocation )
+{	
+	// The first error in a chain is more accurate - don't set again!
+	if ( error )
+		return;
+
+	assert( err > 0 && err < TIXML_ERROR_STRING_COUNT );
+	error   = true;
+	errorId = err;
+	errorDesc = errorString[ errorId ];
+
+	errorRow = errorCol = -1;
+
+	if ( m_startLocation && errorLocation )
+	{
+		errorRow = 0;
+		errorCol = 0;
+		const char* p = m_startLocation;
+
+		while ( p < errorLocation )
+		{
+			// Code contributed by Fletcher Dunn: (modified by lee)
+			switch (*p) {
+				case 0:
+					// We *should* never get here, but in case we do, don't
+					// advance past the terminating null character, ever
+					break;
+
+				case '\r':
+					// bump down to the next line
+					++errorRow;
+					errorCol = 0;				
+					// Eat the character
+					++p;
+
+					// Check for \r\n sequence, and treat this as a single character
+					if (*p == '\n') {
+						++p;
+					}
+					break;
+
+				case '\n':
+					// bump down to the next line
+					++errorRow;
+					errorCol = 0;
+
+					// Eat the character
+					++p;
+
+					// Check for \n\r sequence, and treat this as a single
+					// character.  (Yes, this bizarre thing does occur still
+					// on some arcane platforms...)
+					if (*p == '\r') {
+						++p;
+					}
+					break;
+
+				case '\t':
+					// Eat the character
+					++p;
+
+					// Skip to next tab stop
+					assert(errorTab > 0);
+					errorCol = (errorCol / errorTab + 1) * errorTab;
+					break;
+	
+				default:
+					// Eat the character
+					++p;
+
+					// Normal char - just advance one column
+					++errorCol;
+					break;
+			}
+		}
+	}
+}
+
 
 TiXmlAttribute* TiXmlAttribute::Next() const
 {
@@ -1066,3 +1162,35 @@ TIXML_OSTREAM & operator<< (TIXML_OSTREAM & out, const TiXmlNode & base)
 	base.StreamOut (& out);
 	return out;
 }
+
+
+TiXmlHandle TiXmlHandle::FirstChild( const char * value ) const
+{
+	if ( node )
+	{
+		TiXmlNode* child = node->FirstChild( value );
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
+
+
+TiXmlHandle TiXmlHandle::Child( const char* value, int count ) const
+{
+	if ( node )
+	{
+		int i;
+		TiXmlNode* child = node->FirstChild( value );
+		for (	i=0;
+				child && i<count;
+				child = child->NextSibling( value ), ++i )
+		{
+			// nothing
+		}
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
+

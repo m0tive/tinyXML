@@ -160,6 +160,7 @@ protected:
 									bool ignoreWhiteSpace,		// whether to keep the white space
 									const char* endTag,			// what ends this text
 									bool ignoreCase );			// whether to ignore case in the end tag
+
 	virtual const char* Parse( const char* p ) = 0;
 
 	// If an entity has been found, transform it into a character.
@@ -634,18 +635,26 @@ public:
 
 	virtual ~TiXmlElement();
 
-	/** Given an attribute name, attribute returns the value
+	/** Given an attribute name, Attribute() returns the value
 		for the attribute of that name, or null if none exists.
 	*/
 	const char* Attribute( const char* name ) const;
 
-	/** Given an attribute name, attribute returns the value
+	/** Given an attribute name, Attribute() returns the value
 		for the attribute of that name, or null if none exists.
 		If the attribute exists and can be converted to an integer,
 		the integer value will be put in the return 'i', if 'i'
 		is non-null.
 	*/
 	const char* Attribute( const char* name, int* i ) const;
+
+	/** Given an attribute name, Attribute() returns the value
+		for the attribute of that name, or null if none exists.
+		If the attribute exists and can be converted to an double,
+		the double value will be put in the return 'd', if 'd'
+		is non-null.
+	*/
+	const char* Attribute( const char* name, double* d ) const;
 
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.
@@ -936,7 +945,8 @@ public:
 	}
 	#endif
 
-	/// Parse the given null terminated block of xml data.
+	/** Parse the given null terminated block of xml data.
+	*/
 	virtual const char* Parse( const char* p );
 
 	/** Get the root element -- the only top level element -- of the document.
@@ -945,19 +955,43 @@ public:
 	*/
 	TiXmlElement* RootElement() const		{ return FirstChildElement(); }
 
-	/// If, during parsing, a error occurs, Error will be set to true.
+	/** If an error occurs, Error will be set to true. Also,
+		- The ErrorId() will contain the integer identifier of the error (not generally useful)
+		- The ErrorDesc() method will return the name of the error. (very useful)
+		- The ErrorRow() and ErrorCol() will retur the location of the error.
+	*/	
 	bool Error() const						{ return error; }
 
 	/// Contains a textual (english) description of the error if one occurs.
 	const char * ErrorDesc() const	{ return errorDesc.c_str (); }
 
 	/** Generally, you probably want the error string ( ErrorDesc() ). But if you
-			prefer the ErrorId, this function will fetch it.
-		*/
+		prefer the ErrorId, this function will fetch it.
+	*/
 	const int ErrorId()	const				{ return errorId; }
 
-	/// If you have handled the error, it can be reset with this call.
-	void ClearError()						{ error = false; errorId = 0; errorDesc = ""; }
+	/** Returns the location (if known) of the error. The first column is column 0, 
+		and the first row is row 0. A value of -1 means the row and columnt wasn't applicable
+		(memory errors, for example, have no row/column) or the parser lost the error. (An
+		error in the error reporting, in that case.)
+
+		There is an additional complication: computing the column is problematic since
+		TinyXml doesn't know the tab size. You can set the tab size (before parsing) with
+		the SetErrorTab() method. If you don't set it, the default value of "1" 
+		will count the number of characters to the error, not necessarily the actual column.
+	*/
+	int ErrorRow()	{ return errorRow; }
+	int ErrorCol()	{ return errorCol; }	///< The column where the error occured. See ErrorRow()
+
+	/** Set the tab size, for calculating the location of parsing errors.
+		@sa ErrorRow
+	*/
+	int SetErrorTab( int tabsize )	{ errorTab = tabsize; }
+
+	/** If you have handled the error, it can be reset with this call. The error
+		state is automatically cleared if you Parse a new XML block.
+	*/
+	void ClearError()						{ error = false; errorId = 0; errorDesc = ""; errorRow = errorCol = -1;  }
 
 	/** Dump the document to standard out. */
 	void Print() const						{ Print( stdout, 0 ); }
@@ -965,10 +999,7 @@ public:
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth = 0 ) const;
 	// [internal use]
-	void SetError( int err ) {		assert( err > 0 && err < TIXML_ERROR_STRING_COUNT );
-		error   = true;
-		errorId = err;
-	errorDesc = errorString[ errorId ]; }
+	void SetError( int err, const char* errorLocation );
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
@@ -982,7 +1013,34 @@ private:
 	bool error;
 	int  errorId;
 	TIXML_STRING errorDesc;
+	int errorRow;
+	int errorCol;
+	int errorTab;
+	const char* m_startLocation;
 };
+
+
+class TiXmlHandle
+{
+public:
+	TiXmlHandle( TiXmlNode* node )			{ this->node = node; }
+	TiXmlHandle( const TiXmlHandle& ref )	{ this->node = ref.node; }
+
+	TiXmlHandle FirstChild( const char * value ) const;
+	TiXmlHandle Child( const char* value, int index ) const;
+
+	#ifdef TIXML_USE_STL
+	TiXmlHandle FirstChild( const std::string& _value ) const			{ return FirstChild( _value.c_str() ); }
+	TiXmlHandle Child( const std::string& _value, int index ) const		{ return Child( _value.c_str(), index ); }
+	#endif
+
+	TiXmlNode* Node() const			{ return node; } 
+	TiXmlElement* Element() const	{ return ( ( node && node->ToElement() ) ? node->ToElement() : 0 ); }
+
+private:
+	TiXmlNode* node;
+};
+
 
 #endif
 

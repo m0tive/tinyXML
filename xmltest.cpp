@@ -465,10 +465,10 @@ int main()
 			char buf[ 1024 ];
 			fgets( buf, 1024, textfile );
 			XmlTest( "Entity transformation: write. ",
-								"<psg context=\'Line 5 has &quot;quotation marks&quot; and &apos;apostrophe marks&apos;."
-								" It also has &lt;, &gt;, and &amp;, as well as a fake &#xA9;.' />",
-								buf,
-								true );
+					 "<psg context=\'Line 5 has &quot;quotation marks&quot; and &apos;apostrophe marks&apos;."
+					 " It also has &lt;, &gt;, and &amp;, as well as a fake &#xA9;.' />",
+					 buf,
+					 true );
 		}
 		fclose( textfile );
 	}
@@ -477,15 +477,29 @@ int main()
 		FILE* textfile = fopen( "test5.xml", "w" );
 		if ( textfile )
 		{
-            fputs ("<?xml version='1.0'?><a.elem xmi.version='2.0'/>", textfile);
-            fclose (textfile);
+            fputs("<?xml version='1.0'?><a.elem xmi.version='2.0'/>", textfile);
+            fclose(textfile);
             TiXmlDocument doc;
-            doc.LoadFile ("test5.xml");
-            XmlTest ( "dot in element attributes and names", doc.Error (), 0);
+            doc.LoadFile( "test5.xml" );
+            XmlTest( "dot in element attributes and names", doc.Error(), 0);
 		}
 		textfile = fopen( "textfile.txt", "r" );
         
     }
+
+	{
+		const char* error =	"<?xml version=\"1.0\" standalone=\"no\" ?>\n"
+							"<passages count=\"006\" formatversion=\"20020620\">\n"
+							"    <wrong error>\n"
+							"</passages>";
+
+        TiXmlDocument doc;
+		doc.Parse( error );
+		XmlTest( "Error row", doc.ErrorRow(), 2 );
+		XmlTest( "Error column", doc.ErrorCol(), 16 );
+		//printf( "error=%d id='%s' row %d col%d\n", (int) doc.Error(), doc.ErrorDesc(), doc.ErrorRow()+1, doc.ErrorCol() + 1 );
+
+	}
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }

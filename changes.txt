@@ -130,11 +130,14 @@ Changes in version 2.1.5
 	- Made LinkEndChild public, with docs and appropriate warnings.
 	- Updated the docs.
 
-Changes in 2.1.6
+2.2.0
 - Fixed an uninitialized pointer in the TiXmlAttributes
 - Fixed STL compilation problem in MinGW (and gcc 3?) - thanks Brian Yoder for finding this one
 - Fixed an syntax error in TiXmlDeclaration - thanks Brian Yoder
-
+- Fletcher Dunn proposed and submitted new error handling that tracked the row and column. Lee
+  modified it to not have parse time impact.
+- General cleanup suggestions from Fletcher Dunn.
+- In error handling, general errors will no longer clear the error state of specific ones.
 
 
 

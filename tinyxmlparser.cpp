@@ -267,7 +267,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 
 	if ( !StreamTo( in, '<', tag ) ) 
 	{
-		SetError( TIXML_ERROR_PARSING_EMPTY );
+		SetError( TIXML_ERROR_PARSING_EMPTY, 0 );
 		return;
 	}
 
@@ -303,19 +303,21 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 			}
 			else
 			{
-				SetError( TIXML_ERROR );
+				SetError( TIXML_ERROR, tag->c_str() + tagIndex );
 				return;
 			}
 		}
 	}
 	// We should have returned sooner.
-	SetError( TIXML_ERROR );
+	SetError( TIXML_ERROR, 0 );
 }
 
 #endif
 
 const char* TiXmlDocument::Parse( const char* p )
 {
+	ClearError();
+
 	// Parse away, at the document level. Since a document
 	// contains nothing but other tags, most of what happens
 	// here is skipping white space.
@@ -323,20 +325,20 @@ const char* TiXmlDocument::Parse( const char* p )
 	// In this variant (as opposed to stream and Parse) we
 	// read everything we can.
 
-
 	if ( !p || !*p )
 	{
-		SetError( TIXML_ERROR_DOCUMENT_EMPTY );
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0 );
 		return 0;
 	}
 
     p = SkipWhiteSpace( p );
 	if ( !p )
 	{
-		SetError( TIXML_ERROR_DOCUMENT_EMPTY );
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0 );
 		return 0;
 	}
 
+	m_startLocation = p;
 	while ( p && *p )
 	{
 		TiXmlNode* node = Identify( p );
@@ -351,6 +353,8 @@ const char* TiXmlDocument::Parse( const char* p )
 		}
 		p = SkipWhiteSpace( p );
 	}
+	m_startLocation = 0;
+
 	// All is well.
 	return p;
 }
@@ -423,7 +427,7 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 	else
 	{
 		if ( doc )
-			doc->SetError( TIXML_ERROR_OUT_OF_MEMORY );
+			doc->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0 );
 	}
 	return returnNode;
 }
@@ -541,17 +545,19 @@ const char* TiXmlElement::Parse( const char* p )
 
 	if ( !p || !*p || *p != '<' )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT );
+		if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT, p );
 		return 0;
 	}
 
 	p = SkipWhiteSpace( p+1 );
 
 	// Read the name.
+	const char* pErr = p;
+
     p = ReadName( p, &value );
 	if ( !p || !*p )
 	{
-		if ( document )	document->SetError( TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME );
+		if ( document )	document->SetError( TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME, pErr );
 		return 0;
 	}
 
@@ -563,10 +569,11 @@ const char* TiXmlElement::Parse( const char* p )
 	// tag or an end tag.
 	while ( p && *p )
 	{
+		pErr = p;
 		p = SkipWhiteSpace( p );
 		if ( !p || !*p )
 		{
-			if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
+			if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, pErr );
 			return 0;
 		}
 		if ( *p == '/' )
@@ -575,7 +582,7 @@ const char* TiXmlElement::Parse( const char* p )
 			// Empty tag.
 			if ( *p  != '>' )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_PARSING_EMPTY );		
+				if ( document ) document->SetError( TIXML_ERROR_PARSING_EMPTY, p );		
 				return 0;
 			}
 			return (p+1);
@@ -598,7 +605,7 @@ const char* TiXmlElement::Parse( const char* p )
 			}
 			else
 			{
-				if ( document ) document->SetError( TIXML_ERROR_READING_END_TAG );
+				if ( document ) document->SetError( TIXML_ERROR_READING_END_TAG, p );
 				return 0;
 			}
 		}
@@ -607,11 +614,12 @@ const char* TiXmlElement::Parse( const char* p )
 			// Try to read an element:
 			TiXmlAttribute attrib;
 			attrib.SetDocument( document );
+			const char* pErr = p;
 			p = attrib.Parse( p );
 
 			if ( !p || !*p )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT );
+				if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT, pErr );
 				return 0;
 			}
 			SetAttribute( attrib.Name(), attrib.Value() );
@@ -636,7 +644,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 
 			if ( !textNode )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY );
+				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0 );
 				    return 0;
 			}
 
@@ -674,7 +682,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 
 	if ( !p )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_READING_ELEMENT_VALUE );
+		if ( document ) document->SetError( TIXML_ERROR_READING_ELEMENT_VALUE, 0 );
 	}	
 	return p;
 }
@@ -704,7 +712,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p || *p != '<' )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_PARSING_UNKNOWN );
+		if ( document ) document->SetError( TIXML_ERROR_PARSING_UNKNOWN, p );
 		return 0;
 	}
 	++p;
@@ -718,7 +726,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 
 	if ( !p )
 	{
-		if ( document )	document->SetError( TIXML_ERROR_PARSING_UNKNOWN );
+		if ( document )	document->SetError( TIXML_ERROR_PARSING_UNKNOWN, 0 );
 	}
 	if ( *p == '>' )
 		return p+1;
@@ -756,7 +764,7 @@ const char* TiXmlComment::Parse( const char* p )
 
 	if ( !StringEqual( p, startTag, false ) )
 	{
-		document->SetError( TIXML_ERROR_PARSING_COMMENT );
+		document->SetError( TIXML_ERROR_PARSING_COMMENT, p );
 		return 0;
 	}
 	p += strlen( startTag );
@@ -771,16 +779,17 @@ const char* TiXmlAttribute::Parse( const char* p )
 	if ( !p || !*p ) return 0;
 
 	// Read the name, the '=' and the value.
+	const char* pErr = p;
 	p = ReadName( p, &name );
 	if ( !p || !*p )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
+		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, pErr );
 		return 0;
 	}
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p || *p != '=' )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
+		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, p );
 		return 0;
 	}
 
@@ -788,7 +797,7 @@ const char* TiXmlAttribute::Parse( const char* p )
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
+		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, p );
 		return 0;
 	}
 	
@@ -878,7 +887,7 @@ const char* TiXmlDeclaration::Parse( const char* p )
 	TiXmlDocument* document = GetDocument();
 	if ( !p || !*p || !StringEqual( p, "<?xml", true ) )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_PARSING_DECLARATION );
+		if ( document ) document->SetError( TIXML_ERROR_PARSING_DECLARATION, p );
 		return 0;
 	}
 
