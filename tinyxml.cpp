@@ -807,7 +807,7 @@ TiXmlNode* TiXmlComment::Clone() const
 }
 
 
-void TiXmlText::Print( FILE* cfile, int ) const
+void TiXmlText::Print( FILE* cfile, int /*depth*/ ) const
 {
 	TIXML_STRING buffer;
 	PutString( value, &buffer );
@@ -842,7 +842,7 @@ TiXmlDeclaration::TiXmlDeclaration( const char * _version,
 }
 
 
-void TiXmlDeclaration::Print( FILE* cfile, int ) const
+void TiXmlDeclaration::Print( FILE* cfile, int /*depth*/ ) const
 {
 	fprintf (cfile, "<?xml ");
 

@@ -12,7 +12,7 @@ redistribute it freely, subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must 
 not claim that you wrote the original software. If you use this
-software in a product, an acknowledgment in the product documentation 
+software in a product, an acknowledgment in the product documentation
 would be appreciated but is not required.
 
 2. Altered source versions must be plainly marked as such, and 
@@ -295,7 +295,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 			}
 		}
 	}
-	// We should have returned sooner. 
+	// We should have returned sooner.
 	SetError( TIXML_ERROR );
 }
 
@@ -323,19 +323,19 @@ const char* TiXmlDocument::Parse( const char* p )
 		SetError( TIXML_ERROR_DOCUMENT_EMPTY );
 		return false;
 	}
-	
+
 	while ( p && *p )
 	{
 		TiXmlNode* node = Identify( p );
 		if ( node )
-		{				
+		{
 			p = node->Parse( p );
 			LinkEndChild( node );
-		}		
+		}
 		else
 		{
 			break;
-		}		
+		}
 		p = SkipWhiteSpace( p );
 	}
 	// All is well.

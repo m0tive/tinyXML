@@ -151,7 +151,7 @@ protected:
 
 	// Get a character, while interpreting entities.
 	inline static const char* GetChar( const char* p, char* value )
-	{		
+	{
 		assert( p );
 		if ( *p == '&' )
 		{
