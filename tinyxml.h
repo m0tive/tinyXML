@@ -771,6 +771,11 @@ public:
 	*/
 	void SetAttribute( const char * name, int value );
 
+	/** Sets an attribute of name to a given value. The attribute
+		will be created if it does not exist, or changed if it does.
+	*/
+	void SetDoubleAttribute( const char * name, double value );
+
 	/** Deletes an attribute with the given name.
 	*/
 	void RemoveAttribute( const char * name );

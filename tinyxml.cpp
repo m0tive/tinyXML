@@ -532,6 +532,14 @@ void TiXmlElement::SetAttribute( const char * name, int val )
 }
 
 
+void TiXmlElement::SetDoubleAttribute( const char * name, double val )
+{	
+	char buf[128];
+	sprintf( buf, "%f", val );
+	SetAttribute( name, buf );
+}
+
+
 void TiXmlElement::SetAttribute( const char * name, const char * _value )
 {
 	TiXmlAttribute* node = attributeSet.Find( name );
