@@ -311,7 +311,14 @@ const char* TiXmlDocument::Parse( const char* p )
 	// read everything we can.
 
 
-	if ( !p || !*p  || !( p = SkipWhiteSpace( p ) ) )
+	if ( !p || !*p )
+	{
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY );
+		return false;
+	}
+
+    p = SkipWhiteSpace( p );
+	if ( !p )
 	{
 		SetError( TIXML_ERROR_DOCUMENT_EMPTY );
 		return false;
