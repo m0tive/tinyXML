@@ -72,7 +72,7 @@ TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 {
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
-		return false;
+		return 0;
 
 	return InsertEndChild( node );
 }
@@ -81,7 +81,7 @@ TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addThis )
 {
 	if ( beforeThis->parent != this )
-		return false;
+		return 0;
 	
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
@@ -100,7 +100,7 @@ TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode&
 TiXmlNode* TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& addThis )
 {
 	if ( afterThis->parent != this )
-		return false;
+		return 0;
 	
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
@@ -183,8 +183,6 @@ TiXmlNode* TiXmlNode::LastChild( const std::string& value ) const
 
 TiXmlNode* TiXmlNode::IterateChildren( TiXmlNode* previous )
 {
-	TiXmlNode* child = 0;
-
 	if ( !previous )
 	{
 		return FirstChild();
@@ -199,8 +197,6 @@ TiXmlNode* TiXmlNode::IterateChildren( TiXmlNode* previous )
 
 TiXmlNode* TiXmlNode::IterateChildren( const std::string& val, TiXmlNode* previous )
 {
-	TiXmlNode* child = 0;
-
 	if ( !previous )
 	{
 		return FirstChild( val );

@@ -317,8 +317,8 @@ class TiXmlAttribute : public TiXmlBase
 	std::string		name;
 	std::string		value;
 
-	TiXmlAttribute*	next;
 	TiXmlAttribute*	prev;
+	TiXmlAttribute*	next;
 };
 
 
