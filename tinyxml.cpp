@@ -497,36 +497,6 @@ void TiXmlDocument::Print( FILE* fp, int )
 }
 
 
-// TiXmlAttribute* TiXmlAttribute::Successor()
-// {
-// 	// The leftmost node of the right tree.
-// 	TiXmlAttribute* s = 0;
-// 
-// 	if ( right )
-// 	{
-// 		s = right;
-// 		while( s->left )
-// 			s = s->left;
-// 	}
-// 	return s;
-// }
-// 
-// 
-// TiXmlAttribute* TiXmlAttribute::Predecessor();
-// {
-// 	// The rightmost node of the left tree.
-// 	TiXmlAttribute* p = 0;
-// 
-// 	if ( left )
-// 	{
-// 		p = left;
-// 		while( p->right )
-// 			p = p->right;
-// 	}
-// 	return p;
-// }
-
-
 TiXmlAttribute* TiXmlAttribute::Next()
 {
 	// We are using knowledge of the sentinel. The sentinel
