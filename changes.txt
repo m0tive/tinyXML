@@ -171,3 +171,11 @@ Changes in version 2.1.5
   Volker Boerchers for finding the issue.
 - Ran the program though the magnificent Valgrind - http://valgrind.kde.org - to check
   for memory errors. Fixed some minor issues.
+
+2.3.3
+- Fixed crash when test program was run from incorrect directory.
+- Fixed bug 1070717 - empty document not returned correctly - thanks Katsuhisa Yuasa.
+- Bug 1079301 resolved - deprecated stdlib calls. Thanks Adrian Boeing.
+- Bug 1035218 fixed - documentation errors. Xunji Luo
+- Other bug fixes have accumulated and been fixed on the way as well; my apologies to
+  authors not credited!

@@ -929,6 +929,19 @@ int main()
             XmlTest( "ISO-8859-1 Parsing.", "CöntäntßäöüÄÖÜ", tHandle.Text()->Value() );
     }
 
+	{
+		// Empty documents should return TIXML_ERROR_PARSING_EMPTY, bug 1070717
+		const char* str = "    ";
+		TiXmlDocument doc;
+		doc.Parse( str );
+		XmlTest( "Empty document error TIXML_ERROR_DOCUMENT_EMPTY", TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY, doc.ErrorId() );
+	}
+
+	{
+		TiXmlString temp;
+		XmlTest( "Empty tinyxml string compare unequal", ( temp == "" ), false );
+	}
+
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );
 	QueryPerformanceFrequency( (LARGE_INTEGER*) (&freq) );

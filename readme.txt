@@ -344,7 +344,7 @@ file 'xmltest' will be created.
 
 <h3>To Use in an Application:</h3>
 
-Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, tinyxmlparser.cpp, and tinystr.cpp to your
+Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, tinyxmlparser.cpp, tinystr.cpp, and tinystr.h to your
 project or make file. That's it! It should compile on any reasonably
 compliant C++ system. You do not need to enable exceptions or
 RTTI for TinyXml.
@@ -429,8 +429,8 @@ TiXmlDocument				"demo.xml"
 			TiXmlText		"Go to the "
 			TiXmlElement    "bold"
 				TiXmlText	"Toy store!"
-	TiXmlElement			"Item"		Attributes: priority=2
-		TiXmlText			"bills"
+		TiXmlElement			"Item"		Attributes: priority=2
+			TiXmlText			"Do bills"
 @endverbatim
 
 <h2> Documentation </h2>

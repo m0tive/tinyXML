@@ -754,6 +754,12 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
 		p = SkipWhiteSpace( p, encoding );
 	}
 
+	// Was this empty?
+	if ( !firstChild ) {
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, encoding );
+		return 0;
+	}
+
 	// All is well.
 	return p;
 }
