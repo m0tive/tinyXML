@@ -120,4 +120,5 @@ Changes in version 2.1.5 (in progress)
 - A suggestion by Ronald Fenner Jr (dormlock) to add #include <istream> and <ostream> for Apple's Project Builder 
   (Patch request ID 697642)
 - A patch from ohommes that allows to parse correctly dots in element names and attribute names
-  (Patch request 602600)
+  (Patch request 602600 and kylotan 701728)
+- A patch from  hermitgeek ( James ) and wasteland for improper error reporting
