@@ -1,5 +1,6 @@
 #include "tinyxml.h"
 #include <iostream>
+#include <sstream>
 
 //
 // This file demonstrates some basic functionality of TinyXml.
@@ -20,7 +21,7 @@ int main()
 		"<ToDo>\n"
 		"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
 		"<Item priority=\"2\" distance='none'> Do bills   </Item>"
-		"<Item priority=\"2\" distance='far'> Look for Evil Dinosaurs! </Item>"
+		"<Item priority=\"2\" distance='far &amp; back'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
 	/* What the todo list should look like after processing.
@@ -159,22 +160,6 @@ int main()
 	printf( "** Demo doc processed to stream: ** \n\n" );
 	std::cout << doc << std::endl << std::endl;
 
-//	printf( "** Individual parsing tests: ** \n\n" );
-//	char buf[ 512 ];
-//	std::strstream stream( buf, sizeof( buf ), std::ios::in );
-//
-//	stream << "<TestElement name='testElement' />";
-//
-//	TiXmlElement elementIn( "test" );
-//	stream >> elementIn;
-//
-//	std::cout << "Element: " << elementIn << "\n";
-//
-//	std::istream
-//	std::string elementString = "<Element name='testElement' />";
-//	elementString >> elementIn;
-
-
 	// --------------------------------------------------------
 	// Different ways to walk the XML document.
 	// --------------------------------------------------------
@@ -227,11 +212,16 @@ int main()
 	}
 	printf( "The 'ToDo' element contains %d nodes with the value of 'Item'. (3)\n", count );
 	
-	/*
-	for( int i=0; i<1000; i++ )	
-		doc.LoadFile( "SmallRuleset1.xml" );
-	doc.SaveFile( "smalltest.xml" );
- 	*/
+
+	std::cout << "\n";
+	std::string buffer = "<B>This is &lt;text&gt; in an element</B>";
+	std::istringstream strm( buffer );
+
+	TiXmlElement streamTestElement( "invalid" );
+	strm >> streamTestElement;
+
+	
+
 	return 0;
 }
 

@@ -25,38 +25,59 @@ distribution.
 #include "tinyxml.h"
 #include <ctype.h>
 
-const char* TiXmlBase::SkipWhiteSpace( const char* p )
+bool TiXmlBase::SkipWhiteSpace( std::istream* in )
 {
-	while ( p && *p && 
-	        ( isspace( *p ) || *p == '\n' || *p == '\r' ) )
-		p++;
-	return p;
+	assert( in );
+//	while ( p && *p && 
+//	        ( isspace( *p ) || *p == '\n' || *p == '\r' ) )
+//		p++;
+//	return p;
+
+	while ( in->good() )
+	{
+		int c = in->peek();
+		if ( isspace( c ) || c == '\n' || c =='\r' )		// Still using old rules for white space.
+			in->get();
+		else
+			break;
+	}
+
+	return ( in->good() );
 }
 
-const char* TiXmlBase::ReadName( const char* p, std::string* name )
+bool TiXmlBase::ReadName( std::istream* in, std::string* name )
 {
 	*name = "";
-	const char* start = p;
+//	const char* start = p;
+	assert( in );
 
 	// Names start with letters or underscores.
 	// After that, they can be letters, underscores, numbers,
 	// hyphens, or colons. (Colons are valid ony for namespaces,
 	// but tinyxml can't tell namespaces from names.)
-	if ( p && ( isalpha( (unsigned char) *p ) || *p == '_' ) )
+	int c = in->peek();
+
+	if (    in->good() 
+		 && ( isalpha( c ) || c == '_' ) )
 	{
-		p++;
-		while( p && *p && 
-			   (   isalnum( (unsigned char) *p ) 
-			     || *p == '_'
-				 || *p == '-'
-				 || *p == ':' ) )
+		while(		in->good()
+				&&	(		isalnum( c ) 
+						 || c == '_'
+						 || c == '-'
+						 || c == ':' ) )
 		{
-			p++;
+			in->get();		// pull c off the stream.
+			(*name) += c;
+
+			// Check next time around:
+			c = in->peek();
 		}
-		name->append( start, p - start );
-		return p;
+//		name->append( start, p - start );
+//		return p;
+		return true;
 	}
-	return 0;
+	return false;
+//	return 0;
 }
 
 
@@ -70,71 +91,91 @@ TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] =
 };
 
 
-const char* TiXmlBase::GetEntity( const char* in, char* value )
+void TiXmlBase::GetEntity( std::istream* in, int* value )
 {
 	assert( in );
-	for( int i=0; i<NUM_ENTITY; ++i )
+	
+	// Presume an entity, and pull it out.
+	int pulled = 0;
+	std::string ent;
+	int c = 0;
+	int i;
+
+	while ( pulled < MAX_ENTITY_LENGTH )
 	{
-		if ( strncmp( in, entity[i].str, entity[i].strLength ) == 0 )
+		c = in->get();
+		ent += ((char) c );
+		++pulled;
+
+		if ( c == ';' )
+			break;
+	}	
+
+	// Now try to match it.
+	for( i=0; i<NUM_ENTITY; ++i )
+	{
+		//if ( strncmp( in, entity[i].str, entity[i].strLength ) == 0 )
+		if ( ent == entity[i].str )
 		{
 			*value = entity[i].chr;
-			return ( in + entity[i].strLength );
+			return;
 		}
 	}
-	// Technically, this should be an error, but be forgiving.
-	*value = *in;
-	return ( in + 1 );
+	
+	// So it wasn't an entity, its unrecognized, or something like that.
+	// Pull one character, but put the rest back.
+	if ( ent.empty() )
+	{
+		*value = 0;
+		return;
+	}
+	for( i=ent.length()-1; i>0; --i )
+	{
+		in->putback( ent[i] );
+	}
+	*value = ent[0];	// Don't put back the last one!
 }
 
 
-const char* TiXmlBase::ReadText(	const char* p, std::string* text, 
-									bool ignoreWhiteSpace, 
-									int numEndTag, const char* endTag[], bool endOnWhite )
+bool TiXmlBase::StreamEqual( std::istream* in, int numEndTag, const char** endTag )
 {
-	const int MAXENDTAG = 16;
-	assert( numEndTag < MAXENDTAG );
+	int i;
+	assert( in );
+
+	for( i=0; i<numEndTag; ++i )
+	{
+		if ( in->peek() == *endTag[i] )
+		{
+			// First letters match.
+			std::string str;
+			int len = strlen( endTag[i] );
+
+
+
+
+	
+}
+
+
+bool TiXmlBase::ReadText(	std::istream* in, std::string* text, 
+							bool ignoreWhiteSpace, 
+							int numEndTag, const char* endTag[], 
+							bool endOnWhite )
+{
+	assert( in );
 	*text = "";
 	int i;
 
-	int endTagLen[MAXENDTAG];
-	for ( i = 0; i<numEndTag; ++i )
-	{
-		endTagLen[i] = strlen( endTag[i] );
-	}
-
-	// If there can be multiple ends, find the nearest.
-	char* end = 0;
-	char* q;
-	for( i=0; i<numEndTag; ++i )
-	{
-		if ( q = strstr( p, endTag[i] ) )
-		{
-			if ( end )
-			{
-				if ( q < end ) 
-					end = q;
-			}
-			else
-			{
-				end = q;
-			}
-		}	
-	}
-
-	if ( !end )
-	{
-		return 0;
-	}
-
 	if ( !ignoreWhiteSpace )
 	{
-		// Keep all the white space, if we have a document, and it is set to
-		// keep the white space.
-
-		while ( *p && p < end )
+		// Keep all the white space.
+		while ( in->good()
+				&& !StreamEqual( in, numEndTag, endTag ) )
 		{
 			char c;
-			p = GetChar( p, &c );
+			int  i;
+			GetChar( in, &i );
+			c = (char) i;
 			text->append( &c, 1 );
 		}
 	}
@@ -143,15 +184,15 @@ const char* TiXmlBase::ReadText(	const char* p, std::string* text,
 		bool whitespace = false;
 
 		// Remove leading white space:
-		p = SkipWhiteSpace( p );
-		while (	*p && p < end ) 
+		SkipWhiteSpace( in );
+		while (	in->good() && !StreamEqual( in, numEndTag, endTag ) )
 		{
-			if ( *p == '\r' || *p == '\n' )
+			if ( in->peek() == '\r' || in->peek() == '\n' )
 			{
 				whitespace = true;
-				++p;
+				in->get();
 			}
-			else if ( isspace( *p ) )
+			else if ( isspace( in->peek() ) )
 			{
 				if ( endOnWhite )
 				{
@@ -160,7 +201,7 @@ const char* TiXmlBase::ReadText(	const char* p, std::string* text,
 				else
 				{
 					whitespace = true;
-					++p;
+					in->get();
 				}
 			}
 			else
@@ -172,8 +213,10 @@ const char* TiXmlBase::ReadText(	const char* p, std::string* text,
 					text->append( " ", 1 );
 					whitespace = false;
 				}
+				int i;
 				char c;
-				p = GetChar( p, &c );
+				GetChar( in, &i );
+				c = ( char ) i;
 				text->append( &c, 1 );
 			}
 		}
@@ -183,7 +226,8 @@ const char* TiXmlBase::ReadText(	const char* p, std::string* text,
 //			text->append( " ", 1 );
 //		}
 	}
-	return p;
+//	return p;
+	return ( in->good() );
 }
 
 

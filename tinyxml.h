@@ -103,55 +103,60 @@ class TiXmlBase
 		return out;
 	}
 
-//	/**	An input stream operator, for every class. 
-//		Not yet implemented.
-//
-//		See the notes for operator<< about the symmetry issue.
-//	*/
-//	friend std::istream& operator>> ( std::istream& in, TiXmlBase& base );
+	friend std::istream& operator>> ( std::istream& in, TiXmlBase& base )
+	{
+		base.Parse( &in );
+		return in;
+	}
 
   protected:
 	/*	General parsing helper method. Takes a pointer in,
 		skips all the white space it finds, and returns a pointer
 		to the first non-whitespace data.
 	*/
-	static const char* SkipWhiteSpace( const char* p );
+	static bool SkipWhiteSpace( std::istream* in );
 
 	/*	Reads an XML name into the string provided. Returns
 		a pointer just past the last character of the name, 
 		or 0 if the function has an error.
 	*/
-	static const char* ReadName( const char* p, std::string* name );
+	static bool ReadName( std::istream* in, std::string* name );
 
 	/*	Reads text, either skipping or leaving the whitespace as is.
 		
 	*/
-	static const char* ReadText(	const char* p,				// where to start
+	static bool ReadText(	std::istream* in,			// where to start
 									std::string* text,			// the string read
 									bool ignoreWhiteSpace,		// whether to keep the white space
 									int	 numEndTag,				// how many end tags there are
 									const char** endTag,		// array of "tails"
 									bool endOnWhite );			// additional end condition: stop on white space. (Only valid if not ignoring whitespace, of course)
 
-	virtual const char* Parse( const char* in ) = 0;
+	virtual bool Parse( std::istream* in ) = 0;
 
-	static const char* GetEntity( const char* in, char* value );
+	// If an entity has been found, transform it into a character.
+	static void GetEntity( std::istream* in, int* value );
 
 	/*	Get a character, while interpreting entities.
 	*/
-	inline static const char* GetChar( const char* in, char* value ){	assert( in );
-																		if ( *in == '&' ) 
+	inline static void GetChar( std::istream* in, int* value )		{		
+																		assert( in );
+																		if ( in->peek() == '&' ) 
 																		{
-																			return GetEntity( in, value );
+																			GetEntity( in, value );
 																		}
 																		else 
 																		{
-																			*value = *in;
-																			return ( in + 1 );
+																			*value = in->get();
 																		}
 																	}
 
-//	static const char* PutChar( const char* in, 
+	// Puts a string to a stream, expanding entities as it goes.
+	// Note this should not contian the '<', '>', etc, or they will be transformed into entities!
+	static void PutString( const std::string& str, std::ostream* stream );
+
+	// Return true if the next characters in the stream are any of the endTag sequences.
+	bool StreamEqual( std::istream* in, int numEndTag, const char** endTag );
 
 	enum
 	{
@@ -183,7 +188,9 @@ class TiXmlBase
 	};
 	enum
 	{
-		NUM_ENTITY = 5
+		NUM_ENTITY = 5,
+		MAX_ENTITY_LENGTH = 5
+
 	};
 	static Entity entity[ NUM_ENTITY ];
 };
@@ -404,7 +411,7 @@ class TiXmlAttribute : public TiXmlBase
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/	
-	const char* Parse( const char* in );
+	bool Parse( std::istream* in );
 
 	// [internal use] 
  	virtual void Print( std::ostream* stream, int depth ) const;
@@ -507,8 +514,8 @@ class TiXmlElement : public TiXmlNode
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* in );
-	const char* ReadValue( const char* p );
+	virtual bool Parse( std::istream* in );
+	bool ReadValue( std::istream* in );
 
   private:
 	TiXmlAttributeSet attributeSet;
@@ -534,7 +541,7 @@ class TiXmlComment : public TiXmlNode
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* in );
+	virtual bool Parse( std::istream* in );
 };
 
 
@@ -558,7 +565,7 @@ class TiXmlText : public TiXmlNode
 		Attribtue parsing starts: First char of the text
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* in );
+	virtual bool Parse( std::istream* in );
 };
 
 
@@ -605,7 +612,7 @@ class TiXmlDeclaration : public TiXmlNode
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 	
-	virtual const char* Parse( const char* in );
+	virtual bool Parse( std::istream* in );
 
   private:
 	std::string version;
@@ -635,7 +642,7 @@ class TiXmlUnknown : public TiXmlNode
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/	
-	virtual const char* Parse( const char* in );
+	virtual bool Parse( std::istream* in );
 };
 
 
@@ -666,7 +673,7 @@ class TiXmlDocument : public TiXmlNode
 	bool SaveFile( const std::string& filename ) const;
 
 	/// Parse the given null terminated block of xml data.
-	const char* Parse( const char* in );
+	bool Parse( std::istream* in );
 
 	/** Turn on or off white space sensitivity. No one seems to agree on what
 		the correct behavior is, so this function will change the parsing to

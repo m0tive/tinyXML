@@ -27,6 +27,27 @@ distribution.
 #include "tinyxml.h"
 
 
+void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
+{
+	// fixme: is there a better (speed) way to do this?
+	int i, j;
+
+	for( i=0; i<str.length(); ++i )
+	{
+		for ( j=0; j<NUM_ENTITY; ++j )
+		{
+			if ( str[i] == entity[j].chr )
+			{
+				stream->write( entity[j].str, entity[j].strLength );
+				break;
+			}
+		}
+		if ( j == NUM_ENTITY )
+		{
+			stream->put( str[i] );
+		}
+	}
+}
 
 
 TiXmlNode::TiXmlNode( NodeType _type )
@@ -430,14 +451,11 @@ void TiXmlElement::Print( std::ostream* stream, int depth ) const
 		(*stream) << "    ";
 	}
 
-// 	fprintf( fp, "<%s", value.c_str() );
 	(*stream) << "<" << value;
 
 	TiXmlAttribute* attrib;
 	for ( attrib = attributeSet.First(); attrib; attrib = attrib->Next() )
 	{	
-// 		fprintf( fp, " " );
-// 		attrib->Print( fp, 0 );
 		(*stream) << " ";
 		(*stream) << (*attrib);
 	}
@@ -446,7 +464,6 @@ void TiXmlElement::Print( std::ostream* stream, int depth ) const
 	TiXmlNode* node;
 	if ( firstChild )
 	{ 		
-// 		fprintf( fp, ">" );
 		(*stream) << ">";
 
 		for ( node = firstChild; node; node=node->NextSibling() )
@@ -458,31 +475,26 @@ void TiXmlElement::Print( std::ostream* stream, int depth ) const
 				if ( depth >= 0 )
 				{
 					(*stream) << "\n";
-		}
-	}
+				}
+			}
 			//node->Print( fp, depth+1 );
 			if ( depth >= 0 )
 				node->Print( stream, depth+1 ); 
-	else
+			else
 				node->Print( stream, depth );
 		}
-//  	fprintf( fp, "\n" );
-// 		for ( i=0; i<depth; i++ )
-// 			fprintf( fp, "    " );
-// 		fprintf( fp, "</%s>", value.c_str() );
 		if ( depth >= 0	)			// -1 is a special value for unformatted output
-	{
+		{
 			(*stream) << "\n";
-	}
+		}
 		for( i=0; i<depth; ++i )
 			(*stream) << "    ";
 		(*stream) << "</" << value << ">";
 	}
 	else
 	{
-// 		fprintf( fp, " />" );
 		(*stream) << " />";
-}
+	}
 }
 
 
@@ -551,21 +563,21 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 
 	if ( file.is_open() )
 	{
-		// Bring the entire file into a string, so we can
-		// parse it. This wouldn't be necessary, if the
-		// parser could handle istreams...
-
-		int c = file.get();
-		std::string buffer;
-		buffer.reserve( 1024 );		// Get rid of a bunch of small initial allocations.
-
-		while ( c > 0 )
-		{
-			buffer += c;
-			c = file.get();
-		}	
-
-		Parse( buffer.c_str() );
+//		// Bring the entire file into a string, so we can
+//		// parse it. This wouldn't be necessary, if the
+//		// parser could handle istreams...
+//
+//		int c = file.get();
+//		std::string buffer;
+//		buffer.reserve( 1024 );		// Get rid of a bunch of small initial allocations.
+//
+//		while ( c > 0 )
+//		{
+//			buffer += c;
+//			c = file.get();
+//		}	
+//
+		Parse( &file );
 		if (  !Error() )
 		{
 			return true;
@@ -661,11 +673,19 @@ TiXmlAttribute* TiXmlAttribute::Previous() const
 void TiXmlAttribute::Print( std::ostream* stream, int depth ) const
 {
 	if ( value.find( '\"' ) != std::string::npos )
-		(*stream) << name << "=" << "'" << value << "'";
-// 		fprintf( fp, "%s='%s'", name.c_str(), value.c_str() );
+	{
+		PutString( name, stream );
+		(*stream) << "=" << "'";
+		PutString( value, stream );
+		(*stream) << "'";
+	}
 	else
-		(*stream) << name << "=" << "\"" << value << "\"";
-// 		fprintf( fp, "%s=\"%s\"", name.c_str(), value.c_str() );
+	{
+		PutString( name, stream );
+		(*stream) << "=" << "\"";
+		PutString( value, stream );
+		(*stream) << "\"";
+	}
 }
 
 
@@ -711,9 +731,9 @@ void TiXmlComment::Print( std::ostream* stream, int depth ) const
 	{
 		(*stream) << "    ";
 	}
-// 		fprintf( fp, "    " );
-// 	fprintf( fp, "<!--%s-->", value.c_str() );
-	(*stream) << "<!--" << value << "-->";
+	(*stream) << "<!--";
+	PutString( value, stream );
+	(*stream) << "-->";
 }
 
 
@@ -731,8 +751,8 @@ TiXmlNode* TiXmlComment::Clone() const
 
 void TiXmlText::Print( std::ostream* stream, int depth ) const
 {
-// 	fprintf( fp, "%s", value.c_str() );
-	(*stream) << value;
+//	(*stream) << value;
+	PutString( value, stream );
 }
 
 
@@ -762,30 +782,33 @@ TiXmlDeclaration::TiXmlDeclaration( const std::string& _version,
 
 void TiXmlDeclaration::Print( std::ostream* stream, int depth ) const
 {
-	std::string out = "<?xml ";
+	(*stream) << "<?xml ";
 
 	if ( !version.empty() )
 	{
-		out += "version=\"";
-		out += version;
-		out += "\" ";
+		(*stream) << "version=\"";
+		PutString( version, stream );
+//		out += version;
+		(*stream) << "\" ";
 	}
 	if ( !encoding.empty() )
 	{
-		out += "encoding=\"";
-		out += encoding;
-		out += "\" ";
+		(*stream) << "encoding=\"";
+//		out += encoding;
+		PutString( encoding, stream );
+		(*stream ) << "\" ";
 	}
 	if ( !standalone.empty() )
 	{
-		out += "standalone=\"";
-		out += standalone;
-		out += "\" ";
+		(*stream) << "standalone=\"";
+//		out += standalone;	
+		PutString( standalone, stream );
+		(*stream) << "\" ";
 	}
-	out += "?>";
+//	out += "?>";
+	(*stream) << "?>";
 
-// 	fprintf( fp, "%s", out.c_str() );
-	(*stream) << out;
+//	(*stream) << out;
 }
 
 
@@ -808,9 +831,7 @@ void TiXmlUnknown::Print( std::ostream* stream, int depth ) const
 {
 	for ( int i=0; i<depth; i++ )
 		(*stream) << "    ";
-// 		fprintf( fp, "    " );
-// 	fprintf( fp, "<%s>", value.c_str() );
-	(*stream) << "<" << value << ">";
+	(*stream) << "<" << value << ">";		// Don't use entities hear! It is unknown.
 }
 
 
