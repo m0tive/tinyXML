@@ -379,6 +379,9 @@ class TiXmlUnknown : public TiXmlNode
 	and Unknown, you need to override the methods of factory.
 	The first method call made on TiXmlDocument should be 
 	SetFactory.
+
+	NOTE: This class is experimental: there has not been much 
+		  testing and is subject to change.
 */
 class TiXmlFactory
 {

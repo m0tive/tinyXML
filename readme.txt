@@ -216,6 +216,6 @@ use TinyXml. I hope you enjoy it and find it useful.
 
 Lee Thomason
 
-leethomason@sourceforge.net
+leethomason@users.sourceforge.net
 
 */
