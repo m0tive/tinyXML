@@ -11,7 +11,7 @@
 DEBUG          := NO
 
 # PROFILE can be set to YES to include profiling info, or NO otherwise
-PROFILE        := NO
+PROFILE        := YES
 
 #****************************************************************************
 
@@ -22,7 +22,7 @@ AR     := ar rc
 RANLIB := ranlib
 
 DEBUG_CFLAGS     := -Wall -Wno-unknown-pragmas -Wno-format -g -DDEBUG
-RELEASE_CFLAGS   := -Wall -Wno-unknown-pragmas -Wno-format -O2
+RELEASE_CFLAGS   := -Wall -Wno-unknown-pragmas -Wno-format -O3
 
 LIBS		 :=
 
@@ -43,8 +43,8 @@ else
 endif
 
 ifeq (YES, ${PROFILE})
-   CFLAGS   := ${CFLAGS} -pg
-   CXXFLAGS := ${CXXFLAGS} -pg
+   CFLAGS   := ${CFLAGS} -pg -O3
+   CXXFLAGS := ${CXXFLAGS} -pg -O3
    LDFLAGS  := ${LDFLAGS} -pg
 endif
 

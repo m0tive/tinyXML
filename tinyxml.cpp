@@ -36,7 +36,7 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_OSTREAM* stream )
 
 void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 {
-	int i=0, j=0;
+	int i=0;
 
 	while( i<(int)str.length() )
 	{
@@ -83,9 +83,10 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 			outString->append( entity[4].str, entity[4].strLength );
 			++i;
 		}
-		else if ( c < 32 || c > 127 )
+		else if ( c < 32 || c > 126 )
 		{
 			// Easy pass at non-alpha/numeric/symbol
+			// 127 is the delete key. Below 32 is symbolic.
 			char buf[ 32 ];
 			sprintf( buf, "&#x%02X;", (unsigned) ( c & 0xff ) );
 			outString->append( buf, strlen( buf ) );
