@@ -99,3 +99,9 @@ Continuing OptionalSTL-branch (May 3rd, 2002)
 - fixed : TiXmlInStream never gets used. (It's pure abstract. It wouldn't link if it did.)
 	#ifdef it out?
 - still to do : document / clean up API so that users won't be scared away by TIXML_ #defines
+
+Continuing OptionalSTL-branch (May 4th, 2002)
+- defined 2 new configurations for Win32 (Win32 Debug STL and Win32 Release STL)
+- Code cleanup - tabs set to 4 chars
+- still to do : modify gnu makefile
+- still to do : document API so that users won't be scared away by TIXML_ #defines

@@ -112,7 +112,7 @@ const char* TiXmlBase::ReadName( const char* p, TIXML_STRING * name )
 const char* TiXmlBase::GetEntity( const char* p, char* value )
 {
 	// Presume an entity, and pull it out.
-   TIXML_STRING ent;
+    TIXML_STRING ent;
 	int i;
 
 	// Ignore the &#x entities.
@@ -190,7 +190,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 									const char* endTag, 
 									bool caseInsensitive )
 {
-   *text = "";
+    *text = "";
 	if (    !trimWhiteSpace			// certain tags always keep whitespace
 		 || !condenseWhiteSpace )	// if true, whitespace is always kept
 	{
@@ -201,7 +201,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 		{
 			char c;
 			p = GetChar( p, &c );
-         (* text) += c;
+            (* text) += c;
 		}
 	}
 	else
@@ -242,6 +242,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 }
 
 #ifdef TIXML_USE_STL
+
 void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	// The basic issue with a document is that we don't know what we're
@@ -297,6 +298,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	// We should have returned sooner. 
 	SetError( TIXML_ERROR );
 }
+
 #endif
 
 const char* TiXmlDocument::Parse( const char* p )
@@ -407,6 +409,7 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 }
 
 #ifdef TIXML_USE_STL
+
 void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 {
 	// We're called with some amount of pre-parsing. That is, some of "this"
@@ -511,7 +514,6 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 }
 #endif
 
-
 const char* TiXmlElement::Parse( const char* p )
 {
 	p = SkipWhiteSpace( p );
@@ -526,14 +528,14 @@ const char* TiXmlElement::Parse( const char* p )
 	p = SkipWhiteSpace( p+1 );
 
 	// Read the name.
-   p = ReadName( p, &value );
+    p = ReadName( p, &value );
 	if ( !p || !*p )
 	{
 		if ( document )	document->SetError( TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME );
 		return false;
 	}
 
-   TIXML_STRING endTag ("</");
+    TIXML_STRING endTag ("</");
 	endTag += value;
 	endTag += ">";
 
@@ -607,15 +609,6 @@ const char* TiXmlElement::ReadValue( const char* p )
 	p = SkipWhiteSpace( p );
 	while ( p && *p )
 	{
-//		string text;
-//		while ( p && *p && *p != '<' )
-//		{
-//			text += (*p);
-//			++p;
-//		}
-//
-//		p = SkipWhiteSpace( p );
-
 		if ( *p != '<' )
 		{
 			// Take what we have, make a text element.
@@ -624,7 +617,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 			if ( !textNode )
 			{
 				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY );
-				return 0;
+				    return 0;
 			}
 
 			p = textNode->Parse( p );
@@ -695,7 +688,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 		return 0;
 	}
 	++p;
-   value = "";
+    value = "";
 
 	while ( p && *p && *p != '>' )
 	{

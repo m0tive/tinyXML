@@ -406,11 +406,6 @@ TiXmlDocument* TiXmlNode::GetDocument() const
 }
 
 
-	// TiXmlElement::TiXmlElement()
-	// 	: TiXmlNode( TiXmlNode::ELEMENT )
-	// {
-	// }
-
 TiXmlElement::TiXmlElement (const char * _value)
 : TiXmlNode( TiXmlNode::ELEMENT )
 {

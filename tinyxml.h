@@ -56,7 +56,6 @@ distribution.
 #else
 	#include "tinystr.h"
 	#define TIXML_STRING	TiXmlString
-//	#define TIXML_ISTREAM	TiXmlInStream
 	#define TIXML_OSTREAM	TiXmlOutStream
 #endif
 
@@ -127,8 +126,8 @@ protected:
 	virtual void StreamOut (TIXML_OSTREAM *) const = 0;
 
 	#ifdef TIXML_USE_STL
-	static bool	StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag );
-	static bool StreamTo( TIXML_ISTREAM * in, int character, TIXML_STRING * tag );
+	    static bool	StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	    static bool StreamTo( TIXML_ISTREAM * in, int character, TIXML_STRING * tag );
 	#endif
 
 	/*	Reads an XML name into the string provided. Returns
@@ -230,31 +229,31 @@ class TiXmlNode : public TiXmlBase
 public:
 	#ifdef TIXML_USE_STL	
 
-	/** An input stream operator, for every class. Tolerant of newlines and
-		formatting, but doesn't expect them.
-	*/
-	friend std::istream& operator >> (std::istream& in, TiXmlNode& base);
+	    /** An input stream operator, for every class. Tolerant of newlines and
+		    formatting, but doesn't expect them.
+	    */
+	    friend std::istream& operator >> (std::istream& in, TiXmlNode& base);
 
-	/** An output stream operator, for every class. Note that this outputs
-		without any newlines or formatting, as opposed to Print(), which
-		includes tabs and new lines.
+	    /** An output stream operator, for every class. Note that this outputs
+		    without any newlines or formatting, as opposed to Print(), which
+		    includes tabs and new lines.
 
-		The operator<< and operator>> are not completely symmetric. Writing
-		a node to a stream is very well defined. You'll get a nice stream
-		of output, without any extra whitespace or newlines.
-		
-		But reading is not as well defined. (As it always is.) If you create
-		a TiXmlElement (for example) and read that from an input stream,
-		the text needs to define an element or junk will result. This is
-		true of all input streams, but it's worth keeping in mind.
+		    The operator<< and operator>> are not completely symmetric. Writing
+		    a node to a stream is very well defined. You'll get a nice stream
+		    of output, without any extra whitespace or newlines.
+		    
+		    But reading is not as well defined. (As it always is.) If you create
+		    a TiXmlElement (for example) and read that from an input stream,
+		    the text needs to define an element or junk will result. This is
+		    true of all input streams, but it's worth keeping in mind.
 
-		A TiXmlDocument will read nodes until it reads a root element.
-	*/	
-	friend std::ostream & operator<< (std::ostream& out, const TiXmlNode& base);
+		    A TiXmlDocument will read nodes until it reads a root element.
+	    */	
+	    friend std::ostream & operator<< (std::ostream& out, const TiXmlNode& base);
 
 	#else
-	// Used internally, not part of the public API.
-	friend TIXML_OSTREAM& operator<< (TIXML_OSTREAM& out, const TiXmlNode& base);
+	    // Used internally, not part of the public API.
+	    friend TIXML_OSTREAM& operator<< (TIXML_OSTREAM& out, const TiXmlNode& base);
 	#endif
 
 	/** The types of XML nodes supported by TinyXml. (All the
@@ -403,47 +402,47 @@ public:
 
 	virtual TiXmlNode* Clone() const = 0;
 
-#ifdef TIXML_USE_STL
-	void SetValue( const std::string& value )
-	{
-		SetValue (value . c_str ());
-	}
-	TiXmlNode* FirstChild( const std::string& value ) const
-	{
-		return FirstChild (value . c_str ());
-	}
-	TiXmlNode* LastChild( const std::string& value ) const
-	{
-		return LastChild (value . c_str ());
-	}
-	TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous ) const
-	{
-		return IterateChildren (value . c_str (), previous);
-	}
-	TiXmlNode* PreviousSibling( const std::string& value ) const
-	{
-		return PreviousSibling (value . c_str ());
-	}
-	TiXmlNode* NextSibling( const std::string& value) const
-	{
-		return NextSibling (value . c_str ());
-	}
-	TiXmlElement* NextSiblingElement( const std::string& value) const
-	{
-		return NextSiblingElement (value . c_str ());
-	}
-	TiXmlElement* FirstChildElement( const std::string& value ) const
-	{
-		return FirstChildElement (value . c_str ());
-	}
-#endif
+    #ifdef TIXML_USE_STL
+	    void SetValue( const std::string& value )
+	    {
+		    SetValue (value . c_str ());
+	    }
+	    TiXmlNode* FirstChild( const std::string& value ) const
+	    {
+		    return FirstChild (value . c_str ());
+	    }
+	    TiXmlNode* LastChild( const std::string& value ) const
+	    {
+		    return LastChild (value . c_str ());
+	    }
+	    TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous ) const
+	    {
+		    return IterateChildren (value . c_str (), previous);
+	    }
+	    TiXmlNode* PreviousSibling( const std::string& value ) const
+	    {
+		    return PreviousSibling (value . c_str ());
+	    }
+	    TiXmlNode* NextSibling( const std::string& value) const
+	    {
+		    return NextSibling (value . c_str ());
+	    }
+	    TiXmlElement* NextSiblingElement( const std::string& value) const
+	    {
+		    return NextSiblingElement (value . c_str ());
+	    }
+	    TiXmlElement* FirstChildElement( const std::string& value ) const
+	    {
+		    return FirstChildElement (value . c_str ());
+	    }
+    #endif
 
 protected:
 	TiXmlNode( NodeType type );
 
 	#ifdef TIXML_USE_STL
-	// The real work of the input operator.
-	virtual void StreamIn( TIXML_ISTREAM* in, TIXML_STRING* tag ) = 0;
+	    // The real work of the input operator.
+	    virtual void StreamIn( TIXML_ISTREAM* in, TIXML_STRING* tag ) = 0;
 	#endif
 
 	// The node is passed in by ownership. This object will delete it.
@@ -521,21 +520,21 @@ public:
 	// Set the document pointer so the attribute can report errors.
 	void SetDocument( TiXmlDocument* doc )	{ document = doc; }
 
-#ifdef TIXML_USE_STL
-	TiXmlAttribute( const std::string& _name, const std::string& _value )
-	{
-		name = _name . c_str ();
-		value = _value . c_str ();
-	}
-	void SetName( const std::string& _name )
-	{
-		SetName (_name . c_str ());
-	}
-	void SetValue( const std::string& _value )
-	{
-		SetValue (_value . c_str ());
-	}
-#endif
+    #ifdef TIXML_USE_STL
+	    TiXmlAttribute( const std::string& _name, const std::string& _value )
+	    {
+		    name = _name . c_str ();
+		    value = _value . c_str ();
+	    }
+	    void SetName( const std::string& _name )
+	    {
+		    SetName (_name . c_str ());
+	    }
+	    void SetValue( const std::string& _value )
+	    {
+		    SetValue (_value . c_str ());
+	    }
+    #endif
 
 private:
 	TiXmlDocument*	document;	// A pointer back to a document, for error reporting.
@@ -620,31 +619,31 @@ public:
 
 	virtual void Print( FILE* cfile, int depth ) const;
 
-#ifdef TIXML_USE_STL
-	TiXmlElement( const std::string& _value ) : 	TiXmlNode( TiXmlNode::ELEMENT )
-	{
-		firstChild = lastChild = 0;
-		value = _value . c_str ();
-	}
-	void SetAttribute( const std::string& name, const std::string& value )
-	{
-		SetAttribute (name . c_str (), value . c_str ());
-	}
-	void SetAttribute( const std::string& name, int value )
-	{
-		SetAttribute (name . c_str (), value);
-	}
-	void RemoveAttribute( const std::string& name )
-	{
-		RemoveAttribute (name . c_str ());
-	}
-#endif
+    #ifdef TIXML_USE_STL
+	    TiXmlElement( const std::string& _value ) : 	TiXmlNode( TiXmlNode::ELEMENT )
+	    {
+		    firstChild = lastChild = 0;
+		    value = _value . c_str ();
+	    }
+	    void SetAttribute( const std::string& name, const std::string& value )
+	    {
+		    SetAttribute (name . c_str (), value . c_str ());
+	    }
+	    void SetAttribute( const std::string& name, int value )
+	    {
+		    SetAttribute (name . c_str (), value);
+	    }
+	    void RemoveAttribute( const std::string& name )
+	    {
+		    RemoveAttribute (name . c_str ());
+	    }
+    #endif
 
 protected:
 
 	// Used to be public [internal use]
 	#ifdef TIXML_USE_STL
-	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
 	virtual void StreamOut( TIXML_OSTREAM * out ) const;
 
@@ -681,7 +680,7 @@ public:
 protected:
 	// used to be public
 	#ifdef TIXML_USE_STL
-	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
 	virtual void StreamOut( TIXML_OSTREAM * out ) const;
 	/*	[internal use]
@@ -723,7 +722,7 @@ protected :
 	virtual const char* Parse( const char* p );
 	// [internal use]
 	#ifdef TIXML_USE_STL
-	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
 };
 
@@ -781,7 +780,7 @@ public:
 protected:
 	// used to be public
 	#ifdef TIXML_USE_STL
-	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
 	//	[internal use]
@@ -815,7 +814,7 @@ public:
 protected:
 	// used to be public
 	#ifdef TIXML_USE_STL
-	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
 	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
 	/*	[internal use]
@@ -888,7 +887,7 @@ public:
 
 #ifdef TIXML_USE_STL
 	TiXmlDocument( const std::string& documentName ) :
-	TiXmlNode( TiXmlNode::DOCUMENT )
+	    TiXmlNode( TiXmlNode::DOCUMENT )
 	{
 		error = false;
 	}
@@ -902,7 +901,7 @@ protected :
 	// [internal use]
 	virtual TiXmlNode* Clone() const;
 	#ifdef TIXML_USE_STL
-	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
 
 private:
