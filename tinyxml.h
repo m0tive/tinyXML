@@ -840,6 +840,7 @@ public:
 	TiXmlDocument( const std::string& documentName ) :
 	    TiXmlNode( TiXmlNode::DOCUMENT )
 	{
+        value = documentName;
 		error = false;
 	}
 	#endif
