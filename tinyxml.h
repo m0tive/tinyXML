@@ -370,6 +370,18 @@ public:
 	*/
 	TiXmlNode* InsertEndChild( const TiXmlNode& addThis );
 
+
+	/** Add a new node related to this. Adds a child past the LastChild.
+
+		NOTE: the node to be added is passed by pointer, and will be
+		henceforth owned (and deleted) by tinyXml. This method is efficient
+		and avoids an extra copy, but should be used with care as it
+		uses a different memory model than the other insert functions.
+
+		@sa InsertEndChild
+	*/
+	TiXmlNode* LinkEndChild( TiXmlNode* addThis );
+
 	/** Add a new node related to this. Adds a child before the specified child.
 		Returns a pointer to the new object or NULL if an error occured.
 	*/
@@ -461,9 +473,6 @@ protected:
 	    // The real work of the input operator.
 	    virtual void StreamIn( TIXML_ISTREAM* in, TIXML_STRING* tag ) = 0;
 	#endif
-
-	// The node is passed in by ownership. This object will delete it.
-	TiXmlNode* LinkEndChild( TiXmlNode* addThis );
 
 	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
 	TiXmlNode* Identify( const char* start );
@@ -757,11 +766,12 @@ public:
 	}
 	#endif
 
+	// [internal use]
+	virtual void Print( FILE* cfile, int depth ) const;
+
 protected :
 	// [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
-	// [internal use]
-	virtual void Print( FILE* cfile, int depth ) const;
 	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
 	// [internal use]
 	bool Blank() const;	// returns true if all white space and new lines

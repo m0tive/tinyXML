@@ -26,12 +26,19 @@ cp tinystr.cpp tinyxml
 
 cp tinystr.h tinyxml
 cp tinyxml.h tinyxml
-cp tinyxml.dsp tinyxml
+
+cp echo.dsp tinyxml
+cp tinyXmlTest.dsp tinyxml
+cp tinyXmlTestSTL.dsp tinyxml
 cp tinyxml_lib.dsp tinyxml
-cp xmltest.dsp tinyxml
-recode lat1..ibmpc ./tinyxml/tinyxml.dsp
+cp tinyxmlSTL.dsp tinyxml
+cp tinyxml.dsw tinyxml
+recode lat1..ibmpc ./tinyxml/echo.dsp
+recode lat1..ibmpc ./tinyxml/tinyXmlTest.dsp
+recode lat1..ibmpc ./tinyxml/tinyXmlTestSTL.dsp
 recode lat1..ibmpc ./tinyxml/tinyxml_lib.dsp
-recode lat1..ibmpc ./tinyxml/xmltest.dsp
+recode lat1..ibmpc ./tinyxml/tinyxmlSTL.dsp
+recode lat1..ibmpc ./tinyxml/tinyxml.dsw
 
 mkdir ./tinyxml/docs
 cp ./docs/* ./tinyxml/docs

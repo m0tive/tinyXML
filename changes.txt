@@ -122,3 +122,12 @@ Changes in version 2.1.5 (in progress)
 - A patch from ohommes that allows to parse correctly dots in element names and attribute names
   (Patch request 602600 and kylotan 701728)
 - A patch from  hermitgeek ( James ) and wasteland for improper error reporting
+- Reviewed by Lee, with the following changes:
+	- Got sick of fighting the STL/non-STL thing in the windows build. Broke
+	  them out as seperate projects.
+	- I have too long not included the dsw. Added.
+	- TinyXmlText had a protected Print. Odd.
+	- Made LinkEndChild public, with docs and appropriate warnings.
+	- Updated the docs.
+
+

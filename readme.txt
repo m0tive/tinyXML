@@ -23,9 +23,10 @@ There are different ways to access and interact with XML data.
 TinyXml uses a Document Object Model, meaning the XML data is parsed
 into a tree objects that can be browsed and manipulated, and then 
 written back to disk. You can also construct an XML document from
-scratch with C++ objects and write this to disk.
+scratch with C++ objects and write this to disk (or another output
+stream.)
 
-TinyXml is designed to be easy and fast. It is one header and three cpp 
+TinyXml is designed to be easy and fast. It is two headers and four cpp 
 files. Simply add these to your project and off you go. There is an 
 example to get you started. It is released under the ZLib license, 
 so you can use it in open source or commercial code.
@@ -33,8 +34,8 @@ so you can use it in open source or commercial code.
 It attempts to be a flexible parser, but with truly correct and
 compliant XML output (with the exception of the character set,
 below.) TinyXml should compile on any reasonably C++
-system. It does not rely on exceptions or RTTI, and only uses the STL
-string class.
+system. It does not rely on exceptions or RTTI. It can be 
+compiled with or without STL support.
 
 
 <h2> What it doesn't do. </h2>
@@ -51,11 +52,11 @@ complete XML needs, TinyXml is not the parser for you.
 
 <h2> Code Status.  </h2>
 
-Currently in use, TinyXml is looking pretty stable. If you find
+TinyXml is mature, tested code. It is very stable. If you find
 bugs, send them in and we'll get them straightened out as soon as possible.
 
 There are some areas of improvement; please check sourceforge if you are
-interested in working on TinxXml.
+interested in working on TinyXml.
 
 
 <h2> Features </h2>
@@ -84,6 +85,7 @@ Windows project file, STL and non STL targets are provided. In your project,
 its probably easiest to add the line "#define TIXML_USE_STL" as the first
 line of tinyxml.h.
 
+
 <h3> Entities </h3>
 TinyXml recognizes the pre-defined "entity references", meaning special
 characters. Namely:
@@ -105,12 +107,6 @@ ASCII equivalents. For instance, text with the XML of:
 
 will have the Value() of "Far & Away" when queried from the TiXmlText object,
 but will be written back to the XML stream/file as an entitity.
-
-TiXml will ignore unknown entities and the
-@verbatim
-"&#x"
-@endverbatim
-entities, and leave them unprocessed.
 
 
 <h3> Streams </h3>
@@ -174,7 +170,7 @@ it has been set.
 
 To Compile and Run xmltest:
 
-A Linux Makefile and a Windows Visual C++ .dsp file is provided. 
+A Linux Makefile and a Windows Visual C++ .dsw file is provided. 
 Simply compile and run. It will write the file demotest.xml to your 
 disk and generate output on the screen. It also tests walking the
 DOM by printing out the number of nodes found using different 
@@ -185,8 +181,26 @@ probably run on other systems, but is only tested on Linux. You no
 longer need to run 'make depend'. The dependecies have been
 hard coded.
 
+<h3>Windows project file for VC6</h3>
+<ul>
+<li>tinyxml:		tinyxml library, non-STL </li>
+<li>tinyxmlSTL:		tinyxml library, STL </li>
+<li>tinyXmlTest:	test app, non-STL </li>
+<li>tinyXmlTestSTL: test app, STL </li>
+</ul>
 
-To Use in an Application:
+<h3>Linux Make file</h3>
+At the top of the makefile you can set:
+
+PROFILE, DEBUG, and TINYXML_USE_STL. Details (such that they are) are in
+the makefile.
+
+In the tinyxml directory:
+make clean
+make
+
+
+<h3>To Use in an Application:</h3>
 
 Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, tinyxmlparser.cpp, and tinystr.cpp to your 
 project or make file. That's it! It should compile on any reasonably
@@ -277,15 +291,6 @@ TiXmlDocument				"demo.xml"
 		TiXmlText			"bills"
 @endverbatim
 
-<h2> Contributors </h2>
-
-Thanks very much to everyone who sends suggestions, bugs, ideas, and 
-encouragement. It all helps, and makes this project fun. A special thanks
-to the contributors on the web pages that keep it lively.
-
-So many people have sent in bugs and ideas, that rather than list here I
-try to give credit due in the "changes.txt" file.
-
 <h2> Documentation </h2>
 
 The documentation is build with Doxygen, using the 'dox' 
@@ -321,13 +326,26 @@ XML, and there web pages contain huge amounts of information. I also
 recommend "XML Pocket Reference" by Robert Eckstein and published by 
 OReilly.
 
-<h2> Contact Me: </h2>
+<h2> Contributors, Contacts, and a Brief History </h2>
 
-Id appreciates your suggestions, and would love to know if you 
-use TinyXml. I hope you enjoy it and find it useful. Please post
-questions, comments, file bugs, or contact me at:
+Thanks very much to everyone who sends suggestions, bugs, ideas, and 
+encouragement. It all helps, and makes this project fun. A special thanks
+to the contributors on the web pages that keep it lively.
+
+So many people have sent in bugs and ideas, that rather than list here 
+we try to give credit due in the "changes.txt" file.
+
+TinyXml was originally written be Lee Thomason. (Often the "I" still
+in the documenation.) Lee reviews changes and releases new versions,
+but the project is on maintained and managed by Yves Berquin, with
+the help of the tinyXml community.
+
+We appreciate your suggestions, and would love to know if you 
+use TinyXml. Hopefully you will enjoy it and find it useful. 
+Please post questions, comments, file bugs, or contact us at:
 
 www.sourceforge.net/projects/tinyxml
 
 Lee Thomason
+Yves Berquin
 */
