@@ -1,10 +1,10 @@
-<?xml version="1.0" standalone='no'>
+<?xml version="1.0" standalone="no" ?>
 <!-- Our to do list data -->
 <ToDo>
-    <Item priority="1" distance="close"> Go to the 
+    <Item time="medium" distance="near" priority="2"> Go to the 
         <bold>Toy store!
         </bold>
     </Item>
-    <Item priority="2" distance="none"> Do bills
+    <Item distance="none" priority="2"> Do bills
     </Item>
 </ToDo>

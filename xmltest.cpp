@@ -29,6 +29,7 @@ int main()
 		// Bugs in the intermediate objects will result in a bad print.
 		doc.Print();
 
+
 		// Print out the top level 'element' objects: 
 		TiXmlNode* node;
 		for ( node = doc.FirstChild(); node; node = node->NextSibling() )
@@ -36,6 +37,16 @@ int main()
 			if ( node->ToElement() )
 			{
 				printf( "Top level element '%s' found\n", node->Value().c_str() );
+			}
+			if ( node->ToDeclaration() )
+			{
+				printf( "Declaration found.\n" );
+				if ( !node->ToDeclaration()->Version().empty() )
+					printf( "  version=%s\n", node->ToDeclaration()->Version().c_str() );
+				if ( !node->ToDeclaration()->Standalone().empty() )
+					printf( "  standalone=%s\n", node->ToDeclaration()->Version().c_str() );
+				if ( !node->ToDeclaration()->Encoding().empty() )
+					printf( "  encoding=%s\n", node->ToDeclaration()->Version().c_str() );
 			}
 		}
 
@@ -68,6 +79,32 @@ int main()
 				{
 					printf( "    %s=%s\n", attribute->Name().c_str(), attribute->Value().c_str() );
 				}
+			}
+
+			// Test attribute stuff:
+			childNode = node->FirstChild( "Item" );
+			TiXmlElement*   element = childNode->ToElement();
+			element->SetAttribute( "distance", "near" );
+			element->SetAttribute( "size", "large" );
+			element->SetAttribute( "time", "medium" );
+			element->RemoveAttribute( "size" );
+			element->SetAttribute( "priority", 2 );
+
+			printf( "attributes test: distance=near time=medium priority=2\n" );
+			TiXmlAttribute* attribute;
+			for( attribute = element->FirstAttribute(); 
+				 attribute;
+				 attribute = attribute->Next() )
+			{
+				printf( "    %s=%s\n", attribute->Name().c_str(), attribute->Value().c_str() );
+			}
+
+			// walk the document:
+			printf( "\nWalking the document:\n" );
+			TiXmlNode* child = 0;
+			while ( child = doc.IterateChildren( child ) )
+			{
+				printf( "  value: %s\n", child->Value().c_str() );
 			}
 		}
 	}

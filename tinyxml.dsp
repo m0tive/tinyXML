@@ -98,6 +98,10 @@ SOURCE=.\tinyxml.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\tinyxmlerror.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\tinyxmlparser.cpp
 # End Source File
 # Begin Source File

@@ -24,20 +24,22 @@ distribution.
 #include "tinyxml.h"
 
 
-TiXmlNode::TiXmlNode( int _type, TiXmlDocument* doc )
+TiXmlNode::TiXmlNode( NodeType _type, TiXmlDocument* doc )
 {
 	document = doc;
 	parent = 0;
 	type = _type;
 	firstChild = 0;
 	lastChild = 0;
+	prev = 0;
+	next = 0;
 }
 
 
 TiXmlNode::~TiXmlNode()
 {
-	TiXmlBase* node = firstChild;
-	TiXmlBase* temp = 0;
+	TiXmlNode* node = firstChild;
+	TiXmlNode* temp = 0;
 
 	while ( node )
 	{
@@ -158,7 +160,7 @@ bool TiXmlNode::RemoveChild( TiXmlNode* removeThis )
 TiXmlNode* TiXmlNode::FirstChild( const std::string& value ) const
 {
 	TiXmlNode* node;
-	for ( node = (TiXmlNode*) firstChild; node; node = (TiXmlNode*) node->next )
+	for ( node = firstChild; node; node = node->next )
 	{
 		if ( node->Value() == value )
 			return node;
@@ -170,7 +172,7 @@ TiXmlNode* TiXmlNode::FirstChild( const std::string& value ) const
 TiXmlNode* TiXmlNode::LastChild( const std::string& value ) const
 {
 	TiXmlNode* node;
-	for ( node = (TiXmlNode*) lastChild; node; node = (TiXmlNode*) node->prev )
+	for ( node = lastChild; node; node = node->prev )
 	{
 		if ( node->Value() == value )
 			return node;
@@ -179,10 +181,42 @@ TiXmlNode* TiXmlNode::LastChild( const std::string& value ) const
 }
 
 
+TiXmlNode* TiXmlNode::IterateChildren( TiXmlNode* previous )
+{
+	TiXmlNode* child = 0;
+
+	if ( !previous )
+	{
+		return FirstChild();
+	}
+	else
+	{
+		assert( previous->parent == this );
+		return previous->NextSibling();
+	}
+}
+
+
+TiXmlNode* TiXmlNode::IterateChildren( const std::string& val, TiXmlNode* previous )
+{
+	TiXmlNode* child = 0;
+
+	if ( !previous )
+	{
+		return FirstChild( val );
+	}
+	else
+	{
+		assert( previous->parent == this );
+		return previous->NextSibling( val );
+	}
+}
+
+
 TiXmlNode* TiXmlNode::NextSibling( const std::string& value ) const
 {
 	TiXmlNode* node;
-	for ( node = (TiXmlNode*) next; node; node = (TiXmlNode*) node->next )
+	for ( node = next; node; node = node->next )
 	{
 		if ( node->Value() == value )
 			return node;
@@ -194,7 +228,7 @@ TiXmlNode* TiXmlNode::NextSibling( const std::string& value ) const
 TiXmlNode* TiXmlNode::PreviousSibling( const std::string& value ) const
 {
 	TiXmlNode* node;
-	for ( node = (TiXmlNode*) prev; node; node = (TiXmlNode*) node->prev )
+	for ( node = prev; node; node = node->prev )
 	{
 		if ( node->Value() == value )
 			return node;
@@ -206,43 +240,31 @@ TiXmlNode* TiXmlNode::PreviousSibling( const std::string& value ) const
 TiXmlElement::TiXmlElement( TiXmlDocument* doc ) 
 	: TiXmlNode( TiXmlNode::ELEMENT, doc )
 {
-	firstAttrib = lastAttrib = 0;
-	firstChild = lastChild = 0;
 }
 
 TiXmlElement::TiXmlElement( const std::string& _value, TiXmlDocument* doc ) 
 	: TiXmlNode( TiXmlNode::ELEMENT, doc )
 {
-	firstAttrib = lastAttrib = 0;
 	firstChild = lastChild = 0;
 	value = _value;
 }
 
 TiXmlElement::~TiXmlElement()
 {
-	TiXmlBase* node = firstAttrib;
-	TiXmlBase* temp;
-
-	while( node )
+	while( attributeSet.First() )
 	{
-		temp = node;
-		node = node->next;
-		delete temp;
+		TiXmlAttribute* node = attributeSet.First();
+		attributeSet.Remove( node );
+		delete node;
 	}
 }
 
 const std::string* TiXmlElement::Attribute( const std::string& name ) const
 {
-	// OPT
-	// We should probably do better than a linear search.
+	TiXmlAttribute* node = attributeSet.Find( name );
 
-	TiXmlAttribute* node;
-
-	for ( node = firstAttrib; node; node = (TiXmlAttribute*) node->next )
-	{	
-		if ( node->Name() == name )
-			return &(node->Value() );
-	}
+	if ( node )
+		return &(node->Value() );
 
 	return 0;
 }
@@ -272,65 +294,35 @@ void TiXmlElement::SetAttribute( const std::string& name, int val )
 
 void TiXmlElement::SetAttribute( const std::string& name, const std::string& value )
 {
-	// OPT
-	// We should probably do better than a linear search.
-
-	TiXmlAttribute* node;
-
-	for ( node = firstAttrib; node; node = (TiXmlAttribute*) node->next )
-	{	
-		if ( node->Name() == name )
-		{
-			node->SetValue( value );
-			return;
-		}
+	TiXmlAttribute* node = attributeSet.Find( name );
+	if ( node )
+	{
+		node->SetValue( value );
+		return;
 	}
+
 	TiXmlAttribute* attrib = new TiXmlAttribute( name, value );
 	if ( attrib )
 	{
-		attrib->prev = lastAttrib;
-		attrib->next = 0;
-		if ( lastAttrib )
-		{
-			lastAttrib->next = attrib;
-		}
-		else
-		{
-			firstAttrib = attrib;
-		}
-		lastAttrib = attrib;
+		attributeSet.Add( attrib );
 	}
 	else
 	{
-		if ( document ) document->SetError( "Memory error." );
+		if ( document ) document->SetError( ERROR_OUT_OF_MEMORY );
 	}
 }
 
 
 void TiXmlElement::RemoveAttribute( const std::string& name )
 {
-	// OPT
-	// We should probably do better than a linear search.
-
-	TiXmlAttribute* node;
-
-	for ( node = firstAttrib; node; node = (TiXmlAttribute*) node->next )
-	{	
-		if ( node->Name() == name )
-		{
-			if ( node->prev )
-				node->prev->next = node->next;
-			else
-				firstAttrib = (TiXmlAttribute*) node->next;
-
-			if ( node->next )
-				node->next->prev = node->prev;
-			else
-				lastAttrib = (TiXmlAttribute*) node->prev;
-			delete node;
-		}
+	TiXmlAttribute* node = attributeSet.Find( name );
+	if ( node )
+	{
+		attributeSet.Remove( node );
+		delete node;
 	}
 }
+
 
 void TiXmlElement::Print( FILE* fp, int depth )
 {
@@ -339,23 +331,23 @@ void TiXmlElement::Print( FILE* fp, int depth )
 		fprintf( fp, "    " );
 
 	fprintf( fp, "<%s", value.c_str() );
-	TiXmlBase* node;
 
-	for ( node = firstAttrib; node; node = node->next )
+	TiXmlAttribute* attrib;
+	for ( attrib = attributeSet.First(); attrib; attrib = attrib->Next() )
 	{	
 		fprintf( fp, " " );
-		node->Print( fp, 0 );
+		attrib->Print( fp, 0 );
 	}
 	// If this node has children, give it a closing tag. Else
 	// make it an empty tag.
+	TiXmlNode* node;
 	if ( firstChild )
-	{
- 		
+	{ 		
 		fprintf( fp, ">" );
 
-		for ( node = firstChild; node; node=node->next )
+		for ( node = firstChild; node; node=node->NextSibling() )
 		{
-	 		if ( !((TiXmlNode*)node)->ToText() )
+	 		if ( !node->ToText() )
 				fprintf( fp, "\n" );
 			node->Print( fp, depth+1 );
 		}
@@ -389,13 +381,15 @@ TiXmlNode* TiXmlElement::Clone() const
 
 	// Clone the attributes, then clone the children.
 	TiXmlAttribute* attribute = 0;
-	for( attribute = firstAttrib; attribute; attribute = (TiXmlAttribute*) attribute->next )
+	for(	attribute = attributeSet.First(); 
+			attribute; 
+			attribute = attribute->Next() )
 	{
 		clone->SetAttribute( attribute->Name(), attribute->Value() );
 	}
 	
 	TiXmlNode* node = 0;
-	for ( node = (TiXmlNode*) firstChild; node; node = (TiXmlNode*) node->next )
+	for ( node = firstChild; node; node = node->NextSibling() )
 	{
 		clone->InsertEndChild( node->Clone() );
 	}
@@ -488,7 +482,7 @@ TiXmlNode* TiXmlDocument::Clone() const
 	clone->errorDesc = errorDesc;
 
 	TiXmlNode* node = 0;
-	for ( node = (TiXmlNode*) firstChild; node; node = (TiXmlNode*) node->next )
+	for ( node = firstChild; node; node = node->NextSibling() )
 	{
 		clone->InsertEndChild( node->Clone() );
 	}
@@ -498,12 +492,62 @@ TiXmlNode* TiXmlDocument::Clone() const
 
 void TiXmlDocument::Print( FILE* fp, int )
 {
-	TiXmlBase* node;
-	for ( node=FirstChild(); node; node=node->next )
+	TiXmlNode* node;
+	for ( node=FirstChild(); node; node=node->NextSibling() )
 	{
 		node->Print( fp, 0 );
 		fprintf( fp, "\n" );
 	}
+}
+
+
+// TiXmlAttribute* TiXmlAttribute::Successor()
+// {
+// 	// The leftmost node of the right tree.
+// 	TiXmlAttribute* s = 0;
+// 
+// 	if ( right )
+// 	{
+// 		s = right;
+// 		while( s->left )
+// 			s = s->left;
+// 	}
+// 	return s;
+// }
+// 
+// 
+// TiXmlAttribute* TiXmlAttribute::Predecessor();
+// {
+// 	// The rightmost node of the left tree.
+// 	TiXmlAttribute* p = 0;
+// 
+// 	if ( left )
+// 	{
+// 		p = left;
+// 		while( p->right )
+// 			p = p->right;
+// 	}
+// 	return p;
+// }
+
+
+TiXmlAttribute* TiXmlAttribute::Next()
+{
+	// We are using knowledge of the sentinel. The sentinel
+	// have a value or name.
+	if ( next->value.empty() && next->name.empty() )
+		return 0;
+	return next;
+}
+
+
+TiXmlAttribute* TiXmlAttribute::Previous()
+{
+	// We are using knowledge of the sentinel. The sentinel
+	// have a value or name.
+	if ( prev->value.empty() && prev->name.empty() )
+		return 0;
+	return next;
 }
 
 
@@ -572,6 +616,68 @@ TiXmlNode* TiXmlText::Clone() const
 }
 
 
+TiXmlDeclaration::TiXmlDeclaration( const std::string& _version, 
+									const std::string& _encoding,
+									const std::string& _standalone,
+									TiXmlDocument* _doc )
+	: TiXmlNode( TiXmlNode::DECLARATION, _doc ) 
+{
+	version = _version;
+	encoding = _encoding;
+	standalone = _standalone;
+}
+
+
+void TiXmlDeclaration::Print( FILE* fp, int )
+{
+	std::string out = "<?xml ";
+
+	if ( !version.empty() )
+	{
+		out += "version=\"";
+		out += version;
+		out += "\" ";
+	}
+	if ( !encoding.empty() )
+	{
+		out += "encoding=\"";
+		out += encoding;
+		out += "\" ";
+	}
+	if ( !standalone.empty() )
+	{
+		out += "standalone=\"";
+		out += standalone;
+		out += "\" ";
+	}
+	out += "?>";
+
+	fprintf( fp, "%s", out.c_str() );
+}
+
+
+TiXmlNode* TiXmlDeclaration::Clone() const
+{	
+	TiXmlDeclaration* clone = 0;
+	if ( document )
+	{
+		clone = document->Factory()->CreateDeclaration( Parent(), document );
+	}
+	else	
+	{
+		clone = new TiXmlDeclaration();
+	}
+	if ( !clone )
+		return 0;
+
+	CopyToClone( clone );
+	clone->version = version;
+	clone->encoding = encoding;
+	clone->standalone = standalone;
+	return clone;
+}
+
+
 void TiXmlUnknown::Print( FILE* fp, int depth )
 {
 	for ( int i=0; i<depth; i++ )
@@ -596,5 +702,62 @@ TiXmlNode* TiXmlUnknown::Clone() const
 
 	CopyToClone( clone );
 	return clone;
+}
+
+
+TiXmlAttributeSet::TiXmlAttributeSet()
+{
+	sentinel.next = &sentinel;
+	sentinel.prev = &sentinel;
+}
+
+
+TiXmlAttributeSet::~TiXmlAttributeSet()
+{
+	assert( sentinel.next == &sentinel );
+	assert( sentinel.prev == &sentinel );
+}
+
+
+void TiXmlAttributeSet::Add( TiXmlAttribute* addMe )
+{
+	assert( !Find( addMe->Name() ) );	// Shouldn't be multiply adding to the set.
+	
+	addMe->prev = &sentinel;
+	addMe->next = sentinel.next;
+
+	sentinel.next->prev = addMe;
+	sentinel.next       = addMe;
+}
+
+void TiXmlAttributeSet::Remove( TiXmlAttribute* removeMe )
+{
+	TiXmlAttribute* node;
+
+	for( node = sentinel.next; node != &sentinel; node = node->next )
+	{
+		if ( node == removeMe )
+		{
+			node->prev->next = node->next;
+			node->next->prev = node->prev;
+			node->next = 0;
+			node->prev = 0;
+			return;
+		}
+	}
+	assert( 0 );		// we tried to remove a non-linked attribute.
+}
+
+
+TiXmlAttribute*	TiXmlAttributeSet::Find( const std::string& name ) const
+{
+	TiXmlAttribute* node;
+
+	for( node = sentinel.next; node != &sentinel; node = node->next )
+	{
+		if ( node->Name() == name )
+			return node;
+	}
+	return 0;
 }
 

@@ -18,4 +18,19 @@ Changes in version 1.0.3
   invalid, but the code changes to enforce this are not fully
   in place.
 
+Changes in version 1.1.0
+- Added the	TiXmlAttributeSet class to pull the attributes into
+  a seperate container.
+- Moved the doubly liked list out of XmlBase. Now XmlBase only
+  requires the Print() function and defines some utility functions.
+- Moved errors into a seperate file. (With the idea of internationalization
+  to the other latin-1 languages.)
+- Added the "NodeType"
+- Fixed white space parsing in text to conform with the standard. 
+  Basically, all white space becomes just one space.
+- Added the TiXmlDeclaration class to read xml declarations.
+
+
+
+
 

@@ -25,7 +25,7 @@ into a tree objects that can be browsed and manipulated, and then
 written back to disk. You can also construct an XML document from 
 scratch with C++ objects and write this to disk.
 
-TinyXml is designed to be easy and fast. It is one header and two cpp 
+TinyXml is designed to be easy and fast. It is one header and three cpp 
 files. Simply add these to your project and off you go. There is an 
 example to get you started. It is released under the ZLib license, 
 so you can use it in open source or commercial code.
@@ -50,10 +50,8 @@ complete XML needs, TinyXml is not the parser for you.
 
 <b> Code Status.  </b>
 
-Although currently in use, TinyXml is still in testing. Hopefully 
-its structure and size are such that bugs that do occur will be 
-easily fixed and wrapped back into the source.  The code has not 
-had time to mature.
+Currently in use, TinyXml is looking pretty stable. If you find
+bugs, send them in and we'll get them straightened out as soon as possible.
 
 It currently does not recognize "entity references", meaning special characters. This is a missing feature that will hopefully be included soon. Namely:
 @verbatim
@@ -63,7 +61,6 @@ It currently does not recognize "entity references", meaning special characters.
 	&quot;	"
 	&apos;	‘
 @endverbatim
-
 
 <b> Using and Installing </b>
 
@@ -122,11 +119,13 @@ relate to the DOM.
 
 <?xml version="1.0" standalone=‘no’>
 
-	The first line is ignored by TinyXml, which only parses parts of 
-	XML 1.0 and only uses ASCII, so there’s not much point in worrying 
-	about parsing directives. But it does save the information, so the 
-	commands won’t be lost when it is saved back to disk. This line will 
-	be stored in a TiXmlUnknown object.
+	The first line is a declaration, and gets turned into the
+	TiXmlDeclaration class. It will be the first child of the
+	document node.
+	
+	This is the only directive/special tag parsed by by TinyXml.
+	Generally directive targs are stored in TiXmlUnknown so the 
+	commands won’t be lost when it is saved back to disk.
 
 <?-- Our to do list data -->
 
@@ -158,7 +157,7 @@ Etc.
 Looking at the entire object tree, you end up with:
 @verbatim
 TiXmlDocument				"demo.xml"
-	TiXmlUnknown			"?xml version="1.0" standalone=‘no’"
+	TiXmlDeclaration		"?xml version="1.0" standalone=‘no’"
 	TiXmlComment			" Our to do list data"
 	TiXmlElement			"ToDo"
 		TiXmlElement		"Item"		Attribtutes: priority = 1
@@ -217,5 +216,4 @@ use TinyXml. I hope you enjoy it and find it useful.
 Lee Thomason
 
 leethomason@users.sourceforge.net
-
 */

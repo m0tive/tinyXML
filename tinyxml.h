@@ -21,6 +21,22 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/** @page Contributors
+	Thanks very much to everyone who sends suggestions, bugs, ideas,
+	and encouragement.
+
+	Folks who have contributed code:
+
+	1.0.0, 1.0.1, and 1.0.2 by Lee Thomason (www.grinninglizard.com)
+
+	1.1 Ayende Rahien presented many ideas, changes, and code.
+		Integration and additional coding by Lee Thomason.
+
+	Extensive feedback about tinyxml:
+
+	Ville Nurmi
+*/
+
 
 #ifndef TINYXML_INCLUDED
 #define TINYXML_INCLUDED
@@ -38,11 +54,12 @@ class TiXmlComment;
 class TiXmlUnknown;
 class TiXmlAttribute;
 class TiXmlText;
-
+class TiXmlDeclaration;
+class TiXmlFactory;
 
 /** TiXmlBase is a base class for every class in TinyXml.
 	It does little except to establist that TinyXml classes
-	can be printed and are all part of doubly linked lists.
+	can be printed and provide some utility functions.
 
 	Classes in the TinyXML DOM are either containment nodes 
 	or leaf nodes. No node (in a normal document) is both.
@@ -51,11 +68,15 @@ class TiXmlText;
 	A Document contains:	Element	(container)
 							Comment (leaf)
 							Unknown (leaf)
+							Declaration( leaf )
+
 	An Element contains:	Element (container)
 							Text	(leaf)
 							Attributes (not on tree)
 							Comment (leaf)
 							Unknown (leaf)
+
+	A Decleration contians: Attributes (not on tree)
 	@endverbatim
 */
 class TiXmlBase
@@ -65,7 +86,7 @@ class TiXmlBase
 	friend class TiXmlDocument;
  
   public:
-	TiXmlBase() : prev( 0 ), next( 0 )		{}	
+	TiXmlBase()								{}	
 	virtual ~TiXmlBase()					{}
 	
 	/*	All TinyXml classes can print themselves to a filestream.
@@ -85,8 +106,23 @@ class TiXmlBase
 	*/
 	static const char* ReadName( const char* p, std::string* name );
 
-	TiXmlBase* prev;
-	TiXmlBase* next;
+	enum
+	{
+		NO_ERROR = 0,
+		ERROR_OUT_OF_MEMORY,
+		ERROR_PARSING_ELEMENT,
+		ERROR_FAILED_TO_READ_ELEMENT_NAME,
+		ERROR_READING_ELEMENT_VALUE,
+		ERROR_READING_ATTRIBUTES,
+		ERROR_PARSING_EMPTY,
+		ERROR_READING_END_TAG,
+		ERROR_PARSING_UNKNOWN,
+		ERROR_PARSING_COMMENT,
+		ERROR_PARSING_DECLARATION,
+
+		ERROR_STRING_COUNT
+	};
+	static const char* errorString[ ERROR_STRING_COUNT ];
 };
 
 
@@ -102,8 +138,9 @@ class TiXmlNode : public TiXmlBase
 	/** The types of XML nodes supported by TinyXml. (All the
 		unsupported types are picked up by UNKNOWN.)
 	*/
-	enum {
-		DOCUMENT, ELEMENT, COMMENT, UNKNOWN, TEXT, TYPECOUNT
+	enum NodeType 
+	{
+		DOCUMENT, ELEMENT, COMMENT, UNKNOWN, TEXT, DECLARATION, TYPECOUNT
 	};
 
 	virtual ~TiXmlNode();
@@ -136,11 +173,32 @@ class TiXmlNode : public TiXmlBase
 	/// One step up the DOM.
 	TiXmlNode* Parent() const					{ return parent; }
 
-	TiXmlNode* FirstChild()	const	{ return (TiXmlNode*) firstChild; }  ///< The first child of this node. Will be null if there are no children.
+	TiXmlNode* FirstChild()	const	{ return firstChild; }  ///< The first child of this node. Will be null if there are no children.
 	TiXmlNode* FirstChild( const std::string& value ) const;					 ///< The first child of this node with the matching 'value'. Will be null if none found.
 	
-	TiXmlNode* LastChild() const	{ return (TiXmlNode*) lastChild; }		/// The last child of this node. Will be null if there are no children.
+	TiXmlNode* LastChild() const	{ return lastChild; }		/// The last child of this node. Will be null if there are no children.
 	TiXmlNode* LastChild( const std::string& value ) const;			/// The last child of this node matching 'value'. Will be null if there are no children.
+
+	/** An alternate way to walk the children of a node.
+		One way to iterate over nodes is:
+		@verbatim
+			for( child = parent->FirstChild(); child; child = child->NextSibling() )
+		@endverbatim
+
+		IterateChildren does the same thing with the syntax:
+		@verbatim
+			child = 0;
+			while( child = parent->IterateChildren( child ) )
+		@endverbatim
+
+		IterateChildren takes the previous child as input and finds
+		the next one. If the previous child is null, it returns the
+		first. IterateChildren will return null when done.
+	*/
+	TiXmlNode* IterateChildren( TiXmlNode* previous );
+
+	/// This flavor of IterateChildren searches for children with a particular 'value'
+	TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous );
 		
 	/** Add a new node related to this. Adds a child past the LastChild.
 		Returns a pointer to the new object or NULL if an error occured.
@@ -166,12 +224,12 @@ class TiXmlNode : public TiXmlBase
 	bool RemoveChild( TiXmlNode* removeThis );
 
 	/// Navigate to a sibling node.
-	TiXmlNode* PreviousSibling() const			{ return (TiXmlNode*) prev; }
+	TiXmlNode* PreviousSibling() const			{ return prev; }
 	/// Navigate to a sibling node.
 	TiXmlNode* PreviousSibling( const std::string& ) const;
 	
 	/// Navigate to a sibling node.
-	TiXmlNode* NextSibling() const				{ return (TiXmlNode*) next; }
+	TiXmlNode* NextSibling() const				{ return next; }
 	/// Navigate to a sibling node with the given 'value'.
 	TiXmlNode* NextSibling( const std::string& ) const;
 
@@ -183,11 +241,12 @@ class TiXmlNode : public TiXmlBase
 	TiXmlComment*  ToComment() const	{ return ( type == COMMENT  ) ? (TiXmlComment*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
 	TiXmlUnknown*  ToUnknown() const	{ return ( type == UNKNOWN  ) ? (TiXmlUnknown*)  this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
 	TiXmlText*	   ToText()    const	{ return ( type == TEXT     ) ? (TiXmlText*)     this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
+	TiXmlDeclaration* ToDeclaration() const	{ return ( type == DECLARATION ) ? (TiXmlDeclaration*) this : 0; } ///< Cast to a more defined type. Will return null not of the requested type.
 
 	virtual TiXmlNode* Clone() const = 0;
 
   protected:
-	TiXmlNode( int type, TiXmlDocument* doc );
+	TiXmlNode( NodeType type, TiXmlDocument* doc );
 	virtual const char* Parse( const char* ) = 0;
 
 	// The node is passed in by ownership. This object will delete it.
@@ -201,37 +260,45 @@ class TiXmlNode : public TiXmlBase
 
 	TiXmlDocument*	document;
 	TiXmlNode*		parent;		
-	int				type;
-	TiXmlBase*		firstChild;
-	TiXmlBase*		lastChild;
+	NodeType		type;
+	
+	TiXmlNode*		firstChild;
+	TiXmlNode*		lastChild;
+
 	std::string		value;
+	
+	TiXmlNode*		prev;
+	TiXmlNode*		next;
 };
 
 
 /** An attribute is a name-value pair. Elements have an arbitrary
 	number of attributes, each with a unique name.
 
-	@note The attributes are not TiXmlNodes. There is a possibility
-		  this will change in the future.
+	@note The attributes are not TiXmlNodes, since they are not
+		  part of the XML document object model. There are other
+		  suggested ways to look at this problem.
 */
 class TiXmlAttribute : public TiXmlBase
 {
+	friend class TiXmlAttributeSet;
+
   public:
 	/// Construct an empty attribute.
-	TiXmlAttribute( TiXmlDocument* doc = 0) : document( doc )	{}
+	TiXmlAttribute( TiXmlDocument* doc = 0) : document( doc ), prev( 0 ), next( 0 )	{}
 	/// Construct an attribute with a name and value.
-	TiXmlAttribute( const std::string& _name, const std::string& _value )	: name( _name ), value( _value ) {}
+	TiXmlAttribute( const std::string& _name, const std::string& _value )	: name( _name ), value( _value ), prev( 0 ), next( 0 ) {}
 
 	const std::string& Name()  const { return name; }		///< Return the name of this attribute.
 	const std::string& Value() const { return value; }		///< Return the value of this attribute.
 
-	void SetName( const std::string& _name )	 { name = _name; }		///< Set the name of this attribute.
-	void SetValue( const std::string& _value ) { value = _value; }		///< Set the value.
+	void SetName( const std::string& _name )	{ name = _name; }		///< Set the name of this attribute.
+	void SetValue( const std::string& _value )	{ value = _value; }		///< Set the value.
 
 	/// Get the next sibling attribute in the DOM. Returns null at end.
-	TiXmlAttribute* Next()			{ return (TiXmlAttribute*) next; }	// The backcast relies on their being only attributes in an attribute linked list.
+	TiXmlAttribute* Next();
 	/// Get the previous sibling attribute in the DOM. Returns null at beginning.
-	TiXmlAttribute* Previous()		{ return (TiXmlAttribute*) prev; }
+	TiXmlAttribute* Previous();
 
 	bool operator==( const TiXmlAttribute& rhs ) const { return rhs.name == name; }
 	bool operator<( const TiXmlAttribute& rhs )	 const { return name < rhs.name; }
@@ -249,6 +316,40 @@ class TiXmlAttribute : public TiXmlBase
 	TiXmlDocument*	document;
 	std::string		name;
 	std::string		value;
+
+	TiXmlAttribute*	next;
+	TiXmlAttribute*	prev;
+};
+
+
+/*	A class used to manage a group of attributes.
+	It is only used internally, both by the ELEMENT and the DECLARATION.
+	
+	The set can be changed transparent to the Element and Declaration
+	classes that use it, but NOT transparent to the Attribute 
+	which has to implement a next() and previous() method. Which makes
+	it a bit problematic and prevents the use of STL.
+
+	This version is implemented with circular lists because:
+		- I like circular lists
+		- it demonstrates some independence from the (typical) doubly linked list.
+*/
+class TiXmlAttributeSet
+{
+  public:
+	TiXmlAttributeSet();
+	~TiXmlAttributeSet();
+
+	void Add( TiXmlAttribute* attribute );
+	void Remove( TiXmlAttribute* attribute );
+
+	TiXmlAttribute* First() const	{ return ( sentinel.next == &sentinel ) ? 0 : sentinel.next; }
+	TiXmlAttribute* Last()  const	{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
+	
+	TiXmlAttribute*	Find( const std::string& name ) const;
+
+  private:
+	TiXmlAttribute sentinel;
 };
 
 
@@ -261,6 +362,7 @@ class TiXmlElement : public TiXmlNode
   public:
 	/// Construct an empty element.
 	TiXmlElement( TiXmlDocument* doc = 0);
+
 	/// Construct an empty element.
 	TiXmlElement( const std::string& value, TiXmlDocument* doc = 0);
 
@@ -292,8 +394,8 @@ class TiXmlElement : public TiXmlNode
 	*/
 	void RemoveAttribute( const std::string& name );
 
-	TiXmlAttribute* FirstAttribute()	{ return firstAttrib; }		///< Access the first attribute in this element.
-	TiXmlAttribute* LastAttribute()		{ return lastAttrib; }		///< Access the last attribute in this element.
+	TiXmlAttribute* FirstAttribute()	{ return attributeSet.First(); }		///< Access the first attribute in this element.
+	TiXmlAttribute* LastAttribute()		{ return attributeSet.Last(); }		///< Access the last attribute in this element.
 
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
@@ -309,8 +411,7 @@ class TiXmlElement : public TiXmlNode
 	const char* ReadValue( const char* p );
 
   private:
-	TiXmlAttribute* firstAttrib;
-	TiXmlAttribute* lastAttrib;
+	TiXmlAttributeSet attributeSet;
 };
 
 
@@ -346,7 +447,7 @@ class TiXmlText : public TiXmlNode
 	virtual ~TiXmlText() {}
 
 
-	// [internal use] Creates a new Element and returs it.
+	// [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
 	virtual void Print( FILE* fp, int depth );
@@ -358,6 +459,51 @@ class TiXmlText : public TiXmlNode
 						 returns: next char past '>'
 	*/	
 	virtual const char* Parse( const char* );
+};
+
+
+/** In correct XML the declaration is the first entry in the file.
+	@verbatim
+		<?xml version="1.0" standalone="yes"?>
+	@endverbatim
+*/
+class TiXmlDeclaration : public TiXmlNode
+{
+  public:
+	/// Construct an empty declaration.
+	TiXmlDeclaration( TiXmlDocument* doc = 0)   : TiXmlNode( TiXmlNode::DECLARATION, doc ) {}
+
+	/// Construct.
+	TiXmlDeclaration( const std::string& version, 
+					  const std::string& encoding,
+					  const std::string& standalone,
+					  TiXmlDocument* doc = 0);
+
+	virtual ~TiXmlDeclaration()	{}
+
+	/// Version. Will return empty if none was found.
+	const std::string& Version()		{ return version; }
+	/// Encoding. Will return empty if none was found.
+	const std::string& Encoding()		{ return encoding; }
+	/// Is this a standalone document? 
+	const std::string& Standalone()		{ return standalone; }
+
+	// [internal use] Creates a new Element and returs it.
+	virtual TiXmlNode* Clone() const;
+	// [internal use] 
+	virtual void Print( FILE* fp, int depth );
+
+  protected:
+	//	[internal use] 
+	//	Attribtue parsing starts: next char past '<'
+	//					 returns: next char past '>'
+	
+	virtual const char* Parse( const char* );
+
+  private:
+	std::string version;
+	std::string encoding;
+	std::string standalone;
 };
 
 
@@ -402,6 +548,7 @@ class TiXmlFactory
 	virtual TiXmlText*		CreateText( const TiXmlNode* parent, TiXmlDocument* doc )			{ return new TiXmlText( doc ); }
 	virtual TiXmlComment*	CreateComment( const TiXmlNode* parent, TiXmlDocument* doc )		{ return new TiXmlComment( doc ); }
 	virtual TiXmlUnknown*	CreateUnknown( const TiXmlNode* parent, TiXmlDocument* doc )		{ return new TiXmlUnknown( doc ); }
+	virtual TiXmlDeclaration* CreateDeclaration( const TiXmlNode* parent, TiXmlDocument* doc )	{ return new TiXmlDeclaration( doc ); }
 };
 
 
@@ -452,16 +599,21 @@ class TiXmlDocument : public TiXmlNode
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 	
-	void SetError( const std::string& err ) {	error = true; 
-												errorDesc = err; }
+	void SetError( int err ) {		assert( errorId > 0 && errorId < ERROR_STRING_COUNT );
+									error   = true; 
+									errorId = err;
+									errorDesc = errorString[ errorId ]; }
 	// [internal use]
 	TiXmlFactory* Factory() const	{ return factory; }
 
   private:
+
 	TiXmlFactory* factory;
 	bool error;
-	std::string errorDesc;	
+	int  errorId;	
+	std::string errorDesc;
 };
+
 
 #endif
 
