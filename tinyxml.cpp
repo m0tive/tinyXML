@@ -601,7 +601,7 @@ TiXmlAttribute* TiXmlAttribute::Previous()
 	// have a value or name.
 	if ( prev->value.empty() && prev->name.empty() )
 		return 0;
-	return next;
+	return prev;
 }
 
 

@@ -139,3 +139,10 @@ xmltest.o: /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/include/stdarg.h
 xmltest.o: /usr/include/bits/types.h /usr/include/libio.h
 xmltest.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
 xmltest.o: /usr/include/assert.h
+tinyxmlerror.o: tinyxml.h /usr/include/stdio.h /usr/include/features.h
+tinyxmlerror.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+tinyxmlerror.o: /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/include/stddef.h
+tinyxmlerror.o: /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/include/stdarg.h
+tinyxmlerror.o: /usr/include/bits/types.h /usr/include/libio.h
+tinyxmlerror.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
+tinyxmlerror.o: /usr/include/assert.h

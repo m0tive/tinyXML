@@ -41,3 +41,7 @@ Changes in version 1.2.1
 - Fixed a bug where comments couldn't be inside elements.
 - Loading now clears out existing XML rather than appending.
 - Added the "Clear" method on a node to delete all its children.
+
+Changes in version 1.2.2
+- Fixed TiXmlAttribute::Previous actually returning "next." Thanks
+  to Rickard Troedsson for the bug fix.

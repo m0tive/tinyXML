@@ -199,8 +199,11 @@ int main()
 	}
 	printf( "The 'ToDo' element contains %d nodes with the value of 'Item'. (3)\n", count );
 	
-
-
+	/*
+	for( int i=0; i<1000; i++ )	
+		doc.LoadFile( "SmallRuleset1.xml" );
+	doc.SaveFile( "smalltest.xml" );
+ 	*/
 	return 0;
 }
 

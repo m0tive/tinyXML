@@ -115,14 +115,14 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char** where )
 			&& tolower( *(p+2) ) == 'm'
 			&& tolower( *(p+3) ) == 'l' )
 	{
-		#ifdef DEBUG
+		#ifdef DEBUG_PARSER
 			printf( "XML parsing Declaration\n" );
 		#endif
 		returnNode = new TiXmlDeclaration();
 	}
 	else if ( isalpha( *p ) || *p == '_' )
 	{
-		#ifdef DEBUG
+		#ifdef DEBUG_PARSER
 			printf( "XML parsing Element\n" );
 		#endif
 		returnNode = new TiXmlElement( "" );
@@ -131,14 +131,14 @@ TiXmlNode* TiXmlNode::IdentifyAndParse( const char** where )
 			  && *(p+1) == '-'
 			  && *(p+2) == '-' )
 	{
-		#ifdef DEBUG
+		#ifdef DEBUG_PARSER
 			printf( "XML parsing Comment\n" );
 		#endif
 		returnNode = new TiXmlComment();
 	}
 	else
 	{
-		#ifdef DEBUG
+		#ifdef DEBUG_PARSER
 			printf( "XML parsing Comment\n" );
 		#endif
 		returnNode = new TiXmlUnknown();
