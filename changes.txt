@@ -148,5 +148,7 @@ Changes in version 2.1.5
 - Additional testing (no more bugs found to be fixed in this release)
 - Significant performance improvement to the cursor code.
 
+2.2.2 ?
+- User Data are now defined in TiXmlBase instead of TiXmlNode
 
 
