@@ -144,5 +144,6 @@ Changes in version 2.1.5
 - Nodes and attributes can now print themselves to strings. (Yves suggestion)
 - Fixed bug where entities with one character would confuse parser. (Thanks Roman)
 
+2.2.1
 
 

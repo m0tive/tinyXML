@@ -200,7 +200,7 @@ protected:
 									const char* endTag,			// what ends this text
 									bool ignoreCase );			// whether to ignore case in the end tag
 
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data ) = 0;
+	virtual const char* Parse( const char* p, TiXmlParsingData* data ) = 0;
 
 	// If an entity has been found, transform it into a character.
 	static const char* GetEntity( const char* in, char* value );
@@ -635,7 +635,7 @@ public:
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -796,13 +796,13 @@ protected:
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 
 	/*	[internal use]
 		Reads the "value" of the element -- another element, or text.
 		This should terminate with the current end tag.
 	*/
-	const char* ReadValue( const char* in, const TiXmlParsingData* prevData );
+	const char* ReadValue( const char* in, TiXmlParsingData* prevData );
 
 private:
 	TiXmlAttributeSet attributeSet;
@@ -832,7 +832,7 @@ protected:
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 };
 
 
@@ -870,7 +870,7 @@ protected :
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -939,7 +939,7 @@ protected:
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 
 private:
 	TIXML_STRING version;
@@ -972,7 +972,7 @@ protected:
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 };
 
 
@@ -1027,7 +1027,7 @@ public:
 
 	/** Parse the given null terminated block of xml data.
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data = 0 );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data = 0 );
 
 	/** Get the root element -- the only top level element -- of the document.
 		In well formed XML, there should only be one. TinyXml is tolerant of
@@ -1101,7 +1101,7 @@ public:
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth = 0 ) const;
 	// [internal use]
-	void SetError( int err, const char* errorLocation, const TiXmlParsingData* prevData );
+	void SetError( int err, const char* errorLocation, TiXmlParsingData* prevData );
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;

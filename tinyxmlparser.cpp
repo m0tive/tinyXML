@@ -44,7 +44,8 @@ class TiXmlParsingData
 {
 	friend class TiXmlDocument;
   public:
-	TiXmlParsingData( const char* now, const TiXmlParsingData* prevData );
+	//TiXmlParsingData( const char* now, const TiXmlParsingData* prevData );
+	void Stamp( const char* now );
 
 	const TiXmlCursor& Cursor()	{ return cursor; }
 	//void Update( const char* now );
@@ -53,6 +54,7 @@ class TiXmlParsingData
 	// Only used by the document!
 	TiXmlParsingData( const char* start, int _tabsize, int row, int col )
 	{
+		assert( start );
 		stamp = start;
 		tabsize = _tabsize;
 		cursor.row = row;
@@ -65,34 +67,20 @@ class TiXmlParsingData
 };
 
 
-TiXmlParsingData::TiXmlParsingData(	const char* now, 
-									const TiXmlParsingData* prevData )
+void TiXmlParsingData::Stamp( const char* now )
 {
-	// Initial values:
-	stamp = 0;
-	tabsize = 4;
-
-	if ( !prevData || !prevData->stamp )
-		return;
-
 	assert( now );
 
 	// Do nothing if the tabsize is 0.
-	if ( prevData->tabsize < 1 )
+	if ( tabsize < 1 )
 	{
-		tabsize = prevData->tabsize;
 		return;
 	}
-	tabsize = prevData->tabsize;
-
-	const char* p = 0;
-	int row, col;
 
 	// Get the current row, column.
-	row = prevData->cursor.row;
-	col = prevData->cursor.col;
-	p   = prevData->stamp;
-
+	int row = cursor.row;
+	int col = cursor.col;
+	const char* p = stamp;
 	assert( p );
 
 	while ( p < now )
@@ -155,6 +143,7 @@ TiXmlParsingData::TiXmlParsingData(	const char* now,
 	assert( cursor.row >= -1 );
 	assert( cursor.col >= -1 );
 	stamp = p;
+	assert( stamp );
 }
 
 
@@ -446,7 +435,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 
 #endif
 
-const char* TiXmlDocument::Parse( const char* p, const TiXmlParsingData* prevData )
+const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData )
 {
 	ClearError();
 
@@ -502,7 +491,7 @@ const char* TiXmlDocument::Parse( const char* p, const TiXmlParsingData* prevDat
 	return p;
 }
 
-void TiXmlDocument::SetError( int err, const char* pError, const TiXmlParsingData* prevData )
+void TiXmlDocument::SetError( int err, const char* pError, TiXmlParsingData* data )
 {	
 	// The first error in a chain is more accurate - don't set again!
 	if ( error )
@@ -514,10 +503,11 @@ void TiXmlDocument::SetError( int err, const char* pError, const TiXmlParsingDat
 	errorDesc = errorString[ errorId ];
 
 	errorLocation.Clear();
-	if ( pError && prevData )
+	if ( pError && data )
 	{
-		TiXmlParsingData data( pError, prevData );
-		errorLocation = data.Cursor();
+		//TiXmlParsingData data( pError, prevData );
+		data->Stamp( pError );
+		errorLocation = data->Cursor();
 	}
 }
 
@@ -699,7 +689,7 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 }
 #endif
 
-const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData )
+const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data )
 {
 	p = SkipWhiteSpace( p );
 	TiXmlDocument* document = GetDocument();
@@ -710,12 +700,13 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
 		return 0;
 	}
 
-	TiXmlParsingData data( p, prevData );
-	location = data.Cursor();
+//	TiXmlParsingData data( p, prevData );
+	data->Stamp( p );
+	location = data->Cursor();
 
 	if ( *p != '<' )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT, p, &data );
+		if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT, p, data );
 		return 0;
 	}
 
@@ -727,7 +718,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
     p = ReadName( p, &value );
 	if ( !p || !*p )
 	{
-		if ( document )	document->SetError( TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME, pErr, &data );
+		if ( document )	document->SetError( TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME, pErr, data );
 		return 0;
 	}
 
@@ -743,7 +734,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
 		p = SkipWhiteSpace( p );
 		if ( !p || !*p )
 		{
-			if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, pErr, &data );
+			if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, pErr, data );
 			return 0;
 		}
 		if ( *p == '/' )
@@ -752,7 +743,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
 			// Empty tag.
 			if ( *p  != '>' )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_PARSING_EMPTY, p, &data );		
+				if ( document ) document->SetError( TIXML_ERROR_PARSING_EMPTY, p, data );		
 				return 0;
 			}
 			return (p+1);
@@ -763,7 +754,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
 			// Read the value -- which can include other
 			// elements -- read the end tag, and return.
 			++p;
-			p = ReadValue( p, &data );		// Note this is an Element method, and will set the error if one happens.
+			p = ReadValue( p, data );		// Note this is an Element method, and will set the error if one happens.
 			if ( !p || !*p )
 				return 0;
 
@@ -775,7 +766,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
 			}
 			else
 			{
-				if ( document ) document->SetError( TIXML_ERROR_READING_END_TAG, p, &data );
+				if ( document ) document->SetError( TIXML_ERROR_READING_END_TAG, p, data );
 				return 0;
 			}
 		}
@@ -785,17 +776,17 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
 			TiXmlAttribute* attrib = new TiXmlAttribute();
 			if ( !attrib )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, pErr, &data );
+				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, pErr, data );
 				return 0;
 			}
 
 			attrib->SetDocument( document );
 			const char* pErr = p;
-			p = attrib->Parse( p, &data );
+			p = attrib->Parse( p, data );
 
 			if ( !p || !*p )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT, pErr, &data );
+				if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT, pErr, data );
 				delete attrib;
 				return 0;
 			}
@@ -816,7 +807,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlParsingData* prevData
 }
 
 
-const char* TiXmlElement::ReadValue( const char* p, const TiXmlParsingData* data )
+const char* TiXmlElement::ReadValue( const char* p, TiXmlParsingData* data )
 {
 	TiXmlDocument* document = GetDocument();
 
@@ -893,17 +884,18 @@ void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 #endif
 
 
-const char* TiXmlUnknown::Parse( const char* p, const TiXmlParsingData* prevData )
+const char* TiXmlUnknown::Parse( const char* p, TiXmlParsingData* data )
 {
 	TiXmlDocument* document = GetDocument();
 	p = SkipWhiteSpace( p );
 
-	TiXmlParsingData data( p, prevData );
-	location = data.Cursor();
+//	TiXmlParsingData data( p, prevData );
+	data->Stamp( p );
+	location = data->Cursor();
 
 	if ( !p || !*p || *p != '<' )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_PARSING_UNKNOWN, p, &data );
+		if ( document ) document->SetError( TIXML_ERROR_PARSING_UNKNOWN, p, data );
 		return 0;
 	}
 	++p;
@@ -944,22 +936,23 @@ void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 #endif
 
 
-const char* TiXmlComment::Parse( const char* p, const TiXmlParsingData* prevData )
+const char* TiXmlComment::Parse( const char* p, TiXmlParsingData* data )
 {
 	TiXmlDocument* document = GetDocument();
 	value = "";
 
 	p = SkipWhiteSpace( p );
 
-	TiXmlParsingData data( p, prevData );
-	location = data.Cursor();
+//	TiXmlParsingData data( p, prevData );
+	data->Stamp( p );
+	location = data->Cursor();
 
 	const char* startTag = "<!--";
 	const char* endTag   = "-->";
 
 	if ( !StringEqual( p, startTag, false ) )
 	{
-		document->SetError( TIXML_ERROR_PARSING_COMMENT, p, &data );
+		document->SetError( TIXML_ERROR_PARSING_COMMENT, p, data );
 		return 0;
 	}
 	p += strlen( startTag );
@@ -968,7 +961,7 @@ const char* TiXmlComment::Parse( const char* p, const TiXmlParsingData* prevData
 }
 
 
-const char* TiXmlAttribute::Parse( const char* p, const TiXmlParsingData* prevData )
+const char* TiXmlAttribute::Parse( const char* p, TiXmlParsingData* data )
 {
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p ) return 0;
@@ -977,21 +970,22 @@ const char* TiXmlAttribute::Parse( const char* p, const TiXmlParsingData* prevDa
 	if ( document )
 		tabsize = document->TabSize();
 
-	TiXmlParsingData data( p, prevData );
-	location = data.Cursor();
+//	TiXmlParsingData data( p, prevData );
+	data->Stamp( p );
+	location = data->Cursor();
 
 	// Read the name, the '=' and the value.
 	const char* pErr = p;
 	p = ReadName( p, &name );
 	if ( !p || !*p )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, pErr, &data );
+		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, pErr, data );
 		return 0;
 	}
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p || *p != '=' )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, p, &data );
+		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, p, data );
 		return 0;
 	}
 
@@ -999,7 +993,7 @@ const char* TiXmlAttribute::Parse( const char* p, const TiXmlParsingData* prevDa
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p )
 	{
-		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, p, &data );
+		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, p, data );
 		return 0;
 	}
 	
@@ -1049,11 +1043,12 @@ void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 }
 #endif
 
-const char* TiXmlText::Parse( const char* p, const TiXmlParsingData* prevData )
+const char* TiXmlText::Parse( const char* p, TiXmlParsingData* data )
 {
 	value = "";
-	TiXmlParsingData data( p, prevData );
-	location = data.Cursor();
+//	TiXmlParsingData data( p, prevData );
+	data->Stamp( p );
+	location = data->Cursor();
 
 	bool ignoreWhite = true;
 
@@ -1081,7 +1076,7 @@ void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 }
 #endif
 
-const char* TiXmlDeclaration::Parse( const char* p, const TiXmlParsingData* prevData )
+const char* TiXmlDeclaration::Parse( const char* p, TiXmlParsingData* data )
 {
 	p = SkipWhiteSpace( p );
 	// Find the beginning, find the end, and look for
@@ -1092,8 +1087,9 @@ const char* TiXmlDeclaration::Parse( const char* p, const TiXmlParsingData* prev
 		if ( document ) document->SetError( TIXML_ERROR_PARSING_DECLARATION, 0, 0 );
 		return 0;
 	}
-	TiXmlParsingData data( p, prevData );
-	location = data.Cursor();
+//	TiXmlParsingData data( p, prevData );
+	data->Stamp( p );
+	location = data->Cursor();
 
 	p += 5;
 
@@ -1113,19 +1109,19 @@ const char* TiXmlDeclaration::Parse( const char* p, const TiXmlParsingData* prev
 		if ( StringEqual( p, "version", true ) )
 		{
 			TiXmlAttribute attrib;
-			p = attrib.Parse( p, &data );		
+			p = attrib.Parse( p, data );		
 			version = attrib.Value();
 		}
 		else if ( StringEqual( p, "encoding", true ) )
 		{
 			TiXmlAttribute attrib;
-			p = attrib.Parse( p, &data );		
+			p = attrib.Parse( p, data );		
 			encoding = attrib.Value();
 		}
 		else if ( StringEqual( p, "standalone", true ) )
 		{
 			TiXmlAttribute attrib;
-			p = attrib.Parse( p, &data );		
+			p = attrib.Parse( p, data );		
 			standalone = attrib.Value();
 		}
 		else
