@@ -43,6 +43,12 @@ TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] =
 //		http://www.unicode.org/faq/utf_bom.html
 // Including the basic of this table, which determines the #bytes in the
 // sequence from the lead byte. 0 placed for invalid sequences.
+// Beware of the non-characters in UTF-8:	
+//				ef bb bf (Microsoft "lead bytes")
+//				ef bf be
+//				ef bf bf 
+
+
 
 const int TiXmlBase::utf8ByteTable[256] = 
 {
@@ -211,6 +217,22 @@ void TiXmlParsingData::Stamp( const char* now )
 
 				// Skip to next tab stop
 				col = (col / tabsize + 1) * tabsize;
+				break;
+
+			case (char)(0xef):
+				if ( *(p+1) && *(p+2) )
+				{
+					// In these cases, don't advance the columnt. These are
+					// 0-width spaces.
+					if ( *(p+1)==(char)(0xbb) && *(p+2)==(char)(0xbf) )
+						p += 3;	
+					else if ( *(p+1)==(char)(0xbf) && *(p+2)==(char)(0xbe) )
+						p += 3;	
+					else if ( *(p+1)==(char)(0xbf) && *(p+2)==(char)(0xbf) )
+						p += 3;	
+					else
+						{ p +=3; ++col; }	// A normal character.
+				}
 				break;
 
 			default:

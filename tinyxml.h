@@ -172,6 +172,7 @@ public:
 	static const int utf8ByteTable[256];
 
 protected:
+
 	// See STL_STRING_BUG
 	// Utility class to overcome a bug.
 	class StringToBuffer
@@ -294,6 +295,9 @@ protected:
 	static void ConvertUTF32ToUTF8( unsigned long input, char* output, int* length );
 
 private:
+	TiXmlBase( const TiXmlBase& );				// not implemented.
+	void operator=( const TiXmlBase& base );	// not allowed.
+
 	struct Entity
 	{
 		const char*     str;
@@ -550,7 +554,7 @@ public:
 	virtual TiXmlNode* Clone() const = 0;
 
 protected:
-	TiXmlNode( NodeType type );
+	TiXmlNode( NodeType _type );
 
 	#ifdef TIXML_USE_STL
 	    // The real work of the input operator.
@@ -563,7 +567,7 @@ protected:
 												  target->userData = userData; }
 
 	// Internal Value function returning a TIXML_STRING
-	TIXML_STRING SValue() const	{ return value ; }
+	const TIXML_STRING& SValue() const	{ return value ; }
 
 	TiXmlNode*		parent;
 	NodeType		type;
@@ -575,6 +579,10 @@ protected:
 
 	TiXmlNode*		prev;
 	TiXmlNode*		next;
+
+private:
+	TiXmlNode( const TiXmlNode& );				// not implemented.
+	void operator=( const TiXmlNode& base );	// not allowed.
 };
 
 
@@ -680,6 +688,9 @@ public:
 	void SetDocument( TiXmlDocument* doc )	{ document = doc; }
 
 private:
+	TiXmlAttribute( const TiXmlAttribute& );				// not implemented.
+	void operator=( const TiXmlAttribute& base );	// not allowed.
+
 	TiXmlDocument*	document;	// A pointer back to a document, for error reporting.
 	TIXML_STRING name;
 	TIXML_STRING value;
@@ -844,6 +855,9 @@ protected:
 	const char* ReadValue( const char* in, TiXmlParsingData* prevData );
 
 private:
+	TiXmlElement( const TiXmlElement& );				// not implemented.
+	void operator=( const TiXmlElement& base );	// not allowed.
+
 	TiXmlAttributeSet attributeSet;
 };
 
@@ -855,6 +869,7 @@ class TiXmlComment : public TiXmlNode
 public:
 	/// Constructs an empty comment.
 	TiXmlComment() : TiXmlNode( TiXmlNode::COMMENT ) {}
+
 	virtual ~TiXmlComment()	{}
 
 	// [internal use] Creates a new Element and returs it.
@@ -872,6 +887,11 @@ protected:
 						 returns: next char past '>'
 	*/
 	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+
+private:
+	TiXmlComment( const TiXmlComment& );				// not implemented.
+	void operator=( const TiXmlComment& base );	// not allowed.
+
 };
 
 
@@ -914,6 +934,10 @@ protected :
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	#endif
+
+private:
+	TiXmlText( const TiXmlText& );				// not implemented.
+	void operator=( const TiXmlText& base );	// not allowed.
 };
 
 
@@ -981,6 +1005,9 @@ protected:
 	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 
 private:
+	TiXmlDeclaration( const TiXmlDeclaration& copy );
+	void operator=( const TiXmlDeclaration& copy );
+
 	TIXML_STRING version;
 	TIXML_STRING encoding;
 	TIXML_STRING standalone;
@@ -1014,6 +1041,11 @@ protected:
 						 returns: next char past '>'
 	*/
 	virtual const char* Parse( const char* p, TiXmlParsingData* data );
+
+private:
+	TiXmlUnknown( const TiXmlUnknown& copy );
+	void operator=( const TiXmlUnknown& copy );
+
 };
 
 
@@ -1152,6 +1184,9 @@ protected :
 	#endif
 
 private:
+	TiXmlDocument( const TiXmlDocument& copy );
+	void operator=( const TiXmlDocument& copy );
+
 	bool error;
 	int  errorId;
 	TIXML_STRING errorDesc;
@@ -1244,9 +1279,10 @@ class TiXmlHandle
 {
 public:
 	/// Create a handle from any node (at any depth of the tree.) This can be a null pointer.
-	TiXmlHandle( TiXmlNode* node )			{ this->node = node; }
+	TiXmlHandle( TiXmlNode* node )					{ this->node = node; }
 	/// Copy constructor
-	TiXmlHandle( const TiXmlHandle& ref )	{ this->node = ref.node; }
+	TiXmlHandle( const TiXmlHandle& ref )			{ this->node = ref.node; }
+	TiXmlHandle operator=( const TiXmlHandle& ref ) { this->node = ref.node; return *this; }
 
 	/// Return a handle to the first child node.
 	TiXmlHandle FirstChild() const;

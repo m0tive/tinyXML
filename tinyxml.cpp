@@ -460,6 +460,7 @@ TiXmlElement::TiXmlElement (const char * _value)
 	value = _value;
 }
 
+
 TiXmlElement::~TiXmlElement()
 {
 	while( attributeSet.First() )
@@ -928,7 +929,8 @@ void TiXmlComment::Print( FILE* cfile, int depth ) const
 void TiXmlComment::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	(*stream) << "<!--";
-	PutString( value, stream );
+	//PutString( value, stream );
+	(*stream) << value;
 	(*stream) << "-->";
 }
 

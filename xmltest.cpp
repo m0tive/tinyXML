@@ -501,6 +501,7 @@ int main()
 		TiXmlElement* element = docH.FirstChildElement( "document" ).FirstChildElement( "Russian" ).Element();
 		const char correctValue[] = {	(char)0xd1, (char)0x86, (char)0xd0, (char)0xb5, (char)0xd0, (char)0xbd, (char)0xd0, (char)0xbd, 
 										(char)0xd0, (char)0xbe, (char)0xd1, (char)0x81, (char)0xd1, (char)0x82, (char)0xd1, (char)0x8c, 0 };
+
 		XmlTest( "UTF-8: Russian value.", correctValue, element->Attribute( "value" ), true );
 		XmlTest( "UTF-8: Russian value row.", 4, element->Row() );
 		XmlTest( "UTF-8: Russian value column.", 5, element->Column() );
@@ -518,6 +519,10 @@ int main()
 				 true );
 		XmlTest( "UTF-8: Russian element name row.", 7, text->Row() );
 		XmlTest( "UTF-8: Russian element name column.", 47, text->Column() );
+
+		TiXmlDeclaration* dec = docH.Child( 0 ).Node()->ToDeclaration();
+		XmlTest( "UTF-8: Declaration column.", 1, dec->Column() );
+		XmlTest( "UTF-8: Document column.", 1, doc.Column() );
 
 		// Now try for a round trip.
 		doc.SaveFile( "utf8testout.xml" );
@@ -693,7 +698,7 @@ int main()
     }
 
 	{
-		// DOCTYPE not preserved
+		// DOCTYPE not preserved (950171)
 		// 
 		const char* doctype =
 			"<?xml version=\"1.0\" ?>"
@@ -719,6 +724,38 @@ int main()
 		#endif
 	}
 
+	{
+		// [ 791411 ] Formatting bug
+		// Comments do not stream out correctly.
+		const char* doctype = 
+			"<!-- Somewhat<evil> -->";
+		TiXmlDocument doc;
+		doc.Parse( doctype );
+
+		TiXmlHandle docH( &doc );
+		TiXmlComment* comment = docH.Child( 0 ).Node()->ToComment();
+
+		XmlTest( "Comment formatting.", " Somewhat<evil> ", comment->Value() );
+		#ifdef TIXML_USE_STL
+		std::string str;
+		str << (*comment);
+		XmlTest( "Comment streaming.", "<!-- Somewhat<evil> -->", str.c_str() );
+		#endif
+	}
+
+	{
+		// [ 935500 ] uninitialized pointer?
+		// Missing copy constructors. Actually, the bug was that this would crash the code.
+		// Now it won't compile.
+//		TiXmlElement copied = ReturnCopy();
+//		copied.Print( stdout, 0 );
+//
+//		TiXmlElement ele( "element" );
+//		TiXmlElement eleCopy( ele );
+//		TiXmlElement eleAssign( "assign" );
+//		eleAssign = eleCopy;
+	}
+
 
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );
@@ -729,4 +766,5 @@ int main()
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }
+
 
