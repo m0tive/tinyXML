@@ -6,12 +6,12 @@
 #include "tinyxml.h"
 
 #ifdef TIXML_USE_STL
-#include <iostream>
-#include <sstream>
-#include <strstream>
-using namespace std;
+	#include <iostream>
+	#include <sstream>
+	#include <strstream>
+	using namespace std;
 #else
-#include <stdio.h>
+	#include <stdio.h>
 #endif
 
 static int gPass = 0;
@@ -60,12 +60,12 @@ bool XmlTest( const char* testString, int expected, int found, bool noEcho = fal
 }
 
 
-	//
-	// This file demonstrates some basic functionality of TinyXml.
-	// Note that the example is very contrived. It presumes you know
-	// what is in the XML file. But it does test the basic operations,
-	// and show how to add and remove nodes.
-	//
+//
+// This file demonstrates some basic functionality of TinyXml.
+// Note that the example is very contrived. It presumes you know
+// what is in the XML file. But it does test the basic operations,
+// and show how to add and remove nodes.
+//
 
 int main()
 {
@@ -76,9 +76,9 @@ int main()
 	const char* demoStart =
 		"<?xml version=\"1.0\"  standalone='no' >\n"
 		"<!-- Our to do list data -->"
-	"<ToDo>\n"
-	"<!-- Do I need a secure PDA? -->\n"
-	"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
+		"<ToDo>\n"
+		"<!-- Do I need a secure PDA? -->\n"
+		"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
 		"<Item priority=\"2\" distance='none'> Do bills   </Item>"
 		"<Item priority=\"2\" distance='far &amp; back'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
@@ -88,22 +88,22 @@ int main()
 	const char* demoEnd =
 		"<?xml version=\"1.0\" standalone=\"no\" ?>"
 		"<!-- Our to do list data -->"
-	"<ToDo>"
-	"<!-- Do I need a secure PDA? -->"
-	"<Item priority=\"2\" distance=\"close\">Go to the"
+		"<ToDo>"
+		"<!-- Do I need a secure PDA? -->"
+		"<Item priority=\"2\" distance=\"close\">Go to the"
 		"<bold>Toy store!"
-	"</bold>"
-	"</Item>"
-	"<Item priority=\"1\" distance=\"far\">Talk to:"
+		"</bold>"
+		"</Item>"
+		"<Item priority=\"1\" distance=\"far\">Talk to:"
 		"<Meeting where=\"School\">"
 		"<Attendee name=\"Marple\" position=\"teacher\" />"
 		"<Attendee name=\"Vo&#x82;\" position=\"counselor\" />"
 		"</Meeting>"
-	"<Meeting where=\"Lunch\" />"
+		"<Meeting where=\"Lunch\" />"
 		"</Item>"
-	"<Item priority=\"2\" distance=\"here\">Do bills"
+		"<Item priority=\"2\" distance=\"here\">Do bills"
 		"</Item>"
-	"</ToDo>";
+		"</ToDo>";
 
 	// The example parses from the character string (above):
 

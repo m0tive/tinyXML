@@ -30,23 +30,23 @@ files. Simply add these to your project and off you go. There is an
 example to get you started. It is released under the ZLib license, 
 so you can use it in open source or commercial code.
 
-It attempts to be a flexible parser, but with truly correct and
+It attempts to be a flexible parser, but with truly correct and 
 compliant XML output (with the exception of the character set,
-below.) TinyXml should compile on any reasonably C++
+below.) TinyXml should compile on any reasonably C++ 
 system. It does not rely on exceptions or RTTI, and only uses the STL
 string class.
 
 
 <h2> What it doesn't do. </h2>
 
-It doesnt parse or use DTDs (Document Type Definitions) or XSLs
-(eXtensible Stylesheet Language.) It is limited to the ASCII
-character set. There are other parsers out there (check out
-www.sourceforge.org, search for XML) that are much more fully
-featured. But they are also much bigger, take longer to set up in
-your project, have a higher learning curve, and often have a more
-restrictive license. If you are working with browsers or have more
-complete XML needs, TinyXml is not the parser for you.
+It doesn’t parse or use DTDs (Document Type Definitions) or XSL’s 
+(eXtensible Stylesheet Language.) It is limited to the ASCII 
+character set. There are other parsers out there (check out 
+www.sourceforge.org, search for XML) that are much more fully 
+featured. But they are also much bigger, take longer to set up in 
+your project, have a higher learning curve, and often have a more 
+restrictive license. If you are working with browsers or have more 
+complete XML needs, TinyXml is not the parser for you. 
 
 
 <h2> Code Status.  </h2>
@@ -54,21 +54,32 @@ complete XML needs, TinyXml is not the parser for you.
 Currently in use, TinyXml is looking pretty stable. If you find
 bugs, send them in and we'll get them straightened out as soon as possible.
 
-There are some areas of improvement; please check sourceforge if you are
+There are some areas of improvement; please check sourceforge if you are 
 interested in working on TinxXml.
 
 
-<h2> Changes between version 1 and 2 </h2>
+<h2> Features </h2>
 
-Ignoring other changes, 1.2 is limited to the STL string class, while version
-2.0 makes extensive use of STL. If you need a minimal STL implementation,
-you should drop back to the 1.2 release. In the next version of TinyXml,
-I hope to see us support a compile time switch to use full STL or none
-at all. Initial code looks really good.
+<h3> Using STL </h3>
+
+TinyXml can be compiled to use or not use STL. When using STL, TinyXml
+uses the std::string class, and fully supports std::istream, std::ostream,
+operator<<, and operator>>. Many API methods have both 'const char*' and
+'const std::string&' forms.
+
+When STL support is compiled out, no STL files are included whatsover. All
+the string classes are implemented by TinyXml itself. API methods
+all use the 'const char*' form for input.
+
+Use the compile time #define:
+	
+	TIXML_USE_STL
+
+to compile one version or the other.
 
 
 <h3> Entities </h3>
-TinyXml recognizes the pre-defined "entity references", meaning special
+TinyXml recognizes the pre-defined "entity references", meaning special 
 characters. Namely:
 
 @verbatim
@@ -76,7 +87,7 @@ characters. Namely:
 	&lt;	<
 	&gt;	>
 	&quot;	"
-	&apos;
+	&apos;	‘
 @endverbatim
 
 These are recognized when the XML document is read, and translated to there
@@ -86,10 +97,10 @@ ASCII equivalents. For instance, text with the XML of:
 	Far &amp; Away
 @endverbatim
 
-will have the Value() of "Far & Away" when queried from the TiXmlText object,
+will have the Value() of "Far & Away" when queried from the TiXmlText object, 
 but will be written back to the XML stream/file as an entitity.
 
-TiXml will ignore unknown entities and the
+TiXml will ignore unknown entities and the 
 @verbatim
 "&#x"
 @endverbatim
@@ -97,7 +108,8 @@ entities, and leave them unprocessed.
 
 
 <h3> Streams </h3>
-TiXml has been modified to support both C (FILE) and C++ (operator <<,>>)
+With TIXML_USE_STL on,
+TiXml has been modified to support both C (FILE) and C++ (operator <<,>>) 
 streams. There are some differences that you may need to be aware of.
 
 C style output:
@@ -170,7 +182,7 @@ hard coded.
 
 To Use in an Application:
 
-Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, and tinyxmlparser.cpp to your 
+Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, tinyxmlparser.cpp, and tinystr.cpp to your 
 project or make file. That's it! It should compile on any reasonably
 compliant C++ system. You do not need to enable exceptions or
 RTTI for TinyXml.
@@ -190,7 +202,7 @@ posted as tasks on SourceForge. (www.sourceforge.net/projects/tinyxml)
 
 An example is probably the best way to go. Take:
 @verbatim
-	<?xml version="1.0" standalone=no>
+	<?xml version="1.0" standalone=‘no’>
 	<?-- Our to do list data -->
 	<ToDo>
 		<Item priority="1"> Go to the <bold>Toy store!</bold></Item>
@@ -198,17 +210,17 @@ An example is probably the best way to go. Take:
 	</ToDo>
 @endverbatim
 
-Its not much of a To Do list, but it will do. To read this file 
+It’s not much of a To Do list, but it will do. To read this file 
 (say "demo.xml") you would create a document, and parse it in:
 @verbatim
 	TiXmlDocument doc( "demo.xml" );
 	doc.LoadFile();
 @endverbatim
 
-And its ready to go. Now lets look at some lines and how they 
+And it’s ready to go. Now let’s look at some lines and how they 
 relate to the DOM.
 
-<?xml version="1.0" standalone=no>
+<?xml version="1.0" standalone=‘no’>
 
 	The first line is a declaration, and gets turned into the
 	TiXmlDeclaration class. It will be the first child of the
@@ -216,7 +228,7 @@ relate to the DOM.
 	
 	This is the only directive/special tag parsed by by TinyXml.
 	Generally directive targs are stored in TiXmlUnknown so the 
-	commands wont be lost when it is saved back to disk.
+	commands won’t be lost when it is saved back to disk.
 
 <?-- Our to do list data -->
 
@@ -231,13 +243,13 @@ relate to the DOM.
 <Item priority="1"> 
 
 	Creates another TiXmlElement which is a child of the "ToDo" element. 
-	This element has 1 attribute, with the name priority and the value 
-	1.
+	This element has 1 attribute, with the name ‘priority’ and the value 
+	‘1’.
 
 Go to the 
 
 	A TiXmlText. This is a leaf node and cannot contain other nodes. 
-	It is a child of the Item" Element.
+	It is a child of the ‘Item" Element.
 
 <bold>
 	
@@ -248,7 +260,7 @@ Etc.
 Looking at the entire object tree, you end up with:
 @verbatim
 TiXmlDocument				"demo.xml"
-	TiXmlDeclaration		"version='1.0'" "standalone=no"
+	TiXmlDeclaration		"version='1.0'" "standalone=‘no’"
 	TiXmlComment			" Our to do list data"
 	TiXmlElement			"ToDo"
 		TiXmlElement		"Item"		Attribtutes: priority = 1
@@ -301,11 +313,11 @@ distribution.
 The World Wide Web Consortium is the definitive standard body for 
 XML, and there web pages contain huge amounts of information. I also 
 recommend "XML Pocket Reference" by Robert Eckstein and published by 
-OReilly.
+O’Reilly.
 
 <h2> Contact Me: </h2>
 
-Id appreciates your suggestions, and would love to know if you 
+I’d appreciates your suggestions, and would love to know if you 
 use TinyXml. I hope you enjoy it and find it useful. Please post
 questions, comments, file bugs, or contact me at:
 

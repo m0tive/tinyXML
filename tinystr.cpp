@@ -28,7 +28,7 @@ distribution.
 
 #include "tinystr.h"
 
-/// TiXmlString constructor, based on a C string
+// TiXmlString constructor, based on a C string
 TiXmlString::TiXmlString (const char * instring)
 {
     unsigned newlen;
@@ -47,7 +47,7 @@ TiXmlString::TiXmlString (const char * instring)
     cstring = newstring;
 }
 
-/// TiXmlString copy constructor
+// TiXmlString copy constructor
 TiXmlString::TiXmlString (const TiXmlString & copy)
 {
     unsigned newlen;
@@ -66,7 +66,7 @@ TiXmlString::TiXmlString (const TiXmlString & copy)
     cstring = newstring;
 }
 
-/// TiXmlString = operator. Safe when assign own content
+// TiXmlString = operator. Safe when assign own content
 void TiXmlString ::operator = (const char * content)
 {
     unsigned newlen;
@@ -85,7 +85,7 @@ void TiXmlString ::operator = (const char * content)
     cstring = newstring;
 }
 
-/// = operator. Safe when assign own content
+// = operator. Safe when assign own content
 void TiXmlString ::operator = (const TiXmlString & copy)
 {
     unsigned newlen;
@@ -105,7 +105,7 @@ void TiXmlString ::operator = (const TiXmlString & copy)
 }
 
 
-/// Checks if a TiXmlString contains only whitespace (same rules as isspace)
+// Checks if a TiXmlString contains only whitespace (same rules as isspace)
 bool TiXmlString::isblank () const
 {
     char * lookup;
@@ -115,7 +115,7 @@ bool TiXmlString::isblank () const
     return true;
 }
 
-/// append a const char * to an existing TiXmlString
+// append a const char * to an existing TiXmlString
 void TiXmlString::append( const char* str, int len )
 {
     char * new_string;
@@ -153,7 +153,7 @@ void TiXmlString::append( const char* str, int len )
 }
 
 
-/// append a const char * to an existing TiXmlString
+// append a const char * to an existing TiXmlString
 void TiXmlString::append( const char * suffix )
 {
     char * new_string;
@@ -190,7 +190,7 @@ void TiXmlString::append( const char * suffix )
         strcat (cstring, suffix);
 }
 
-/// Check for TiXmlString equuivalence
+// Check for TiXmlString equuivalence
 bool TiXmlString::operator == (const TiXmlString & compare) const
 {
     return (! strcmp (c_str (), compare . c_str ()));
@@ -201,4 +201,17 @@ unsigned TiXmlString::length () const
     if (allocated)
         return strlen (cstring);
     return 0;
+}
+
+
+unsigned TiXmlString::find (char tofind, unsigned offset) const
+{
+    char * lookup;
+
+    if (offset >= (int) length ())
+        return notfound;
+    for (lookup = cstring + offset; * lookup; lookup++)
+        if (* lookup == tofind)
+            return lookup - cstring;
+    return notfound;
 }
