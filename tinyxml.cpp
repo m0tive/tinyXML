@@ -611,11 +611,11 @@ bool TiXmlDocument::SaveFile() const
 
 
 bool TiXmlDocument::LoadFile( const std::string& filename )
-{	
+{
 	// Delete the existing data:
 	Clear();
 	value = filename;
-	
+
 	FILE* file = fopen( filename.c_str(), "r" );
 
 	if ( file )
@@ -625,6 +625,13 @@ bool TiXmlDocument::LoadFile( const std::string& filename )
 		fseek( file, 0, SEEK_END );
 		length = ftell( file );
 		fseek( file, 0, SEEK_SET );
+
+		// Strange case, but good to handle up front.
+		if ( length == 0 )
+		{
+			fclose( file );
+			return false;
+   		}
 
 		// If we have a file, assume it is all one big XML file, and read it in.
 		// The document parser may decide the document ends sooner than the entire file, however.

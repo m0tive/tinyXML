@@ -77,4 +77,5 @@ Changes in version 2.0.0 BETA
 - Improved text out formatting.
 - Fixed ReplaceChild bug, thanks to Tao Chen.
 
-
+Changes in version 2.0.1
+- Fixed hanging on loading a 0 length file. Thanks to Jeff Scozzafava.

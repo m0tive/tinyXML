@@ -831,7 +831,7 @@ const char* TiXmlText::Parse( const char* p )
 {
 	value = "";
 
-	TiXmlDocument* doc = GetDocument();
+	//TiXmlDocument* doc = GetDocument();
 	bool ignoreWhite = true;
 //	if ( doc && !doc->IgnoreWhiteSpace() ) ignoreWhite = false;
 
@@ -847,13 +847,13 @@ void TiXmlDeclaration::StreamIn( std::istream* in, std::string* tag )
 {
 	while ( in->good() )
 	{
-		int c = in->get();	
+		int c = in->get();
 		(*tag) += c;
 
 		if ( c == '>' )
 		{
 			// All is well.
-			return;		
+			return;
 		}
 	}
 }
