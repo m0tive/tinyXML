@@ -559,7 +559,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 			  )
 		{
 			int len;
-			char cArr[4];
+			char cArr[4] = { 0, 0, 0, 0 };
 			p = GetChar( p, cArr, &len, encoding );
 			text->append( cArr, len );
 		}
@@ -592,8 +592,8 @@ const char* TiXmlBase::ReadText(	const char* p,
 					(*text) += ' ';
 					whitespace = false;
 				}
-				char cArr[4];
 				int len;
+				char cArr[4] = { 0, 0, 0, 0 };
 				p = GetChar( p, cArr, &len, encoding );
 				if ( len == 1 )
 					(*text) += cArr[0];	// more efficient
