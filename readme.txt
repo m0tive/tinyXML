@@ -57,6 +57,14 @@ your project, have a higher learning curve, and often have a more
 restrictive license. If you are working with browsers or have more
 complete XML needs, TinyXml is not the parser for you.
 
+The following DTD syntax will not parse at this time in TinyXml:
+
+	<!DOCTYPE Archiv [
+	 <!ELEMENT Comment (#PCDATA)>
+	]>
+
+because TinyXml sees this as a !DOCTYPE node with an illegally 
+embedded !ELEMENT node. This may be addressed in the future.
 
 <h2> Code Status.  </h2>
 
@@ -105,7 +113,7 @@ Normally, TinyXml will try to detect the correct encoding and use it. However,
 by setting the value of TIXML_DEFAULT_ENCODING in the header file, TinyXml
 can be forced to always use one encoding.
 
-The rules for detecting the encoding are:
+TinyXml will assume Legacy Mode until one of the following occurs:
 <ol>
 	<li> If the non-standard but common "UTF-8 lead bytes" (0xef 0xbb 0xbf)
 		 begin the file or data stream, TinyXml will read it as UTF-8. </li>
@@ -122,7 +130,7 @@ The rules for detecting the encoding are:
 What happens if the encoding is incorrectly set or detected? TinyXml will try
 to read and pass through text seen as improperly encoded. You may get some strange
 results or mangled characters, however. In this case, you may want to force
-TinyXml to Legacy Mode.
+TinyXml to the correct mode.
 
 <b> You may force TinyXml to Legacy Mode by using LoadFile( TIXML_ENCODING_LEGACY ) or
 LoadFile( filename, TIXML_ENCODING_LEGACY ). You may force it to use legacy mode all
@@ -132,8 +140,8 @@ For English users, using English XML, UTF-8 is the same as low-ASCII. You
 don't need to be aware of UTF-8 or change your code in any way. You can think
 of UTF-8 as a "superset" of ASCII.
 
-UTF-8 is not a double byte format. TinyXml does not use or support wchar, TCHAR,
-or Microsofts _UNICODE.
+UTF-8 is not a double byte format. TinyXml does not use or directly support 
+wchar, TCHAR, or Microsofts _UNICODE at this time.
 
 For "high-ascii" languages - everything not English, pretty much - TinyXml can
 handle all languages, at the same time, as long as the XML is encoded

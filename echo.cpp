@@ -8,59 +8,29 @@ int main( int argc, char* argv[] )
 {
 	if ( argc < 2 )
 	{
-		printf( "Loads a file, then writes it back out. Times both steps.\n" );
+		printf( "Loads a file, then writes it back out.\n" );
 		printf( "Usage: echo inputfile\n" );
 		return 1;
 	}
 
 	TiXmlDocument doc( argv[1] );
-	
-	time_t prev, now;
-
-	prev = clock();
-	
 	bool result = doc.LoadFile();
-
-	if ( !result )
+	if ( doc.Error() )
 	{
-		printf( "Error: '%s' at [%d,%d]\n",
-				doc.ErrorDesc(),
-				doc.ErrorRow(),
-				doc.ErrorCol() );
+		printf( "Error loading document.\n" );
+		printf( "Error id=%d desc='%s' row=%d col=%d\n",
+				 doc.ErrorId(), doc.ErrorDesc(), doc.ErrorRow(), doc.ErrorCol() );
+		return 2;
 	}
-
-	printf( "Result: %d\n", (int) result );
-	now = clock();
-	printf( "Read from c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
-	prev = now;
+	
+	printf( "Load '%s' successful.\n", doc.Value() );
 
 #ifdef TIXML_USE_STL	
-	doc.SaveFile( "echoteststl.xml" );
-#else
-	doc.SaveFile( "echotest.xml" );
-#endif	
-
-	now = clock();
-	printf( "Write to c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
-	prev = now;
-
-	doc.Clear();
-	prev = clock();
-
-#ifdef TIXML_USE_STL		
-	ifstream inputStream( argv[1] );
-	inputStream >> doc;
-	now = clock();
-	printf( "Read from stream: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
-	prev = now;
-
-	ofstream outputStream( "echoteststream.xml" );
-	outputStream << doc;
-	now = clock();
-	printf( "Write to stream: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
-	prev = now;
+	doc.SaveFile( "echotest.stl.xml" );
 #endif
+	doc.SaveFile( "echotest.xml" );
 
+	doc.Print( stdout, 0 );
 	
 	return 0;
 }
