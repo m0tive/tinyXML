@@ -692,6 +692,33 @@ int main()
 		}
     }
 
+	{
+		// DOCTYPE not preserved
+		// 
+		const char* doctype =
+			"<?xml version=\"1.0\" ?>"
+			"<!DOCTYPE PLAY SYSTEM 'play.dtd'>"
+			"<!ELEMENT title (#PCDATA)>"
+			"<!ELEMENT books (title,authors)>"
+			"<element />";
+
+		TiXmlDocument doc;
+		doc.Parse( doctype );
+		doc.SaveFile( "test7.xml" );
+		doc.Clear();
+		doc.LoadFile( "test7.xml" );
+		
+		TiXmlHandle docH( &doc );
+		TiXmlUnknown* unknown = docH.Child( 1 ).Unknown();
+		XmlTest( "Correct value of unknown.", "!DOCTYPE PLAY SYSTEM 'play.dtd'", unknown->Value() );
+		#ifdef TIXML_USE_STL
+		TiXmlNode* node = docH.Child( 2 ).Node();
+		std::string str;
+		str << (*node);
+		XmlTest( "Correct streaming of unknown.", "<!ELEMENT title (#PCDATA)>", str.c_str() );
+		#endif
+	}
+
 
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );

@@ -991,6 +991,8 @@ private:
 	unknown. It is a tag of text, but should not be modified.
 	It will be written back to the XML, unchanged, when the file
 	is saved.
+
+	DTD tags get thrown into TiXmlUnknowns.
 */
 class TiXmlUnknown : public TiXmlNode
 {
@@ -1288,8 +1290,8 @@ public:
 	TiXmlElement* Element() const	{ return ( ( node && node->ToElement() ) ? node->ToElement() : 0 ); }
 	/// Return the handle as a TiXmlText. This may return null.
 	TiXmlText* Text() const			{ return ( ( node && node->ToText() ) ? node->ToText() : 0 ); }
-
-// fixme: attribute support
+	/// Return the handle as a TiXmlUnknown. This may return null;
+	TiXmlUnknown* Unknown() const			{ return ( ( node && node->ToUnknown() ) ? node->ToUnknown() : 0 ); }
 
 private:
 	TiXmlNode* node;

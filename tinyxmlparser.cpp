@@ -666,6 +666,7 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 
 	const char* xmlHeader = { "<?xml" };
 	const char* commentHeader = { "<!--" };
+	const char* dtdHeader = { "<!" };
 
 	if ( StringEqual( p, xmlHeader, true ) )
 	{
@@ -673,6 +674,20 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 			TIXML_LOG( "XML parsing Declaration\n" );
 		#endif
 		returnNode = new TiXmlDeclaration();
+	}
+	else if ( StringEqual( p, commentHeader, false ) )
+	{
+		#ifdef DEBUG_PARSER
+			TIXML_LOG( "XML parsing Comment\n" );
+		#endif
+		returnNode = new TiXmlComment();
+	}
+	else if ( StringEqual( p, dtdHeader, false ) )
+	{
+		#ifdef DEBUG_PARSER
+			TIXML_LOG( "XML parsing Unknown(1)\n" );
+		#endif
+		returnNode = new TiXmlUnknown();
 	}
 	else if (    IsAlphaUTF8( *(p+1) )
 			  || *(p+1) == '_' )
@@ -682,17 +697,10 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 		#endif
 		returnNode = new TiXmlElement( "" );
 	}
-	else if ( StringEqual( p, commentHeader, false ) )
-	{
-		#ifdef DEBUG_PARSER
-			TIXML_LOG( "XML parsing Comment\n" );
-		#endif
-		returnNode = new TiXmlComment();
-	}
 	else
 	{
 		#ifdef DEBUG_PARSER
-			TIXML_LOG( "XML parsing Unknown\n" );
+			TIXML_LOG( "XML parsing Unknown(2)\n" );
 		#endif
 		returnNode = new TiXmlUnknown();
 	}

@@ -1039,13 +1039,14 @@ void TiXmlUnknown::Print( FILE* cfile, int depth ) const
 {
 	for ( int i=0; i<depth; i++ )
 		fprintf( cfile, "    " );
-	fprintf( cfile, "%s", value.c_str() );
+	fprintf( cfile, "<%s>", value.c_str() );
 }
 
 void TiXmlUnknown::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	(*stream) << "<" << value << ">";		// Don't use entities here! It is unknown.
 }
+
 
 TiXmlNode* TiXmlUnknown::Clone() const
 {
