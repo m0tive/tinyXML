@@ -195,14 +195,14 @@ At the top of the makefile you can set:
 PROFILE, DEBUG, and TINYXML_USE_STL. Details (such that they are) are in
 the makefile.
 
-In the tinyxml directory:
-make clean
-make
+In the tinyxml directory, type "make clean" then "make". The executable
+file 'xmltest' will be created.
+
 
 
 <h3>To Use in an Application:</h3>
 
-Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, tinyxmlparser.cpp, and tinystr.cpp to your 
+Add tinyxml.cpp, tinyxml.h, tinyxmlerror.cpp, tinyxmlparser.cpp, and tinystr.cpp to your
 project or make file. That's it! It should compile on any reasonably
 compliant C++ system. You do not need to enable exceptions or
 RTTI for TinyXml.
