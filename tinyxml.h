@@ -92,22 +92,22 @@ class TiXmlBase
 
 	enum
 	{
-		NO_ERROR = 0,
-		ERROR_OPENING_FILE,
-		ERROR_OUT_OF_MEMORY,
-		ERROR_PARSING_ELEMENT,
-		ERROR_FAILED_TO_READ_ELEMENT_NAME,
-		ERROR_READING_ELEMENT_VALUE,
-		ERROR_READING_ATTRIBUTES,
-		ERROR_PARSING_EMPTY,
-		ERROR_READING_END_TAG,
-		ERROR_PARSING_UNKNOWN,
-		ERROR_PARSING_COMMENT,
-		ERROR_PARSING_DECLARATION,
+		TIXML_NO_ERROR = 0,
+		TIXML_ERROR_OPENING_FILE,
+		TIXML_ERROR_OUT_OF_MEMORY,
+		TIXML_ERROR_PARSING_ELEMENT,
+		TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME,
+		TIXML_ERROR_READING_ELEMENT_VALUE,
+		TIXML_ERROR_READING_ATTRIBUTES,
+		TIXML_ERROR_PARSING_EMPTY,
+		TIXML_ERROR_READING_END_TAG,
+		TIXML_ERROR_PARSING_UNKNOWN,
+		TIXML_ERROR_PARSING_COMMENT,
+		TIXML_ERROR_PARSING_DECLARATION,
 
-		ERROR_STRING_COUNT
+		TIXML_ERROR_STRING_COUNT
 	};
-	static const char* errorString[ ERROR_STRING_COUNT ];
+	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
 };
 
 
@@ -598,7 +598,7 @@ class TiXmlDocument : public TiXmlNode
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 	
-	void SetError( int err ) {		assert( err > 0 && err < ERROR_STRING_COUNT );
+	void SetError( int err ) {		assert( err > 0 && err < TIXML_ERROR_STRING_COUNT );
 									error   = true; 
 									errorId = err;
 									errorDesc = errorString[ errorId ]; }
