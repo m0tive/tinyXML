@@ -68,8 +68,11 @@ class TiXmlUnknown;
 class TiXmlAttribute;
 class TiXmlText;
 class TiXmlDeclaration;
-
 class TiXmlParsingData;
+
+const int TIXML_MAJOR_VERSION = 2;
+const int TIXML_MINOR_VERSION = 3;
+const int TIXML_PATCH_VERSION = 1;
 
 /*	Internal structure for tracking location of items 
 	in the XML file.
@@ -701,12 +704,12 @@ public:
 	bool operator>( const TiXmlAttribute& rhs )  const { return name > rhs.name; }
 
 	/*	[internal use]
-		Attribtue parsing starts: first letter of the name
+		Attribute parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
-	// [internal use]
+	// Prints this Attribute to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 
 	virtual void StreamOut( TIXML_OSTREAM * out ) const;
@@ -855,10 +858,9 @@ public:
 	TiXmlAttribute* FirstAttribute() const	{ return attributeSet.First(); }		///< Access the first attribute in this element.
 	TiXmlAttribute* LastAttribute()	const 	{ return attributeSet.Last(); }		///< Access the last attribute in this element.
 
-	// [internal use] Creates a new Element and returns it.
+	/// Creates a new Element and returns it - the returned element is a copy.
 	virtual TiXmlNode* Clone() const;
-	// [internal use]
-
+	// Print the Element to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 
 protected:
@@ -899,9 +901,9 @@ public:
 
 	virtual ~TiXmlComment()	{}
 
-	// [internal use] Creates a new Element and returs it.
+	/// Returns a copy of this Comment.
 	virtual TiXmlNode* Clone() const;
-	// [internal use]
+	/// Write this Comment to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 protected:
 	// used to be public
@@ -943,14 +945,13 @@ public:
 	}
 	#endif
 
-	// [internal use]
+	/// Write this text object to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 
 protected :
-	// [internal use] Creates a new Element and returns it.
+	///  [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
-	// [internal use]
 	bool Blank() const;	// returns true if all white space and new lines
 	/*	[internal use]
 			Attribtue parsing starts: First char of the text
@@ -1008,15 +1009,15 @@ public:
 	virtual ~TiXmlDeclaration()	{}
 
 	/// Version. Will return an empty string if none was found.
-	const char * Version() const		{ return version.c_str (); }
+	const char *Version() const			{ return version.c_str (); }
 	/// Encoding. Will return an empty string if none was found.
-	const char * Encoding() const		{ return encoding.c_str (); }
+	const char *Encoding() const		{ return encoding.c_str (); }
 	/// Is this a standalone document?
-	const char * Standalone() const		{ return standalone.c_str (); }
+	const char *Standalone() const		{ return standalone.c_str (); }
 
-	// [internal use] Creates a new Element and returs it.
+	/// Creates a copy of this Declaration and returns it.
 	virtual TiXmlNode* Clone() const;
-	// [internal use]
+	/// Print this declaration to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 
 protected:
@@ -1054,9 +1055,9 @@ public:
 	TiXmlUnknown() : TiXmlNode( TiXmlNode::UNKNOWN ) {}
 	virtual ~TiXmlUnknown() {}
 
-	// [internal use]
+	/// Creates a copy of this Unknown and returns it.
 	virtual TiXmlNode* Clone() const;
-	// [internal use]
+	/// Print this Unknown to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 protected:
 	#ifdef TIXML_USE_STL
@@ -1194,7 +1195,7 @@ public:
 	/** Dump the document to standard out. */
 	void Print() const						{ Print( stdout, 0 ); }
 
-	// [internal use]
+	/// Print this Document to a FILE stream.
 	virtual void Print( FILE* cfile, int depth = 0 ) const;
 	// [internal use]
 	void SetError( int err, const char* errorLocation, TiXmlParsingData* prevData, TiXmlEncoding encoding );

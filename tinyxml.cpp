@@ -387,8 +387,8 @@ TiXmlElement* TiXmlNode::FirstChildElement() const
 	TiXmlNode* node;
 
 	for (	node = FirstChild();
-	node;
-	node = node->NextSibling() )
+			node;
+			node = node->NextSibling() )
 	{
 		if ( node->ToElement() )
 			return node->ToElement();
@@ -401,8 +401,8 @@ TiXmlElement* TiXmlNode::FirstChildElement( const char * _value ) const
 	TiXmlNode* node;
 
 	for (	node = FirstChild( _value );
-	node;
-	node = node->NextSibling( _value ) )
+			node;
+			node = node->NextSibling( _value ) )
 	{
 		if ( node->ToElement() )
 			return node->ToElement();

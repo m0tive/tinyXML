@@ -109,8 +109,8 @@ The rules for reading text are:
 		 TinyXml will read it as UTF-8. </li>
 	<li> If the declaration tag is read, and it has an encoding="something else", then
 		 TinyXml will read it as Legacy Mode. In legacy mode, TinyXml will 
-		 work as it did before. It's not clear what that mode does, but old content
-		 should keep working.</li>
+		 work as it did before. It's not clear what that mode does exactly, but 
+		 old content should keep working.</li>
 </ol>
 
 What happens if another encoding is sent to TinyXml to parse? TinyXml will try
