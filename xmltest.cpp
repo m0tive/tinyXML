@@ -937,10 +937,12 @@ int main()
 		XmlTest( "Empty document error TIXML_ERROR_DOCUMENT_EMPTY", TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY, doc.ErrorId() );
 	}
 
+	#ifndef TIXML_USE_STL
 	{
 		TiXmlString temp;
 		XmlTest( "Empty tinyxml string compare unequal", ( temp == "" ), false );
 	}
+	#endif
 
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );
