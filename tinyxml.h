@@ -431,6 +431,9 @@ public:
 
 	virtual TiXmlNode* Clone() const = 0;
 
+	void  SetUserData( void* user )			{ userData = user; }
+	void* GetUserData()						{ return userData; }
+
 protected:
 	TiXmlNode( NodeType type );
 
@@ -444,7 +447,8 @@ protected:
 
 	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
 	TiXmlNode* Identify( const char* start );
-	void CopyToClone( TiXmlNode* target ) const	{ target->SetValue (value.c_str() ); }
+	void CopyToClone( TiXmlNode* target ) const	{ target->SetValue (value.c_str() );
+												  target->userData = userData; }
 
 	// Internal Value function returning a TIXML_STRING
 	TIXML_STRING SValue() const	{ return value ; }
@@ -459,6 +463,7 @@ protected:
 
 	TiXmlNode*		prev;
 	TiXmlNode*		next;
+	void*			userData;
 };
 
 
@@ -862,11 +867,11 @@ public:
 	#ifdef TIXML_USE_STL
 	bool LoadFile( const std::string& filename )			///< STL std::string version.
 	{
-		return LoadFile (filename . c_str ());
+		return LoadFile (filename.c_str ());
 	}
 	bool SaveFile( const std::string& filename ) const		///< STL std::string version.
 	{
-		return SaveFile (filename . c_str ());
+		return SaveFile (filename.c_str ());
 	}
 	#endif
 

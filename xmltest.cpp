@@ -394,6 +394,18 @@ int main()
 		XmlTest( "Test InsertAfterChild on empty node. ", ( childNode1 == parent.LastChild() ), true );
 	}
 
+	{
+		// Missing constructor implementation. No test -- just compiles.
+		TiXmlText text( "Missing" );
+
+		#ifdef TIXML_USE_STL
+		// Missing implementation:
+		TiXmlDocument doc;
+		string name = "missing";
+		doc.LoadFile( name );
+		#endif
+ 	}
+
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }
