@@ -75,11 +75,14 @@ Use the compile time #define:
 
 	TIXML_USE_STL
 
-to compile one version or the other.
+to compile one version or the other. This can be passed by the compiler,
+or set as the first line of "tinyxml.h".
 
 Note: If compiling the test code in Linux, setting the environment
 variable TINYXML_USE_STL=YES/NO will control STL compilation. In the
-Windows project file, STL and non STL targets are provided.
+Windows project file, STL and non STL targets are provided. In your project,
+its probably easiest to add the line "#define TIXML_USE_STL" as the first
+line of tinyxml.h.
 
 <h3> Entities </h3>
 TinyXml recognizes the pre-defined "entity references", meaning special

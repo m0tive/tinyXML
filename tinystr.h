@@ -22,6 +22,11 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+#include "tinyxml.h"
+
+
+#ifndef TIXML_USE_STL
+
 #ifndef TIXML_STRING_INCLUDED
 #define TIXML_STRING_INCLUDED
 
@@ -194,7 +199,7 @@ class TiXmlString
 } ;
 
 /* 
-   TiXmlOutStream is an emulation of std::ostream. It is based on TiXmlString. \n
+   TiXmlOutStream is an emulation of std::ostream. It is based on TiXmlString.
    Only the operators that we need for TinyXML have been developped.
 */
 class TiXmlOutStream : public TiXmlString
@@ -217,4 +222,5 @@ public :
     }
 } ;
 
-#endif
+#endif	// TIXML_STRING_INCLUDED
+#endif	// TIXML_USE_STL

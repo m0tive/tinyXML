@@ -88,3 +88,10 @@ Changes in version 2.1.0
 - Yves Berquin brings us the STL switch. The forum on SourceForge, and various emails to
   me, have long debated all out STL vs. no STL at all. And now you can have it both ways.
   TinyXml will compile either way.
+
+Changes in version 2.1.1
+- Compilation warnings.
+
+Changes in version 2.1.2
+- Uneeded code is not compiled in the STL case.
+- Changed headers so that STL can be turned on or off in tinyxml.h
