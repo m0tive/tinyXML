@@ -52,8 +52,7 @@ int main()
 		// Write to a file and read it back, to check file I/O.
 
 		TiXmlDocument doc( "demotest.xml" );
-		std::istrstream demoStartStream( demoStart, strlen( demoStart ) );
-		doc.Parse( &demoStartStream );
+		doc.Parse( demoStart );
 
 		if ( doc.Error() )
 		{

@@ -21,199 +21,196 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-
 #include "tinyxml.h"
 #include <ctype.h>
 #include <strstream>
 using namespace std;
 
 
-bool TiXmlBase::SkipWhiteSpace( istream* in )
+bool TiXmlBase::StreamChunkToString( std::istream* in, std::string* str )
 {
 	assert( in );
-//	while ( p && *p && 
-//	        ( isspace( *p ) || *p == '\n' || *p == '\r' ) )
-//		p++;
-//	return p;
+	*str = "";
 
+	if ( in->peek() != '<' )	return false;
+	(*str) += in->get();	// throw out the opening '<'
+
+	int count = 1;
 	while ( in->good() )
 	{
-		int c = in->peek();
-		if ( isspace( c ) || c == '\n' || c =='\r' )		// Still using old rules for white space.
-			in->get();
+		int c = in->get();
+		if ( c == '<' )
+		{
+			++count;
+		}
+		else if ( c == '>' )	
+		{
+			--count;
+			if ( count == 0 )
+			{
+				(*str) += (char) c;
+				return true;
+			}
+		}
+		(*str) += (char) c;
+	}
+	return false;
+}
+
+const char* TiXmlBase::SkipWhiteSpace( const char* p )
+{
+	if ( !p || !*p )
+	{
+		return 0;
+	}
+	while ( p && *p )
+	{
+		if ( isspace( *p ) || *p == '\n' || *p =='\r' )		// Still using old rules for white space.
+			++p;
 		else
 			break;
 	}
 
-	return ( in->good() );
+	return p;
 }
 
-bool TiXmlBase::ReadName( istream* in, string* name )
+const char* TiXmlBase::ReadName( const char* p, string* name )
 {
 	*name = "";
-//	const char* start = p;
-	assert( in );
+	assert( p );
 
 	// Names start with letters or underscores.
 	// After that, they can be letters, underscores, numbers,
 	// hyphens, or colons. (Colons are valid ony for namespaces,
 	// but tinyxml can't tell namespaces from names.)
-	int c = in->peek();
-
-	if (    in->good() 
-		 && ( isalpha( c ) || c == '_' ) )
+	if (    p && *p 
+		 && ( isalpha( (unsigned char) *p ) || *p == '_' ) )
 	{
-		while(		in->good()
-				&&	(		isalnum( c ) 
-						 || c == '_'
-						 || c == '-'
-						 || c == ':' ) )
+		while(		p && *p
+				&&	(		isalnum( (unsigned char ) *p ) 
+						 || *p == '_'
+						 || *p == '-'
+						 || *p == ':' ) )
 		{
-			in->get();		// pull c off the stream.
-			(*name) += c;
-
-			// Check next time around:
-			c = in->peek();
+			(*name) += *p;
+			++p;
 		}
-//		name->append( start, p - start );
-//		return p;
-		return true;
+		return p;
 	}
-	return false;
-//	return 0;
+	return 0;
 }
 
 
 TiXmlBase::Entity TiXmlBase::entity[ NUM_ENTITY ] = 
 {
-	{ "&amp;",  4, '&' },
-	{ "&lt;",   3, '<' },
-	{ "&gt;",   3, '>' },
-	{ "&quot;", 5, '\"' },
-	{ "&apos;", 5, '\'' }
+	{ "&amp;",  5, '&' },
+	{ "&lt;",   4, '<' },
+	{ "&gt;",   4, '>' },
+	{ "&quot;", 6, '\"' },
+	{ "&apos;", 6, '\'' }
 };
 
 
-void TiXmlBase::GetEntity( istream* in, int* value )
+const char* TiXmlBase::GetEntity( const char* p, char* value )
 {
-	assert( in );
-	
 	// Presume an entity, and pull it out.
 	int pulled = 0;
 	string ent;
-	int c = 0;
+	char c = 0;
 	int i;
-
-	while ( pulled < MAX_ENTITY_LENGTH )
-	{
-		c = in->get();
-		ent += ((char) c );
-		++pulled;
-
-		if ( c == ';' )
-			break;
-	}	
 
 	// Now try to match it.
 	for( i=0; i<NUM_ENTITY; ++i )
 	{
-		//if ( strncmp( in, entity[i].str, entity[i].strLength ) == 0 )
-		if ( ent.compare( entity[i].str ) == 0 )
+		std::string s = entity[i].str;
+		if ( ent.compare( s ) == 0 )
 		{
+			assert( s.length() == entity[i].strLength );
 			*value = entity[i].chr;
-			return;
+			return ( p + entity[i].strLength );
 		}
 	}
 	
 	// So it wasn't an entity, its unrecognized, or something like that.
 	// Pull one character, but put the rest back.
-	if ( ent.empty() )
-	{
-		*value = 0;
-		return;
-	}
-	for( i=ent.length()-1; i>0; --i )
-	{
-		in->putback( ent[i] );
-	}
-	*value = ent[0];	// Don't put back the last one!
+	*value = *p;	// Don't put back the last one, since we return it!
+	return p+1;
 }
 
 
-bool TiXmlBase::StreamEqual( istream* in, int numEndTag, const char** endTag, bool caseInsensitive )
+int TiXmlBase::dcount = 0;
+
+bool TiXmlBase::StringEqual( const char* p, int numEndTag, const char** endTag, bool ignoreCase, int* advance )
 {
+	*advance = 0;
+
+	assert( p );
+	if ( !p || !*p )
+	{
+		assert( 0 );
+		return false;
+	}
 	int i;
-	assert( in );
 	bool match = false;
 
 	for( i=0; i<numEndTag; ++i )
 	{
-		int c = in->peek();
-		if ( c == *endTag[i] )
+		if ( tolower( *p ) == tolower( *endTag[i] ) )
 		{
-			// First letters match.
-			string str;
-			int len = strlen( endTag[i] );
+			const char* q = p;
+			const char* tag = endTag[i];
 
-			int j;
-			for( j=0; j<len; ++j )
+			if (ignoreCase)
 			{
-				c = in->get();
-				if ( c < 0 ) break;
-
-				str += (char) c;
-				if ( caseInsensitive )
+				while ( *q && *tag && *q == *tag )
 				{
-					if ( tolower( c ) != tolower( *( endTag[i] + j ) ) ) 
-						break;
+					++q;
+					++tag;
 				}
-				else
+
+				if ( *tag == 0 )		// Have we found the end of the tag, and everything equal?
 				{
-					if ( c != *( endTag[i] + j ) ) 
-						break;
+					*advance = strlen( endTag[i] );
+					return true;
 				}
 			}
-			if ( j == len )
+			else
 			{
-				// We have a match!
-				match = true;
-			}
+				while ( *q && *tag && tolower( *q ) == tolower( *tag ) )
+				{
+					++q;
+					++tag;
+				}
 
-			// Push back the str to the buffer.
-			for( j=str.length()-1; j>=0; --j )
-			{
-				in->putback( str[j] );
-				assert( in->good() );
+				if ( *tag == 0 )
+				{
+					*advance = strlen( endTag[i] );
+					return true;
+				}
 			}
-
-			// If we have a match, return out, else check the next tag.
-			if ( match )
-				return true;
 		}
 	}
 	return false;
 }
 
 
-bool TiXmlBase::ReadText(	istream* in, 
-							string* text, 
-							bool ignoreWhiteSpace, 
-							int numEndTag, const char* endTag[], bool caseInsensitive,
-							bool endOnWhite )
+const char* TiXmlBase::ReadText(	const char* p, 
+									string* text, 
+									bool ignoreWhiteSpace, 
+									int numEndTag, const char* endTag[], bool caseInsensitive,
+									bool endOnWhite )
 {
-	assert( in );
 	*text = "";
+	int advance = 0;
 
 	if ( !ignoreWhiteSpace )
 	{
 		// Keep all the white space.
-		while ( in->good()
-				&& !StreamEqual( in, numEndTag, endTag, caseInsensitive ) )
+		while (	   p && *p
+				&& !StringEqual( p, numEndTag, endTag, caseInsensitive, &advance ) )
 		{
 			char c;
-			int  i;
-			GetChar( in, &i );
-			c = (char) i;
+			p = GetChar( p, &c );
 			text->append( &c, 1 );
 		}
 	}
@@ -222,16 +219,16 @@ bool TiXmlBase::ReadText(	istream* in,
 		bool whitespace = false;
 
 		// Remove leading white space:
-		SkipWhiteSpace( in );
-		while (	   ( in->peek() > 0 )
-				&& !StreamEqual( in, numEndTag, endTag, caseInsensitive ) )
+		p = SkipWhiteSpace( p );
+		while (	   p && *p
+				&& !StringEqual( p, numEndTag, endTag, caseInsensitive, &advance ) )
 		{
-			if ( in->peek() == '\r' || in->peek() == '\n' )
+			if ( *p == '\r' || *p == '\n' )
 			{
 				whitespace = true;
-				in->get();
+				++p;
 			}
-			else if ( isspace( in->peek() ) )
+			else if ( isspace( *p ) )
 			{
 				if ( endOnWhite )
 				{
@@ -240,7 +237,7 @@ bool TiXmlBase::ReadText(	istream* in,
 				else
 				{
 					whitespace = true;
-					in->get();
+					++p;
 				}
 			}
 			else
@@ -252,56 +249,45 @@ bool TiXmlBase::ReadText(	istream* in,
 					text->append( " ", 1 );
 					whitespace = false;
 				}
-				int i;
 				char c;
-				GetChar( in, &i );
-				c = ( char ) i;
+				p = GetChar( p, &c );
 				text->append( &c, 1 );
 			}
 		}
-//		// Keep white space before the '<' 
-//		if ( whitespace )
-//		{
-//			text->append( " ", 1 );
-//		}
 	}
-//	return p;
-	//assert( in->good() );
-	return true;
+	return p + advance;
 }
 
 
-bool TiXmlDocument::Parse( istream* in )
+const char* TiXmlDocument::Parse( const char* p )
 {
 	// Parse away, at the document level. Since a document
 	// contains nothing but other tags, most of what happens
 	// here is skipping white space.
 	//
 
-	// Parsing ends when we hit a declaration (except for the first),
-	// or don't hit an opening tag.
+	// Parsing ends when we read the end of the root element, or
+	// we don't find an opening '<'
+	//
 	
- 	SkipWhiteSpace( in );
 
-	if ( !in->good() )
+	if ( !p || !*p  || !( p = SkipWhiteSpace( p ) ) )
 	{
 		// If we are empty, this is an error, else it's just the end.
-		if ( NoChildren() )
-		{
+//		if ( NoChildren() )
+//		{
 			SetError( TIXML_ERROR_DOCUMENT_EMPTY );
 			return false;
-		}
-		else
-		{
-			return true;
-		}
+//		}
+//		else
+//		{
+//			return true;
+//		}
 	}
 	
-	while ( in->good() )
+	while ( p && *p )
 	{	
-		int c = in->peek();
-
-		if ( c != '<' )
+		if ( *p != '<' )
 		{
 			// If we are empty, this is an error, else it's just the end.
 			if ( NoChildren() )
@@ -313,10 +299,10 @@ bool TiXmlDocument::Parse( istream* in )
 		}
 		else
 		{
-			TiXmlNode* node = Identify( in );
+			TiXmlNode* node = Identify( p );
 			if ( node )
-			{
-				node->Parse( in );
+			{					
+				p = node->Parse( p );
 				LinkEndChild( node );
 			}		
 			else
@@ -324,28 +310,30 @@ bool TiXmlDocument::Parse( istream* in )
 				break;
 			}		
 		}
-		SkipWhiteSpace( in );
+		p = SkipWhiteSpace( p );
 	}
 	// All is well.
-	return true;
+	return p;
 }
 
 
-TiXmlNode* TiXmlNode::Identify( istream* in )
+TiXmlNode* TiXmlNode::Identify( const char* p )
 {
 	TiXmlNode* returnNode = 0;
 
-	SkipWhiteSpace( in );
-	if( !in->good() || in->peek() != '<' )
+	p = SkipWhiteSpace( p );
+	if( !p || !*p || *p != '<' )
 	{
 		return 0;
 	}
 
 	TiXmlDocument* doc = GetDocument();
-	SkipWhiteSpace( in );
+	p = SkipWhiteSpace( p );
 
-	if ( !in->good() )
+	if ( !p || !*p )
+	{
 		return 0;
+	}
 
 	// What is this thing? 
 	// - Elements start with a letter or underscore, but xml is reserved.
@@ -354,35 +342,26 @@ TiXmlNode* TiXmlNode::Identify( istream* in )
 	// - Everthing else is unknown to tinyxml.
 	//
 
-//	if ( 	   tolower( *(q+0) ) == '?'
-//			&& tolower( *(q+1) ) == 'x' 
-//			&& tolower( *(q+2) ) == 'm'
-//			&& tolower( *(q+3) ) == 'l' )
-//	{
 	const char* xmlHeader[] = { "<?xml" };
 	const char* commentHeader[] = { "<!--" };
+	int advance;
 
-	int c = in->get();		// the current character,
-	int nextC = in->get();	// the next character:
-	in->putback( nextC );	// And we put them back. The information is for look-ahead.
-	in->putback( c );
-
-	if ( StreamEqual( in, 1, xmlHeader, true ) )
+	if ( StringEqual( p, 1, xmlHeader, true, &advance ) )
 	{
 		#ifdef DEBUG_PARSER
 			printf( "XML parsing Declaration\n" );
 		#endif
 		returnNode = new TiXmlDeclaration();
 	}
-	else if (    isalpha( nextC ) 
-			  || nextC == '_' )
+	else if (    isalpha( *(p+1) )
+			  || *(p+1) == '_' )
 	{
 		#ifdef DEBUG_PARSER
 			printf( "XML parsing Element\n" );
 		#endif
 		returnNode = new TiXmlElement( "" );
 	}
-	else if ( StreamEqual( in, 1, commentHeader, false ) )
+	else if ( StringEqual( p, 1, commentHeader, false, &advance ) )
 	{
 		#ifdef DEBUG_PARSER
 			printf( "XML parsing Comment\n" );
@@ -412,23 +391,22 @@ TiXmlNode* TiXmlNode::Identify( istream* in )
 }
 
 
-bool TiXmlElement::Parse( istream* in )
+const char* TiXmlElement::Parse( const char* p )
 {
-	SkipWhiteSpace( in );
+	p = SkipWhiteSpace( p );
 	TiXmlDocument* document = GetDocument();
 
-	if ( !in->good() || in->peek() != '<' )
+	if ( !p || !*p || *p != '<' )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT );
 		return false;
 	}
 
-	in->get();
-	SkipWhiteSpace( in );
+	p = SkipWhiteSpace( p+1 );
 
 	// Read the name.
-	ReadName( in, &value );
-	if ( !in->good() )
+	p = ReadName( p, &value );
+	if ( !p || !*p )
 	{
 		if ( document )	document->SetError( TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME );
 		return false;
@@ -440,49 +418,46 @@ bool TiXmlElement::Parse( istream* in )
 
 	// Check for and read attributes. Also look for an empty
 	// tag or an end tag.
-	while ( in->good() )
+	while ( p && *p )
 	{
-		SkipWhiteSpace( in );
-		if ( !in->good() )
+		p = SkipWhiteSpace( p );
+		if ( !p || !*p )
 		{
 			if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
-			return false;
+			return 0;
 		}
-		int c = in->peek();
-
-		if ( c == '/' )
+		if ( *p == '/' )
 		{
-			in->get();		// get the '/'
+			++p;
 			// Empty tag.
-			c = in->peek();
-			if ( c  != '>' )
+			if ( *p  != '>' )
 			{
 				if ( document ) document->SetError( TIXML_ERROR_PARSING_EMPTY );		
-				return false;;
+				return 0;
 			}
-			in->get();		// get the '>'
-			return true;
+			return (p+1);
 		}
-		else if ( c == '>' )
+		else if ( *p == '>' )
 		{
 			// Done with attributes (if there were any.)
 			// Read the value -- which can include other
 			// elements -- read the end tag, and return.
-			in->get();
-			ReadValue( in );		// Note this is an Element method, and will set the error if one happens.
-			if ( !in->good() )
-				return false;
+			++p;
+			p = ReadValue( p );		// Note this is an Element method, and will set the error if one happens.
+			if ( !p || !*p )
+				return 0;
 
 			// We should find the end tag now
-			if ( StreamEqual( in, endTag.c_str(), false ) )
+			int length;
+			if ( StringEqual( p, endTag.c_str(), false, &length ) )
 			{
-				in->ignore( endTag.length() );		// pull the endtag off the stream.
-				return true;
+				p += length;
+				return p;
 			}
 			else
 			{
 				if ( document ) document->SetError( TIXML_ERROR_READING_END_TAG );
-				return false;
+				return 0;
 			}
 		}
 		else
@@ -490,41 +465,36 @@ bool TiXmlElement::Parse( istream* in )
 			// Try to read an element:
 			TiXmlAttribute attrib;
 			attrib.SetDocument( document );
-			attrib.Parse( in );
+			p = attrib.Parse( p );
 
-			if ( !in->good() )
+			if ( !p || !*p )
 			{
 				if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT );
-				return false;
+				return 0;
 			}
 			SetAttribute( attrib.Name(), attrib.Value() );
 		}
 	}
-	return true;
+	return p;
 }
 
 
-bool TiXmlElement::ReadValue( istream* in )
+const char* TiXmlElement::ReadValue( const char* p )
 {
 	TiXmlDocument* document = GetDocument();
 
 	// Read in text and elements in any order.
-	SkipWhiteSpace( in );
-	while ( in->good() )
+	p = SkipWhiteSpace( p );
+	while ( p && *p )
 	{
-//		const char* start = p;
-
 		string text;
-		while ( in->good() && in->peek() != '<' )
+		while ( p && *p && *p != '<' )
 		{
-			int c = in->get();
-			assert( c >= 0 );
-			text += c;
+			text += (*p);
+			++p;
 		}
-//		while ( *p && *p != '<' )
-//			p++;
 
-		SkipWhiteSpace( in );
+		p = SkipWhiteSpace( p );
 
 		if ( !text.empty() )
 		{
@@ -536,9 +506,8 @@ bool TiXmlElement::ReadValue( istream* in )
 				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY );
 				return 0;
 			}
-			istrstream itext( text.c_str(), text.length() );
 
-			textNode->Parse( &itext );
+			p = textNode->Parse( p );
 
 			if ( !textNode->Blank() )
 				LinkEndChild( textNode );
@@ -549,167 +518,126 @@ bool TiXmlElement::ReadValue( istream* in )
 		{
 			// We hit a '<'
 			// Have we hit a new element or an end tag?
-			if ( StreamEqual( in, "</", false ) )
+			int len;
+			if ( StringEqual( p, "</", false, &len ) )
 			{
-				return true;
+				return p;
 			}
 			else
 			{
-				TiXmlNode* node = Identify( in );
+				TiXmlNode* node = Identify( p );
 				if ( node )
 				{
-					node->Parse( in );
+					p = node->Parse( p );
 					LinkEndChild( node );
 				}				
 				else
 				{
-					return false;
+					return 0;
 				}
 			}
 		}
-		SkipWhiteSpace( in );
+		p = SkipWhiteSpace( p );
 	}
 
-	if ( !in->good() )
+	if ( !p )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_READING_ELEMENT_VALUE );
-		return false;
 	}	
-	return true;
+	return p;
 }
 
 
-bool TiXmlUnknown::Parse( istream* in )
+const char* TiXmlUnknown::Parse( const char* p )
 {
 	TiXmlDocument* document = GetDocument();
-	SkipWhiteSpace( in );
-	if ( !in->good() || in->peek() != '<' )
+	p = SkipWhiteSpace( p );
+	if ( !p || !*p || *p != '<' )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_PARSING_UNKNOWN );
-		return false;
+		return 0;
 	}
-	in->get();		// opening '<'
-	int c = in->get();
+	++p;
 	value = "";
 
-	while ( c > 0 && c != '>' )
+	while ( p && *p && *p != '>' )
 	{
-		value += c;
-		c = in->get();
+		value += *p;
+		++p;
 	}
 
-	if ( c <= 0 )
+	if ( !p )
 	{
 		if ( document )	document->SetError( TIXML_ERROR_PARSING_UNKNOWN );
-		return false;
 	}
-	return true;
+	return p;
 }
 
 
-bool TiXmlComment::Parse( istream* in )
+const char* TiXmlComment::Parse( const char* p )
 {
 	TiXmlDocument* document = GetDocument();
 	value = "";
 
-	SkipWhiteSpace( in );
-
-	if ( !StreamEqual( in, "<!--", false ) )
+	p = SkipWhiteSpace( p );
+	int len;
+	if ( !StringEqual( p, "<!--", false, &len ) )
 	{
 		document->SetError( TIXML_ERROR_PARSING_COMMENT );
-		return false;
+		return 0;
 	}
-	
-	in->ignore( 4 );
+	assert( len == 4 );
+	p += len;
 	const char* endTag[1];
 	endTag[0] = "-->";
 
-	ReadText( in, &value, true, 1, endTag, false, false );
-
-	if ( StreamEqual( in, endTag[0], false ) )
-	{
-		in->ignore( 3 );
-		return true;
-	}
-	return false;
-
-	// Find the end, copy the parts between to the value of
-	// this object, and return.
-//	int c;
-//	while( in->good() && !StreamEqual( in, "-->", false ) )
-//	{
-//		GetChar( in, &c );
-//		value += c;
-//	}
-//
-//	if ( !in->good() )
-//	{
-//		if ( document )	document->SetError( TIXML_ERROR_PARSING_COMMENT );
-//		return false;
-//	}
-//
-//	in->ignore( 3 );		// the '-->'
-//	return in->good();
-
-//	else
-//	{
-//		TiXmlDocument* doc = GetDocument();
-//		bool ignoreWhite = true;
-//		if ( doc && !doc->IgnoreWhiteSpace() )
-//			ignoreWhite = false;
-//
-//		const char* end[1] = { "-->" };
-//		p = ReadText( start, &value, ignoreWhite, 1, end, false ); 
-//
-//		if ( !p )
-//		{
-//			return 0;
-//		}
-//		return p + 3;			// return just past the '>'
-//	}
+	p = ReadText( p, &value, true, 1, endTag, false, false );
+	return p;
 }
 
 
-bool TiXmlAttribute::Parse( istream* in )
+const char* TiXmlAttribute::Parse( const char* p )
 {
-	SkipWhiteSpace( in );
+	p = SkipWhiteSpace( p );
+	if ( !p || !*p ) return 0;
+
 	// Read the name, the '=' and the value.
-	ReadName( in, &name );
-	if ( !in->good() )
+	p = ReadName( p, &name );
+	if ( !p || !*p )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
-		return false;
+		return 0;
 	}
-	SkipWhiteSpace( in );
-	if ( !in->good() || in->peek() != '=' )
+	p = SkipWhiteSpace( p );
+	if ( !p || !*p || *p != '=' )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
-		return false;
+		return 0;
 	}
 
-	in->ignore( 1 );
-	SkipWhiteSpace( in );
-	if ( !in->good() )
+	++p;	// skip '='
+	p = SkipWhiteSpace( p );
+	if ( !p || !*p )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES );
-		return false;
+		return 0;
 	}
 	
 	const char* end[8];
 
-	if ( in->peek() == '\'' )
+	if ( *p == '\'' )
 	{
-		in->ignore( 1 );
+		++p;
 		end[0] = "\'";
-		ReadText( in, &value, false, 1, end, false, false );
-		in->ignore( 1 );	// get past the end '
+		p = ReadText( p, &value, false, 1, end, false, false );
+//		++p;	// get past the end '
 	}
-	else if ( in->peek() == '"' )
+	else if ( *p == '"' )
 	{
-		in->ignore( 1 );
+		++p;
 		end[0] = "\"";
-		ReadText( in, &value, false, 1, end, false, false );
-		in->ignore( 1 );	// get past the end "
+		p = ReadText( p, &value, false, 1, end, false, false );
+//		++p;	// get past the end "
 	}
 	else
 	{
@@ -718,14 +646,14 @@ bool TiXmlAttribute::Parse( istream* in )
 		// its best, even without them.
 		end[0] = "/";
 		end[1] = ">";
-		in->ignore( 1 );
-		ReadText( in, &value, false, 2, end, false, true );
+		++p;
+		p = ReadText( p, &value, false, 2, end, false, true );
 	}
-	return ( !value.empty() );
+	return p;
 }
 
 
-bool TiXmlText::Parse( istream* in )
+const char* TiXmlText::Parse( const char* p )
 {
 	value = "";
 //	value.reserve( 256 );	// Avoid a bunch of small allocations in the beginning. Give ourselves some memory.
@@ -735,23 +663,24 @@ bool TiXmlText::Parse( istream* in )
 	if ( doc && !doc->IgnoreWhiteSpace() ) ignoreWhite = false;
 
 	const char* end[1] = { "<" };
-	return ReadText( in, &value, ignoreWhite, 1, end, false, false );
+	return ReadText( p, &value, ignoreWhite, 1, end, false, false );
 }
 
 
-bool TiXmlDeclaration::Parse( istream* in )
+const char* TiXmlDeclaration::Parse( const char* p )
 {
-	SkipWhiteSpace( in );
+	p = SkipWhiteSpace( p );
 	// Find the beginning, find the end, and look for
 	// the stuff in-between.
 	TiXmlDocument* document = GetDocument();
-	if ( !StreamEqual( in, "<?xml", true ) )
+	int len;
+	if ( !p || !*p || !StringEqual( p, "<?xml", true, &len ) )
 	{
 		if ( document ) document->SetError( TIXML_ERROR_PARSING_DECLARATION );
-		return false;
+		return 0;
 	}
 
-	in->ignore( 5 );
+	p += 5;
 //	const char* start = p+5;
 //	const char* end  = strstr( start, "?>" );
 
@@ -759,47 +688,45 @@ bool TiXmlDeclaration::Parse( istream* in )
 	encoding = "";
 	standalone = "";
 
-	while ( in->good() )
+	while ( p && *p )
 	{
-		if ( in->peek() == '>' )
+		if ( *p == '>' )
 		{
-			in->ignore( 1 );
-			return true;
+			++p;
+			return p;
 		}
 
-		SkipWhiteSpace( in );
-		if ( StreamEqual( in, "version", true ) )
+		p = SkipWhiteSpace( p );
+		int len;
+		if ( StringEqual( p, "version", true, &len ) )
 		{
-			in->ignore( 7 );
-
+//			p += 7;
 			TiXmlAttribute attrib;
-			attrib.Parse( in );		
+			p = attrib.Parse( p );		
 			version = attrib.Value();
 		}
-		else if ( StreamEqual( in, "encoding", true ) )
+		else if ( StringEqual( p, "encoding", true, &len ) )
 		{
-			in->ignore( 8 );
-
+//			p += 8;
 			TiXmlAttribute attrib;
-			attrib.Parse( in );		
+			p = attrib.Parse( p );		
 			encoding = attrib.Value();
 		}
-		else if ( StreamEqual( in, "standalone", true ) )
+		else if ( StringEqual( p, "standalone", true, &len ) )
 		{
-			in->ignore( 10 );
-
+//			p += 10;
 			TiXmlAttribute attrib;
-			attrib.Parse( in );		
+			p = attrib.Parse( p );		
 			standalone = attrib.Value();
 		}
 		else
 		{
 			// Read over whatever it is.
-			while( in->good() && in->peek() != '>' && !isspace( in->peek() ) )
-				in->get();
+			while( p && *p && *p != '>' && !isspace( *p ) )
+				++p;
 		}
 	}
-	return false;		// didn't find end tag
+	return 0;
 }
 
 bool TiXmlText::Blank() const

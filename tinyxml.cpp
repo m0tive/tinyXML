@@ -25,7 +25,7 @@ distribution.
 #include <sstream>
 #include <fstream>
 #include "tinyxml.h"
-
+using namespace std;
 
 void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 {
@@ -553,47 +553,43 @@ bool TiXmlDocument::SaveFile() const
 
 
 bool TiXmlDocument::LoadFile( const std::string& filename )
-{
+{	
 	// Delete the existing data:
 	Clear();
 	value = filename;
 	
-	std::ifstream file;
+	ifstream file;
 	file.open( filename.c_str(), std::ios::in );
 
 	if ( file.is_open() )
 	{
-//		// Bring the entire file into a string, so we can
-//		// parse it. This wouldn't be necessary, if the
-//		// parser could handle istreams...
-//
-//		int c = file.get();
-//		std::string buffer;
-//		buffer.reserve( 1024 );		// Get rid of a bunch of small initial allocations.
-//
-//		while ( c > 0 )
-//		{
-//			buffer += c;
-//			c = file.get();
-//		}	
-//
-		Parse( &file );
+		// If we have a file, assume it is all one big XML file, and read it in.
+		// The document parser may decide the document ends sooner than the entire file, however.
+		std::string data;
+
+		const int BUF_SIZE = 64;
+		char buf[BUF_SIZE];
+		while( file.good() )
+		{
+			file.get( buf, BUF_SIZE-1 );
+			assert( strlen( buf ) < BUF_SIZE );
+			data += buf;
+		}
+
+		Parse( data.c_str() );
 		if (  !Error() )
 		{
 			return true;
 		}
 	}
-	else
-	{
-		SetError( TIXML_ERROR_OPENING_FILE );
-	}
+	SetError( TIXML_ERROR_OPENING_FILE );
 	return false;
 }
 
 
 bool TiXmlDocument::SaveFile( const std::string& filename ) const
 {
-	// fixme
+	// The old c stuff lives on...
 	FILE* fp = fopen( filename.c_str(), "w" );
 	if ( fp )
 	{
