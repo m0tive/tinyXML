@@ -1,5 +1,8 @@
 #include "tinyxml.h"
 #include <time.h>
+#include <fstream>
+
+using namespace std;
 
 int main( int argc, char* argv[] )
 {
@@ -12,18 +15,34 @@ int main( int argc, char* argv[] )
 
 	TiXmlDocument doc( argv[1] );
 	
-	time_t start, read, wrote;
+	time_t prev, now;
 
-	start = clock();
-	doc.LoadFile();
-	read = clock();
-	doc.SaveFile( "echotest.xml" );
-	wrote = clock();
-
-	printf( "Read: %fms  Write: %fs\n", double( read-start ) / double( CLOCKS_PER_SEC ),
-										 double( wrote-read ) / double( CLOCKS_PER_SEC ) );
+	prev = clock();
 	
+	doc.LoadFile();
+	now = clock();
+	printf( "Read from c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
+	prev = now;
 
+	doc.SaveFile( "echotest.xml" );
+	now = clock();
+	printf( "Write to c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
+	prev = now;
+
+	doc.Clear();
+	prev = clock();
+	ifstream inputStream( argv[1] );
+
+	inputStream >> doc;
+	now = clock();
+	printf( "Read from stream: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
+	prev = now;
+
+	ofstream outputStream( "echoteststream.xml" );
+	outputStream << doc;
+	now = clock();
+	printf( "Write to stream: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
+	prev = now;
 
 	return 0;
 }

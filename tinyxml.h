@@ -90,7 +90,11 @@ class TiXmlBase
 
 		This function is the most efficient print function.
 	*/
- 	virtual void Print( std::ostream* stream, int depth ) const = 0;
+ 	virtual void Print( FILE* cfile, int depth ) const = 0;
+
+	// Underlying implementation of the operator <<
+	virtual void StreamOut ( std::ostream* out ) const = 0;
+
 
 	/**	The world does not agree on whether white space should be kept or
 		not. In order to make everyone happy, these global, static functions
@@ -227,7 +231,7 @@ class TiXmlNode : public TiXmlBase
 	*/
 	friend std::ostream& operator<< ( std::ostream& out, const TiXmlNode& base )
 	{
-		base.Print( &out, -1 );
+		base.StreamOut( &out );
 		return out;
 	}
 
@@ -465,16 +469,15 @@ class TiXmlAttribute : public TiXmlBase
 	virtual const char* Parse( const char* p );
 
 	// [internal use] 
- 	virtual void Print( std::ostream* stream, int depth ) const;
+ 	virtual void Print( FILE* cfile, int depth ) const;
 
+	// [internal use] 
+	virtual void StreamOut( std::ostream* out ) const;
 
 	// [internal use]
 	// Set the document pointer so the attribute can report errors.
 	void SetDocument( TiXmlDocument* doc )	{ document = doc; }
 
-//	// [internal use] 
-//	virtual void Stream( std::istream* in, std::string* tag );
-//
   private:
 	TiXmlDocument*	document;	// A pointer back to a document, for error reporting.
 	std::string		name;
@@ -561,7 +564,10 @@ class TiXmlElement : public TiXmlNode
 	virtual TiXmlNode* Clone() const;
 
 	// [internal use] 
- 	virtual void Print( std::ostream* stream, int depth ) const;
+ 	virtual void Print( FILE* cfile, int depth ) const;
+
+	// [internal use] 
+	virtual void StreamOut ( std::ostream* out ) const;
 
 	// [internal use] 
 	virtual void Stream( std::istream* in, std::string* tag );
@@ -596,8 +602,12 @@ class TiXmlComment : public TiXmlNode
 
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
+
 	// [internal use] 
- 	virtual void Print( std::ostream* stream, int depth ) const;
+ 	virtual void Print( FILE* cfile, int depth ) const;
+
+	// [internal use] 
+	virtual void StreamOut ( std::ostream* out ) const;
 
 	// [internal use] 
 	virtual void Stream( std::istream* in, std::string* tag );
@@ -623,7 +633,10 @@ class TiXmlText : public TiXmlNode
 	// [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
- 	virtual void Print( std::ostream* stream, int depth ) const;
+ 	virtual void Print( FILE* cfile, int depth ) const;
+
+	// [internal use] 
+	virtual void StreamOut ( std::ostream* out ) const;
 	// [internal use] 	
 	bool Blank() const;	// returns true if all white space and new lines
 
@@ -674,7 +687,10 @@ class TiXmlDeclaration : public TiXmlNode
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
 	// [internal use] 
- 	virtual void Print( std::ostream* stream, int depth ) const;
+ 	virtual void Print( FILE* cfile, int depth ) const;
+
+	// [internal use] 
+	virtual void StreamOut ( std::ostream* out ) const;
 
 	// [internal use] 
 	virtual void Stream( std::istream* in, std::string* tag );
@@ -706,8 +722,11 @@ class TiXmlUnknown : public TiXmlNode
 
 	// [internal use] 	
 	virtual TiXmlNode* Clone() const;
-	// [internal use] 	
- 	virtual void Print( std::ostream* stream, int depth ) const;
+	// [internal use] 
+ 	virtual void Print( FILE* cfile, int depth ) const;
+
+	// [internal use] 
+	virtual void StreamOut ( std::ostream* out ) const;
 
 	// [internal use] 
 	virtual void Stream( std::istream* in, std::string* tag );
@@ -770,18 +789,18 @@ class TiXmlDocument : public TiXmlNode
 	*/
 	const int ErrorId()	const				{ return errorId; }
   
-	/// Print the document to an ostream -- preserve the tabbing.
-	void Print( std::ostream* stream, int depth = 0 ) const;
+	// [internal use] 
+ 	virtual void Print( FILE* cfile, int depth = 0 ) const;
+
+	// [internal use] 
+	virtual void StreamOut ( std::ostream* out ) const;
 
 	/** Dump the document to standard out. */
-	void Print() const								{ Print( stdout ); }
+	void Print() const								{ Print( stdout, 0 ); }
 
-	/** Print to a c-stream. 
-	
-		Note this is somewhat less efficient, in
-		terms of both memory and speed, than the ostream print.
-	*/
-	void Print( FILE* cfile ) const;
+//	/** Print to a c-stream. 
+//	*/
+//	void Print( FILE* cfile ) const;
 
 	/// Get the root element -- the only top level element -- of the document.
 	TiXmlElement* RootElement() const;

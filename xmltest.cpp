@@ -4,6 +4,9 @@
 #include <strstream>
 using namespace std;
 
+int gPass = 0;
+int gFail = 0;
+
 // Utility functions:
 template< class T >
 bool XmlTest( const char* testString, T expected, T found, bool noEcho = false )
@@ -19,7 +22,12 @@ bool XmlTest( const char* testString, T expected, T found, bool noEcho = false )
 		cout << " " << testString << " [" << expected << "][" <<  found << "]";
 	cout << "\n";
 
-	return ( expected == found );
+	bool pass = ( expected == found );
+	if ( pass )
+		++gPass;
+	else
+		++gFail;
+	return pass;
 }
 
 
@@ -313,7 +321,7 @@ int main()
 										  text1.FirstChild()->Value(),
 										  true );
 							
-	
+	cout << endl << "Pass " << gPass << ", Fail " << gFail << endl;	
 	return 0;
 }
 
