@@ -8,7 +8,6 @@
 #ifdef TIXML_USE_STL
 	#include <iostream>
 	#include <sstream>
-	//#include <strstream>
 	using namespace std;
 #else
 	#include <stdio.h>
@@ -478,6 +477,12 @@ int main()
 
 		XmlTest( "Stream round trip correct.",	string( demoEnd ).c_str(), 
 												outputStream0.str().c_str(), true );
+
+		std::string str;
+		str << document0;
+
+		XmlTest( "String printing correct.", string( demoEnd ).c_str(), 
+											 str.c_str(), true );
 	}
 #endif
 
@@ -609,9 +614,26 @@ int main()
             doc.LoadFile( "test5.xml" );
             XmlTest( "dot in element attributes and names", doc.Error(), 0);
 		}
-		textfile = fopen( "textfile.txt", "r" );
-        
+		fclose( textfile );
     }
+
+	{ 
+		FILE* textfile = fopen( "test6.xml", "w" );
+		if ( textfile )
+		{
+            fputs("<element><Name>1.1 Start easy ignore fin thickness&#xA;</Name></element>", textfile );
+            fclose(textfile);
+            TiXmlDocument doc;
+            bool result = doc.LoadFile( "test6.xml" );
+            XmlTest( "Entity with one digit.", result, true );
+
+			TiXmlText* text = doc.FirstChildElement()->FirstChildElement()->FirstChild()->ToText();
+			XmlTest( "Entity with one digit.", 
+						text->Value(), "1.1 Start easy ignore fin thickness\n" );
+		}
+		fclose( textfile );
+    }		
+
 
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );

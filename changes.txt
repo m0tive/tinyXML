@@ -141,6 +141,8 @@ Changes in version 2.1.5
 - Fix error in documentation : comments starting with "<?--" instead of "<!--" (thanks ion_pulse)
 - Added the TiXmlHandle. An easy, safe way to browse XML DOMs with less code.
 - Added QueryAttribute calls which have better error messaging. (Proposed by Fletcher Dunn)
+- Nodes and attributes can now print themselves to strings. (Yves suggestion)
+- Fixed bug where entities with one character would confuse parser. (Thanks Roman)
 
 
 

@@ -19,7 +19,17 @@ int main( int argc, char* argv[] )
 
 	prev = clock();
 	
-	doc.LoadFile();
+	bool result = doc.LoadFile();
+
+	if ( !result )
+	{
+		printf( "Error: '%s' at [%d,%d]\n",
+				doc.ErrorDesc(),
+				doc.ErrorRow(),
+				doc.ErrorCol() );
+	}
+
+	printf( "Result: %d\n", (int) result );
 	now = clock();
 	printf( "Read from c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
 	prev = now;

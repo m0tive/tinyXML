@@ -308,7 +308,10 @@ public:
 		    A TiXmlDocument will read nodes until it reads a root element, and
 			all the children of that root element.
 	    */	
-	    friend std::ostream & operator<< (std::ostream& out, const TiXmlNode& base);
+	    friend std::ostream& operator<< (std::ostream& out, const TiXmlNode& base);
+
+		/// Appends the XML node or attribute to a std::string.
+		friend std::string& operator<< (std::string& out, const TiXmlNode& base );
 
 	#else
 	    // Used internally, not part of the public API.
@@ -1235,7 +1238,10 @@ public:
 
 	#ifdef TIXML_USE_STL
 	TiXmlHandle FirstChild( const std::string& _value ) const			{ return FirstChild( _value.c_str() ); }
-	TiXmlHandle Child( const std::string& _value, int index ) const		{ return Child( _value.c_str(), index ); }
+	TiXmlHandle FirstChildElement( const std::string& _value ) const		{ return FirstChildElement( _value.c_str() ); }
+
+	TiXmlHandle Child( const std::string& _value, int index ) const			{ return Child( _value.c_str(), index ); }
+	TiXmlHandle ChildElement( const std::string& _value, int index ) const	{ return ChildElement( _value.c_str(), index ); }
 	#endif
 
 	/// Return the handle as a TiXmlNode. This may return null.

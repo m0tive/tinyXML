@@ -237,20 +237,34 @@ const char* TiXmlBase::GetEntity( const char* p, char* value )
     TIXML_STRING ent;
 	int i;
 
-	// Ignore the &#x entities.
+	// Handle the &#x entities.
 	if (    strncmp( "&#x", p, 3 ) == 0 
 	     && *(p+3) 
-		 && *(p+4) )
+		 && *(p+4) 
+		 && ( *(p+4) == ';' || *(p+5) == ';' )
+	   )
 	{
 		*value = 0;
-		
-		if ( isalpha( *(p+3) ) ) *value += ( tolower( *(p+3) ) - 'a' + 10 ) * 16;
-		else				     *value += ( *(p+3) - '0' ) * 16;
 
-		if ( isalpha( *(p+4) ) ) *value += ( tolower( *(p+4) ) - 'a' + 10 );
-		else				     *value += ( *(p+4) - '0' );
+		if ( *(p+4) == ';' )
+		{
+			// Short, one value entity.
+			if ( isalpha( *(p+3) ) ) *value += ( tolower( *(p+3) ) - 'a' + 10 );
+			else				     *value += ( *(p+3) - '0' );
 
-		return p+6;
+			return p+5;
+		}
+		else
+		{
+			// two value entity
+			if ( isalpha( *(p+3) ) ) *value += ( tolower( *(p+3) ) - 'a' + 10 ) * 16;
+			else				     *value += ( *(p+3) - '0' ) * 16;
+
+			if ( isalpha( *(p+4) ) ) *value += ( tolower( *(p+4) ) - 'a' + 10 );
+			else				     *value += ( *(p+4) - '0' );
+
+			return p+6;
+		}
 	}
 
 	// Now try to match it.
