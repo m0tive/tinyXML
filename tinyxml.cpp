@@ -508,8 +508,9 @@ void TiXmlComment::Print( FILE* fp, int depth )
 {
 	for ( int i=0; i<depth; i++ )
 		fprintf( fp, "    " );
-	fprintf( fp, "<?--%s-->", value.c_str() );
+	fprintf( fp, "<!--%s-->", value.c_str() );
 }
+
 
 TiXmlNode* TiXmlComment::Clone() const
 {
@@ -584,3 +585,4 @@ TiXmlNode* TiXmlUnknown::Clone() const
 	CopyToClone( clone );
 	return clone;
 }
+

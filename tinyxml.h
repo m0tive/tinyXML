@@ -219,8 +219,10 @@ class TiXmlAttribute : public TiXmlBase
 	void SetName( const std::string& _name )	 { name = _name; }		///< Set the name of this attribute.
 	void SetValue( const std::string& _value ) { value = _value; }		///< Set the value.
 
-	TiXmlAttribute* Next();			///< Get the next sibling attribute in the DOM. Returns null at end.
-	TiXmlAttribute* Previous();		///< Get the previous sibling attribute in the DOM. Returns null at beginning.
+	/// Get the next sibling attribute in the DOM. Returns null at end.
+	TiXmlAttribute* Next()			{ return (TiXmlAttribute*) next; }	// The backcast relies on their being only attributes in an attribute linked list.
+	/// Get the previous sibling attribute in the DOM. Returns null at beginning.
+	TiXmlAttribute* Previous()		{ return (TiXmlAttribute*) prev; }
 
 	bool operator==( const TiXmlAttribute& rhs ) const { return rhs.name == name; }
 	bool operator<( const TiXmlAttribute& rhs )	 const { return name < rhs.name; }
@@ -279,7 +281,7 @@ class TiXmlElement : public TiXmlNode
 	void RemoveAttribute( const std::string& name );
 
 	TiXmlAttribute* FirstAttribute()	{ return firstAttrib; }		///< Access the first attribute in this element.
-	TiXmlAttribute* LastAttribtute()	{ return lastAttrib; }		///< Access the last attribute in this element.
+	TiXmlAttribute* LastAttribute()		{ return lastAttrib; }		///< Access the last attribute in this element.
 
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
@@ -447,3 +449,4 @@ class TiXmlDocument : public TiXmlNode
 };
 
 #endif
+

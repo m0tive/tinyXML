@@ -1,14 +1,20 @@
-rm ./tinyxml_unix/*.*
-rm ./tinyxml_unix/docs/*.*
-rm ./docs/*.*
+rm -rf ./tinyxml_unix
+rm -rf ./docs
 
 doxygen dox
 
 mkdir tinyxml_unix
+mkdir tinyxml_unix/docs
+
 cp readme.txt ./tinyxml_unix/README
+cp changes.txt ./tinyxml_unix/CHANGES
+
 cp *.cpp ./tinyxml_unix
 cp *.h ./tinyxml_unix
 cp makefile ./tinyxml_unix
 cp test0.xml ./tinyxml_unix
 cp test1.xml ./tinyxml_unix
+cp test2.xml ./tinyxml_unix
 cp ./docs/*.* ./tinyxml_unix/docs
+
+tar -zcf tinyxml-unix.tar.gz tinyxml_unix

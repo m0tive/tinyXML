@@ -79,7 +79,8 @@ const char* TiXmlDocument::Parse( const char* start )
 		if ( *p != '<' )
 		{
 			error = true;
-			errorDesc = "'<' not found.";
+			errorDesc = "The '<' symbol that starts a tag was not found.";
+			break;
 		}
 		else
 		{
@@ -406,13 +407,17 @@ const char* TiXmlAttribute::Parse( const char* p )
 const char* TiXmlText::Parse( const char* p )
 {
 	value = "";
-	while ( *p != '<' )
+	while ( *p && *p != '<' )
 	{
 		if ( *p == '\r' || *p == '\n' )
 		{
-			// only add one white space
-			if ( !isspace( value[ value.size() - 1 ] ) )
-				value += ' ';
+			// Make sure we don't go out of range:
+			if ( value.size() > 0 )
+			{
+				// only add one white space
+				if ( !isspace( value[ value.size() - 1 ] ) )
+					value += ' ';
+			}
 		}
 		else
 		{
@@ -425,8 +430,9 @@ const char* TiXmlText::Parse( const char* p )
 
 bool TiXmlText::Blank()
 {
-	for ( int i=0; i<value.size(); i++ )
+	for ( unsigned i=0; i<value.size(); i++ )
 		if ( !isspace( value[i] ) )
 			return false;
 	return true;
 }
+

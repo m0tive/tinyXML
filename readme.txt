@@ -64,12 +64,13 @@ It currently does not recognize "entity references", meaning special characters.
 	&apos;	‘
 @endverbatim
 
+
 <b> Using and Installing </b>
 
 To Compile and Run xmltest:
 
 A Visual C++ .dsp file is provided. Simply compile and run. It will 
-write 3 xml files to disk. Hopefully the output matches the input! 
+write 4 xml files to disk. Hopefully the output matches the input! 
 It also briefly demonstrates walking the DOM by printing out the 
 top level element names.
 
@@ -203,6 +204,11 @@ XML, and there web pages contain huge amounts of information. I also
 recommend "XML Pocket Reference" by Robert Eckstein and published by 
 O’Reilly.
 
+<b> Special Thanks </b>
+
+Thanks to those using TinyXml and sending me bugs. I hope it is 
+helpful and I appreciate the feedback.
+
 <b> Contact Me: </b>
 
 I’d appreciates your suggestions, and would love to know if you 
@@ -210,6 +216,6 @@ use TinyXml. I hope you enjoy it and find it useful.
 
 Lee Thomason
 
-lee@grinninglizard.com
+leethomason@sourceforge.net
 
 */

@@ -5,6 +5,8 @@ doxygen dox
 mkdir tinyxml_win
 
 copy readme.txt tinyxml_win
+copy changes.txt tinyxml_win
+
 copy *.cpp tinyxml_win
 copy *.h tinyxml_win
 copy *.dsp tinyxml_win
