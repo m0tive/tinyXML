@@ -484,16 +484,28 @@ void TiXmlElement::Print( FILE* cfile, int depth ) const
 
 	TiXmlAttribute* attrib;
 	for ( attrib = attributeSet.First(); attrib; attrib = attrib->Next() )
-	{	
+	{
 		fprintf( cfile, " " );
 		attrib->Print( cfile, depth );
 	}
 
-	// If this node has children, give it a closing tag. Else
-	// make it an empty tag.
+	// There are 3 different formatting approaches:
+	// 1) An element without children is printed as a <foo /> node
+	// 2) An element with only a text child is printed as <foo> text </foo>
+	// 3) An element with children is printed on multiple lines.
 	TiXmlNode* node;
-	if ( firstChild )
-	{ 		
+	if ( !firstChild )
+	{
+		fprintf( cfile, " />" );
+  	}
+	else if ( firstChild == lastChild && firstChild->ToText() )
+	{
+		fprintf( cfile, ">" );
+		firstChild->Print( cfile, depth + 1 );
+		fprintf( cfile, "</%s>", value.c_str() );
+  	}
+	else
+	{
 		fprintf( cfile, ">" );
 
 		for ( node = firstChild; node; node=node->NextSibling() )
@@ -502,16 +514,12 @@ void TiXmlElement::Print( FILE* cfile, int depth ) const
 			{
 				fprintf( cfile, "\n" );
 			}
-			node->Print( cfile, depth+1 ); 
+			node->Print( cfile, depth+1 );
 		}
 		fprintf( cfile, "\n" );
 		for( i=0; i<depth; ++i )
 			fprintf( cfile, "    " );
 		fprintf( cfile, "</%s>", value.c_str() );
-	}
-	else
-	{
-		fprintf( cfile, " />" );
 	}
 }
 
