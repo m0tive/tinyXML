@@ -5,6 +5,7 @@
 // latin-1, but at least the error messages could now be translated.
 //
 // It also cleans up the code a bit.
+//
 
 const char* TiXmlBase::errorString[ TIXML_ERROR_STRING_COUNT ] =
 {
