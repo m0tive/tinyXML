@@ -52,6 +52,7 @@ class TiXmlString
     {
         allocated = 0;
         cstring = NULL;
+        current_length = 0;
     }
 
     // TiXmlString copy constructor
@@ -142,6 +143,7 @@ class TiXmlString
             allocated = size;
             cstring = new char [size];
             cstring [0] = 0;
+            current_length = 0;
         }
     }
 
@@ -164,6 +166,8 @@ class TiXmlString
     char * cstring;
     // Number of chars allocated
     unsigned allocated;
+    // Current string size
+    unsigned current_length;
 
     // New size computation. It is simplistic right now : it returns twice the amount
     // we need
@@ -179,6 +183,7 @@ class TiXmlString
             delete [] cstring;
         cstring = NULL;
         allocated = 0;
+        current_length = 0;
     }
 
     void append (const char *suffix );
