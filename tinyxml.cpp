@@ -26,98 +26,6 @@ distribution.
 #include "tinyxml.h"
 
 
-void TiXmlCursor::StampImpl( const char* now, const TiXmlCursor* prevPosition, int tabsize )
-{
-	// Do nothing if the tabsize is 0.
-	if ( tabsize < 1 )
-		return;
-
-	TiXmlCursor prev;
-
-	if ( prevPosition )
-		prev = *prevPosition;
-	else
-		prev.row = prev.col = 0;
-
-	if ( !prev.last )
-		prev.last = now;
-
-	if ( now )
-	{
-		const char* p = prev.last;
-		row = prev.row;
-		col = prev.col;
-
-		// A little optimization:
-		/*
-		assert( '\r' < ' ' );
-		assert( '\n' < ' ' );
-		assert( '\t' < ' ' );
-		while ( p < now && *p >= ' ' )
-		{
-			++p;
-			++col;
-		}
-		*/
-
-		while ( p < now )
-		{
-			// Code contributed by Fletcher Dunn: (modified by lee)
-			switch (*p) {
-				case 0:
-					// We *should* never get here, but in case we do, don't
-					// advance past the terminating null character, ever
-					return;
-
-				case '\r':
-					// bump down to the next line
-					++row;
-					col = 0;				
-					// Eat the character
-					++p;
-
-					// Check for \r\n sequence, and treat this as a single character
-					if (*p == '\n') {
-						++p;
-					}
-					break;
-
-				case '\n':
-					// bump down to the next line
-					++row;
-					col = 0;
-
-					// Eat the character
-					++p;
-
-					// Check for \n\r sequence, and treat this as a single
-					// character.  (Yes, this bizarre thing does occur still
-					// on some arcane platforms...)
-					if (*p == '\r') {
-						++p;
-					}
-					break;
-
-				case '\t':
-					// Eat the character
-					++p;
-
-					// Skip to next tab stop
-					col = (col / tabsize + 1) * tabsize;
-					break;
-	
-				default:
-					// Eat the character
-					++p;
-
-					// Normal char - just advance one column
-					++col;
-					break;
-			}
-		}
-		last = p;
-	}
-}
 
 
 bool TiXmlBase::condenseWhiteSpace = true;
@@ -540,15 +448,6 @@ TiXmlDocument* TiXmlNode::GetDocument() const
 }
 
 
-int TiXmlNode::TabSize() const
-{
-	TiXmlDocument* doc = GetDocument();
-	if ( doc )
-		return doc->TabSize();
-	return 4;
-}
-
-
 TiXmlElement::TiXmlElement (const char * _value)
 : TiXmlNode( TiXmlNode::ELEMENT )
 {
@@ -650,7 +549,7 @@ void TiXmlElement::SetAttribute( const char * name, const char * _value )
 	else
 	{
 		TiXmlDocument* document = GetDocument();
-		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0 );
+		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0, 0 );
 	}
 }
 
@@ -844,19 +743,14 @@ bool TiXmlDocument::LoadFile( const char* filename )
 		}
 		fclose( file );
 
-		TiXmlCursor start;
-		start.col = 0;
-		start.row = 0;
-		start.last = data.c_str();
-
-		Parse( data.c_str(), &start );
+		Parse( data.c_str(), 0 );
 
 		if (  Error() )
             return false;
         else
 			return true;
 	}
-	SetError( TIXML_ERROR_OPENING_FILE, 0 );
+	SetError( TIXML_ERROR_OPENING_FILE, 0, 0 );
 	return false;
 }
 
@@ -916,21 +810,6 @@ void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
 		if ( node->ToElement() )
 			break;
 	}
-}
-
-
-void TiXmlDocument::SetError( int err, const char* pError )
-{	
-	// The first error in a chain is more accurate - don't set again!
-	if ( error )
-		return;
-
-	assert( err > 0 && err < TIXML_ERROR_STRING_COUNT );
-	error   = true;
-	errorId = err;
-	errorDesc = errorString[ errorId ];
-
-	errorLocation.Stamp( pError, &location, TabSize() );
 }
 
 

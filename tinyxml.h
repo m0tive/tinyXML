@@ -70,26 +70,20 @@ class TiXmlAttribute;
 class TiXmlText;
 class TiXmlDeclaration;
 
+class TiXmlParsingData;
+
 /*	Internal structure for tracking location of items 
 	in the XML file.
 */
 struct TiXmlCursor
 {
 	TiXmlCursor()		{ Clear(); }
-	void Clear()		{ last = 0; row = col = -1; }
+	void Clear()		{ row = col = -1; }
 
 	int row;	// 0 based.
 	int col;	// 0 based.
-	const char* last;	// After parsing, this is a pointer to dangling memory! It should
-						// never be used.
-
-	void Stamp( const char* now, const TiXmlCursor* prev, int tabsize )
-	{
-		if ( tabsize > 0 )
-			StampImpl( now, prev, tabsize );
-	}
-	void StampImpl( const char* now, const TiXmlCursor* prev, int tabsize );
 };
+
 
 // Only used by Attribute::Query functions
 enum 
@@ -206,7 +200,7 @@ protected:
 									const char* endTag,			// what ends this text
 									bool ignoreCase );			// whether to ignore case in the end tag
 
-	virtual const char* Parse( const char* p, const TiXmlCursor* position ) = 0;
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data ) = 0;
 
 	// If an entity has been found, transform it into a character.
 	static const char* GetEntity( const char* in, char* value );
@@ -502,13 +496,6 @@ public:
 	*/
 	TiXmlDocument* GetDocument() const;
 
-	/** Returns the tab size being used to compute the location of nodes and attributes
-		in the document.
-
-		@sa SetTabSize
-	*/
-	int TabSize() const;
-
 	/// Returns true if this node has no children.
 	bool NoChildren() const						{ return !firstChild; }
 
@@ -645,7 +632,7 @@ public:
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
-	virtual const char* Parse( const char* p, const TiXmlCursor* position );
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -806,13 +793,13 @@ protected:
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlCursor* position );
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
 
 	/*	[internal use]
 		Reads the "value" of the element -- another element, or text.
 		This should terminate with the current end tag.
 	*/
-	const char* ReadValue( const char* in, const TiXmlCursor* position );
+	const char* ReadValue( const char* in, const TiXmlParsingData* prevData );
 
 private:
 	TiXmlAttributeSet attributeSet;
@@ -842,7 +829,7 @@ protected:
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlCursor* position );
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
 };
 
 
@@ -880,7 +867,7 @@ protected :
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlCursor* position );
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -949,7 +936,7 @@ protected:
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 
-	virtual const char* Parse( const char* p, const TiXmlCursor* position );
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
 
 private:
 	TIXML_STRING version;
@@ -982,7 +969,7 @@ protected:
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlCursor* position );
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
 };
 
 
@@ -1037,7 +1024,7 @@ public:
 
 	/** Parse the given null terminated block of xml data.
 	*/
-	virtual const char* Parse( const char* p, const TiXmlCursor* position = 0 );
+	virtual const char* Parse( const char* p, const TiXmlParsingData* data = 0 );
 
 	/** Get the root element -- the only top level element -- of the document.
 		In well formed XML, there should only be one. TinyXml is tolerant of
@@ -1098,7 +1085,12 @@ public:
 	/** If you have handled the error, it can be reset with this call. The error
 		state is automatically cleared if you Parse a new XML block.
 	*/
-	void ClearError()						{ error = false; errorId = 0; errorDesc = ""; errorLocation.row = errorLocation.col = 0; errorLocation.last = 0; }
+	void ClearError()						{	error = false; 
+												errorId = 0; 
+												errorDesc = ""; 
+												errorLocation.row = errorLocation.col = 0; 
+												//errorLocation.last = 0; 
+											}
 
 	/** Dump the document to standard out. */
 	void Print() const						{ Print( stdout, 0 ); }
@@ -1106,7 +1098,7 @@ public:
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth = 0 ) const;
 	// [internal use]
-	void SetError( int err, const char* errorLocation );
+	void SetError( int err, const char* errorLocation, const TiXmlParsingData* prevData );
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
