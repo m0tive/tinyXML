@@ -150,5 +150,10 @@ Changes in version 2.1.5
 
 2.2.2 ?
 - User Data are now defined in TiXmlBase instead of TiXmlNode
+- Character Entities are now UCS-2
+- Character Entities can be decimal or hexadecimal
+- UTF-8 conversion.
+
+
 
 

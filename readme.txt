@@ -19,6 +19,12 @@ organizer application. XML is a very structured and convenient format.
 All those random file formats created to store application data can 
 all be replaced with XML. One parser for everything.
 
+The best place for the complete, correct, and quite frankly hard to
+read spec is at <a href="http://www.w3.org/TR/2004/REC-xml-20040204/">
+http://www.w3.org/TR/2004/REC-xml-20040204/</a>. 
+
+FIXME: http://skew.org/xml/tutorial/
+
 There are different ways to access and interact with XML data.
 TinyXml uses a Document Object Model (DOM), meaning the XML data is parsed
 into a tree objects that can be browsed and manipulated, and then 
@@ -374,9 +380,13 @@ distribution.
 <h2> References  </h2>
 
 The World Wide Web Consortium is the definitive standard body for 
-XML, and there web pages contain huge amounts of information. I also 
-recommend "XML Pocket Reference" by Robert Eckstein and published by 
-OReilly.
+XML, and there web pages contain huge amounts of information. 
+
+The definitive spec: <a href="http://www.w3.org/TR/2004/REC-xml-20040204/">
+http://www.w3.org/TR/2004/REC-xml-20040204/</a>
+
+I also recommend "XML Pocket Reference" by Robert Eckstein and published by 
+OReilly...the book that got the whole thing started.
 
 <h2> Contributors, Contacts, and a Brief History </h2>
 

@@ -167,6 +167,9 @@ public:
 	void  SetUserData( void* user )			{ userData = user; }
 	void* GetUserData()						{ return userData; }
 
+	// Table that returs, for a given lead byte, the total number of bytes
+	// in the UTF-8 sequence.
+	static const int utf8ByteTable[256];
 
 protected:
 	// See STL_STRING_BUG
@@ -180,7 +183,10 @@ protected:
 	};
 
 	static const char*	SkipWhiteSpace( const char* );
-	inline static bool	IsWhiteSpace( int c )		{ return ( isspace( c ) || c == '\n' || c == '\r' ); }
+	inline static bool	IsWhiteSpace( char c )		
+	{ 
+		return ( isspace( (unsigned char) c ) || c == '\n' || c == '\r' ); 
+	}
 
 	virtual void StreamOut (TIXML_OSTREAM *) const = 0;
 
@@ -207,20 +213,32 @@ protected:
 	virtual const char* Parse( const char* p, TiXmlParsingData* data ) = 0;
 
 	// If an entity has been found, transform it into a character.
-	static const char* GetEntity( const char* in, char* value );
+	static const char* GetEntity( const char* in, char* value, int* length );
 
 	// Get a character, while interpreting entities.
-	inline static const char* GetChar( const char* p, char* _value )
+	// The length can be from 0 to 4 bytes.
+	inline static const char* GetCharUTF8( const char* p, char* _value, int* length )
 	{
 		assert( p );
-		if ( *p == '&' )
+		*length = utf8ByteTable[ *((unsigned char*)p) ];
+		assert( *length >= 0 && *length < 5 );
+
+		if ( *length == 1 )
 		{
-			return GetEntity( p, _value );
+			if ( *p == '&' )
+				return GetEntity( p, _value, length );
+			*_value = *p;
+			return p+1;
+		}
+		else if ( *length )
+		{
+			strncpy( _value, p, *length );
+			return p + (*length);
 		}
 		else
 		{
-			*_value = *p;
-			return p+1;
+			// Not valid text.
+			return 0;
 		}
 	}
 
@@ -231,6 +249,8 @@ protected:
 	static void PutString( const TIXML_STRING& str, TIXML_STRING* out );
 
 	// Return true if the next characters in the stream are any of the endTag sequences.
+	// Ignore case only works for english, and should only be relied on when comparing
+	// to Engilish words: StringEqual( p, "version", true ) is fine.
 	static bool StringEqual(	const char* p,
 								const char* endTag,
 								bool ignoreCase );
@@ -261,6 +281,17 @@ protected:
 
     /// Field containing a generic user pointer
 	void*			userData;
+	
+	// None of these methods are reliable for any language except English.
+	// Good for approximation, not great for accuracy.
+	static int IsAlphaUTF8( unsigned char anyByte );
+	static int IsAlphaNumUTF8( unsigned char anyByte );
+	inline static int ToLowerUTF8( int v )
+	{
+		if ( v < 128 ) return tolower( v );
+		return v;
+	}
+	static void ConvertUTF32ToUTF8( unsigned long input, char* output, int* length );
 
 private:
 	struct Entity
@@ -1244,7 +1275,7 @@ public:
 	TiXmlHandle ChildElement( int index ) const;
 
 	#ifdef TIXML_USE_STL
-	TiXmlHandle FirstChild( const std::string& _value ) const			{ return FirstChild( _value.c_str() ); }
+	TiXmlHandle FirstChild( const std::string& _value ) const				{ return FirstChild( _value.c_str() ); }
 	TiXmlHandle FirstChildElement( const std::string& _value ) const		{ return FirstChildElement( _value.c_str() ); }
 
 	TiXmlHandle Child( const std::string& _value, int index ) const			{ return Child( _value.c_str(), index ); }
@@ -1257,6 +1288,8 @@ public:
 	TiXmlElement* Element() const	{ return ( ( node && node->ToElement() ) ? node->ToElement() : 0 ); }
 	/// Return the handle as a TiXmlText. This may return null.
 	TiXmlText* Text() const			{ return ( ( node && node->ToText() ) ? node->ToText() : 0 ); }
+
+// fixme: attribute support
 
 private:
 	TiXmlNode* node;

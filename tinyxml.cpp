@@ -29,6 +29,7 @@ distribution.
 #include <sstream>
 #endif
 
+
 bool TiXmlBase::condenseWhiteSpace = true;
 
 void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_OSTREAM* stream )
@@ -44,7 +45,7 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 
 	while( i<(int)str.length() )
 	{
-		int c = str[i];
+		unsigned char c = (unsigned char) str[i];
 
 		if (    c == '&' 
 		     && i < ( (int)str.length() - 2 )
@@ -87,10 +88,10 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 			outString->append( entity[4].str, entity[4].strLength );
 			++i;
 		}
-		else if ( c < 32 || c > 126 )
+		else if ( c < 32 )
 		{
 			// Easy pass at non-alpha/numeric/symbol
-			// 127 is the delete key. Below 32 is symbolic.
+			// Below 32 is symbolic.
 			char buf[ 32 ];
 			sprintf( buf, "&#x%02X;", (unsigned) ( c & 0xff ) );
 			outString->append( buf, strlen( buf ) );
@@ -98,6 +99,10 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 		}
 		else
 		{
+			// Assume everthing else is unicode. c should never actually 
+			// be out of the range of 0-255. Else something has gone strange.
+			assert( c > 0 && c < 256 );
+
 			char realc = (char) c;
 			outString->append( &realc, 1 );
 			++i;
@@ -845,8 +850,8 @@ void TiXmlAttribute::Print( FILE* cfile, int /*depth*/ ) const
 {
 	TIXML_STRING n, v;
 
-	PutString( Name(), &n );
-	PutString( Value(), &v );
+	PutString( name, &n );
+	PutString( value, &v );
 
 	if (value.find ('\"') == TIXML_STRING::npos)
 		fprintf (cfile, "%s=\"%s\"", n.c_str(), v.c_str() );
@@ -1039,7 +1044,7 @@ void TiXmlUnknown::Print( FILE* cfile, int depth ) const
 
 void TiXmlUnknown::StreamOut( TIXML_OSTREAM * stream ) const
 {
-	(*stream) << "<" << value << ">";		// Don't use entities hear! It is unknown.
+	(*stream) << "<" << value << ">";		// Don't use entities here! It is unknown.
 }
 
 TiXmlNode* TiXmlUnknown::Clone() const
