@@ -84,24 +84,7 @@ Changes in version 2.0.1
 - Added missing licence text. Thanks to Lars Willemsens.
 - Added <ctype.h> include, at the suggestion of Steve Walters.
 
-Changes in OptionalSTL-branch
------------------------------
-- 2 new files : tinystr.h and tinystr.cpp
-- no usage of STL anymore
-- Still to do : modify gnu makefile
-- Still to do : add conditional conversion functions for users of STL
-
-Continuing OptionalSTL-branch (May 3rd, 2002)
-- #define TIXML_USE_STL implemented
-- still to do : modify gnu makefile
-- fixed(?) : deal with Attribute function that returns std::string *
-- still to do : fix "fail" bug in stl version
-- fixed : TiXmlInStream never gets used. (It's pure abstract. It wouldn't link if it did.)
-	#ifdef it out?
-- still to do : document / clean up API so that users won't be scared away by TIXML_ #defines
-
-Continuing OptionalSTL-branch (May 4th, 2002)
-- defined 2 new configurations for Win32 (Win32 Debug STL and Win32 Release STL)
-- Code cleanup - tabs set to 4 chars
-- still to do : modify gnu makefile
-- still to do : document API so that users won't be scared away by TIXML_ #defines
+Changes in version 2.1.0
+- Yves Berquin brings us the STL switch. The forum on SourceForge, and various emails to
+  me, have long debated all out STL vs. no STL at all. And now you can have it both ways.
+  TinyXml will compile either way.

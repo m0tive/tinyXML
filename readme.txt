@@ -22,7 +22,7 @@ all be replaced with XML. One parser for everything.
 There are different ways to access and interact with XML data.
 TinyXml uses a Document Object Model, meaning the XML data is parsed
 into a tree objects that can be browsed and manipulated, and then 
-written back to disk. You can also construct an XML document from 
+written back to disk. You can also construct an XML document from
 scratch with C++ objects and write this to disk.
 
 TinyXml is designed to be easy and fast. It is one header and three cpp 
@@ -78,7 +78,8 @@ Use the compile time #define:
 to compile one version or the other.
 
 Note: If compiling the test code in Linux, setting the environment
-variable TINYXML_USE_STL=YES/NO will control STL compilation.
+variable TINYXML_USE_STL=YES/NO will control STL compilation. In the
+Windows project file, STL and non STL targets are provided.
 
 <h3> Entities </h3>
 TinyXml recognizes the pre-defined "entity references", meaning special
