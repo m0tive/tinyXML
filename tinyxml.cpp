@@ -814,10 +814,12 @@ void TiXmlText::Print( FILE* cfile, int /*depth*/ ) const
 	fprintf( cfile, "%s", buffer.c_str() );
 }
 
+
 void TiXmlText::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	PutString( value, stream );
 }
+
 
 TiXmlNode* TiXmlText::Clone() const
 {	
@@ -830,6 +832,7 @@ TiXmlNode* TiXmlText::Clone() const
 	CopyToClone( clone );
 	return clone;
 }
+
 
 TiXmlDeclaration::TiXmlDeclaration( const char * _version,
 	const char * _encoding,

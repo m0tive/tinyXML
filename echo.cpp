@@ -29,15 +29,16 @@ int main( int argc, char* argv[] )
 #else
 	doc.SaveFile( "echotest.xml" );
 #endif	
+
 	now = clock();
 	printf( "Write to c-file: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
 	prev = now;
 
 	doc.Clear();
 	prev = clock();
-	ifstream inputStream( argv[1] );
 
 #ifdef TIXML_USE_STL		
+	ifstream inputStream( argv[1] );
 	inputStream >> doc;
 	now = clock();
 	printf( "Read from stream: %fs\n", double( now-prev ) / double( CLOCKS_PER_SEC ) );
