@@ -20,7 +20,7 @@ int main( int argc, char* argv[] )
 	doc.SaveFile( "echotest.xml" );
 	wrote = clock();
 
-	printf( "Read: %fms  Write: %fms\n", double( read-start ) / double( CLOCKS_PER_SEC ),
+	printf( "Read: %fms  Write: %fs\n", double( read-start ) / double( CLOCKS_PER_SEC ),
 										 double( wrote-read ) / double( CLOCKS_PER_SEC ) );
 	
 
