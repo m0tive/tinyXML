@@ -74,21 +74,24 @@ class TiXmlString
     void operator = (const TiXmlString & copy);
 
     // += operator. Maps to append
-    operator += (const char * suffix)
+    TiXmlString& operator += (const char * suffix)
     {
         append (suffix);
+		return *this;
     }
 
     // += operator. Maps to append
-    operator += (char single)
+    TiXmlString& operator += (char single)
     {
         append (single);
+		return *this;
     }
 
     // += operator. Maps to append
-    operator += (TiXmlString & suffix)
+    TiXmlString& operator += (TiXmlString & suffix)
     {
         append (suffix);
+		return *this;
     }
     bool operator == (const TiXmlString & compare) const;
     bool operator < (const TiXmlString & compare) const;

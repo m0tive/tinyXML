@@ -52,8 +52,8 @@ endif
 # Preprocessor directives
 #****************************************************************************
 
-ifeq (YES, ${PROFILE})
-  DEFS :=
+ifeq (YES, ${TINYXML_USE_STL})
+  DEFS := -DTIXML_USE_STL
 else
   DEFS :=
 endif
@@ -86,7 +86,7 @@ all: ${OUTPUT}
 # Source files
 #****************************************************************************
 
-SRCS := tinyxml.cpp tinyxmlparser.cpp xmltest.cpp tinyxmlerror.cpp
+SRCS := tinyxml.cpp tinyxmlparser.cpp xmltest.cpp tinyxmlerror.cpp tinystr.cpp
 
 # Add on the sources for libraries
 SRCS := ${SRCS}
@@ -117,7 +117,7 @@ clean:
 depend:
 	#makedepend ${INCS} ${SRCS}
 
-tinyxml.o: tinyxml.h
-tinyxmlparser.o: tinyxml.h
-xmltest.o: tinyxml.h
-tinyxmlerror.o: tinyxml.h
+tinyxml.o: tinyxml.h tinystr.h
+tinyxmlparser.o: tinyxml.h tinystr.h
+xmltest.o: tinyxml.h tinystr.h
+tinyxmlerror.o: tinyxml.h tinystr.h

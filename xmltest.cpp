@@ -83,8 +83,9 @@ int main()
 		"<Item priority=\"2\" distance='far &amp; back'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
+#ifdef TIXML_USE_STL
 	/*	What the todo list should look like after processing.
-			In stream (no formatting) representation. */
+		In stream (no formatting) representation. */
 	const char* demoEnd =
 		"<?xml version=\"1.0\" standalone=\"no\" ?>"
 		"<!-- Our to do list data -->"
@@ -104,6 +105,7 @@ int main()
 		"<Item priority=\"2\" distance=\"here\">Do bills"
 		"</Item>"
 		"</ToDo>";
+#endif
 
 	// The example parses from the character string (above):
 
@@ -217,7 +219,7 @@ int main()
 	printf( "\n** Demo doc processed: ** \n\n" );
 	doc.Print( stdout );
 
-	
+
 #ifdef TIXML_USE_STL
 	printf( "** Demo doc processed to stream: ** \n\n" );
 	cout << doc << endl << endl;
@@ -236,7 +238,7 @@ int main()
 	cout << "** Basic structure. **\n";
 	ostringstream outputStream( ostringstream::out );
 	outputStream << doc;
-	XmlTest( "Output stream correct.",	string( demoEnd ).c_str(), 
+	XmlTest( "Output stream correct.",	string( demoEnd ).c_str(),
 										outputStream.str().c_str(), true );
 #endif
 

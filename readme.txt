@@ -72,17 +72,13 @@ the string classes are implemented by TinyXml itself. API methods
 all use the 'const char*' form for input.
 
 Use the compile time #define:
-	
+
 	TIXML_USE_STL
 
 to compile one version or the other.
 
-Ignoring other changes, 1.2 is limited to the STL string class, while version
-2.0 makes extensive use of STL. If you need a minimal STL implementation,
-you should drop back to the 1.2 release. In the next version of TinyXml,
-I hope to see us support a compile time switch to use full STL or none
-at all. Initial code looks really good.
-
+Note: If compiling the test code in Linux, setting the environment
+variable TINYXML_USE_STL=YES/NO will control STL compilation.
 
 <h3> Entities </h3>
 TinyXml recognizes the pre-defined "entity references", meaning special

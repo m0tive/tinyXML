@@ -60,7 +60,7 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 			 && str[i+1] == '#'
 			 && str[i+2] == 'x' )
 		{
-			outString->append( &str[i], 1 );
+			outString->append( str.c_str() + i, 1 );
 		}
 		else
 		{
@@ -74,7 +74,7 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 			}
 			if ( j == NUM_ENTITY )
 			{
-				outString->append( &str[i], 1 );
+				outString->append( str.c_str() + i, 1 );
 			}
 		}
 		++i;

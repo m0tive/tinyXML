@@ -191,10 +191,10 @@ void TiXmlString::append( const char * suffix )
 }
 
 // Check for TiXmlString equuivalence
-bool TiXmlString::operator == (const TiXmlString & compare) const
-{
-    return (! strcmp (c_str (), compare . c_str ()));
-}
+//bool TiXmlString::operator == (const TiXmlString & compare) const
+//{
+//    return (! strcmp (c_str (), compare . c_str ()));
+//}
 
 unsigned TiXmlString::length () const
 {
@@ -208,10 +208,46 @@ unsigned TiXmlString::find (char tofind, unsigned offset) const
 {
     char * lookup;
 
-    if (offset >= (int) length ())
+    if (offset >= length ())
         return notfound;
     for (lookup = cstring + offset; * lookup; lookup++)
         if (* lookup == tofind)
             return lookup - cstring;
-    return notfound;
+    return (unsigned) notfound;
+}
+
+
+bool TiXmlString::operator == (const TiXmlString & compare) const
+{
+	if ( allocated && compare.allocated )
+	{
+		assert( cstring );
+		assert( compare.cstring );
+		return ( strcmp( cstring, compare.cstring ) == 0 );
+ 	}
+	return false;
+}
+
+
+bool TiXmlString::operator < (const TiXmlString & compare) const
+{
+	if ( allocated && compare.allocated )
+	{
+		assert( cstring );
+		assert( compare.cstring );
+		return ( strcmp( cstring, compare.cstring ) > 0 );
+ 	}
+	return false;
+}
+
+
+bool TiXmlString::operator > (const TiXmlString & compare) const
+{
+	if ( allocated && compare.allocated )
+	{
+		assert( cstring );
+		assert( compare.cstring );
+		return ( strcmp( cstring, compare.cstring ) < 0 );
+ 	}
+	return false;
 }
