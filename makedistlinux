@@ -18,6 +18,10 @@ cp readme.txt ./tinyxml
 cp changes.txt ./tinyxml
 cp Makefile ./tinyxml
 
+cp utf8test.xml tinyxml
+cp utf8testverify.xml tinyxml
+cp utf8test.gif tinyxml
+
 cp tinyxml.cpp tinyxml
 cp tinyxmlerror.cpp tinyxml
 cp tinyxmlparser.cpp tinyxml

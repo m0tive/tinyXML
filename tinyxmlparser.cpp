@@ -237,7 +237,10 @@ void TiXmlParsingData::Stamp( const char* now )
 
 			default:
 				// Eat the 1 to 4 byte utf8 character.
-				p += TiXmlBase::utf8ByteTable[*((unsigned char*)p)];
+				int step = TiXmlBase::utf8ByteTable[*((unsigned char*)p)];
+				if ( step == 0 )
+					step = 1;		// Error case from bad encoding, but handle gracefully.
+				p += step;
 
 				// Just advance one column, of course.
 				++col;

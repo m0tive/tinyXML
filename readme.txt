@@ -21,9 +21,9 @@ all be replaced with XML. One parser for everything.
 
 The best place for the complete, correct, and quite frankly hard to
 read spec is at <a href="http://www.w3.org/TR/2004/REC-xml-20040204/">
-http://www.w3.org/TR/2004/REC-xml-20040204/</a>. 
-
-FIXME: http://skew.org/xml/tutorial/
+http://www.w3.org/TR/2004/REC-xml-20040204/</a>. An intro to XML
+(that I really like) can be found at 
+<a href="http://skew.org/xml/tutorial/">http://skew.org/xml/tutorial</a>.
 
 There are different ways to access and interact with XML data.
 TinyXml uses a Document Object Model (DOM), meaning the XML data is parsed
@@ -32,26 +32,26 @@ written back to disk. You can also construct an XML document from
 scratch with C++ objects and write this to disk (or another output
 stream.)
 
-TinyXml is designed to be easy and fast. It is two headers and four cpp 
-files. Simply add these to your project and off you go. There is an 
-example to get you started. It is released under the ZLib license, 
-so you can use it in open source or commercial code.
+TinyXml is designed to be easy and fast to learn. It is two headers 
+and four cpp files. Simply add these to your project and off you go. 
+There is an example file - xmltest.cpp - to get you started. 
 
-It attempts to be a flexible parser, but with truly correct and
-compliant XML output (with the exception of the character set,
-below.) TinyXml should compile on any reasonably C++
-system. It does not rely on exceptions or RTTI. It can be 
-compiled with or without STL support.
+TinyXml is released under the ZLib license, 
+so you can use it in open source or commercial code. The details
+of the license are at the top of every source file.
+
+TinyXml attempts to be a flexible parser, but with truly correct and
+compliant XML output. TinyXml should compile on any reasonably C++
+compliant system. It does not rely on exceptions or RTTI. It can be 
+compiled with or without STL support. TinyXml fully supports
+the UTF-8 encoding, and the first 64k character entities.
 
 
 <h2> What it doesn't do. </h2>
 
 It doesnt parse or use DTDs (Document Type Definitions) or XSLs
-(eXtensible Stylesheet Language.) It is only tested on Latin-1 
-characters (which is the Western European character set). 
-Although people have reported success in passing through Latin-1 
-and UTF-8 data. There are other parsers out there (check out
-www.sourceforge.org, search for XML) that are much more fully
+(eXtensible Stylesheet Language.) There are other parsers out there 
+(check out www.sourceforge.org, search for XML) that are much more fully
 featured. But they are also much bigger, take longer to set up in
 your project, have a higher learning curve, and often have a more
 restrictive license. If you are working with browsers or have more
@@ -61,7 +61,9 @@ complete XML needs, TinyXml is not the parser for you.
 <h2> Code Status.  </h2>
 
 TinyXml is mature, tested code. It is very stable. If you find
-bugs, send them in and we'll get them straightened out as soon as possible.
+bugs, please file a bug report is on the sourceforge web site
+(www.sourceforge.net/projects/tinyxml).
+We'll get them straightened out as soon as possible.
 
 There are some areas of improvement; please check sourceforge if you are
 interested in working on TinyXml.
@@ -93,9 +95,41 @@ Windows project file, STL and non STL targets are provided. In your project,
 its probably easiest to add the line "#define TIXML_USE_STL" as the first
 line of tinyxml.h.
 
+<h3> UTF-8 </h3>
+
+TinyXml supports UTF-8 allowing to manipulate XML files in any language. UTF-8
+is the default encoding of all XML files.
+
+For English users, using English XML, UTF-8 is the same as low-ASCII. You
+don't need to be aware of UTF-8 or change your code in any way.
+
+For "high-ascii" languages - everything else, pretty much - TinyXml can
+handle all languages, at the same time, as long as the XML is encoded
+in UTF-8. That can be a little tricky, older programs and operating systems
+tend to use the "default" or "traditional" code page. Many apps (and almost all
+modern ones) can output UTF-8, but older or stubborn (or just broken) ones
+still output text in the default code page. 
+
+For example, Japanese systems traditionally use SHIFT-JIS encoding. 
+Text encoded as SHIFT-JIS can not be read by tinyxml. 
+A good text editor can import SHIFT-JIS and then save as UTF-8.
+
+The <a href="http://skew.org/xml/tutorial/">Skew.org link</a> does a great
+job covering the encoding issue.
+
+The test file "utf8test.xml" is an XML containing English, Spanish, Russian,
+and Simplified Chinese. (Hopefully they are translated correctly). The file
+"utf8test.gif" is a screen capture of the XML file, rendered in IE. Note that
+if you don't have the correct fonts (Simplified Chinese or Russian) on your
+system, you won't see output that matches the GIF file even if you can parse
+it correctly. Also note that (at least on my Windows machine) console output
+is in a Western code page, so that Print() or printf() cannot correctly display
+the file. This is not a bug in TinyXml - just an OS issue. No data is lost or 
+destroyed by TinyXml. The console just doesn't render UTF-8.
+
 
 <h3> Entities </h3>
-TinyXml recognizes the pre-defined "entity references", meaning special
+TinyXml recognizes the pre-defined "character entities", meaning special
 characters. Namely:
 
 @verbatim
@@ -103,18 +137,23 @@ characters. Namely:
 	&lt;	<
 	&gt;	>
 	&quot;	"
-	&apos;
+	&apos;	'
 @endverbatim
 
 These are recognized when the XML document is read, and translated to there
-ASCII equivalents. For instance, text with the XML of:
+UTF-8 equivalents. For instance, text with the XML of:
 
 @verbatim
 	Far &amp; Away
 @endverbatim
 
 will have the Value() of "Far & Away" when queried from the TiXmlText object,
-but will be written back to the XML stream/file as an entitity.
+but will be written back to the XML stream/file as a character entitity. 
+
+Additionally, any character can be specified by its Unicode code point:
+The syntax "&#xA0;" or "&#160;" are both to the non-breaking space characher. Note
+that these will generally not be preserved on output: TinyXml will write the
+space to the output stream, not the character reference.
 
 
 <h3> Streams </h3>
@@ -129,7 +168,7 @@ C style output:
 	Generates formatted output, with plenty of white space, intended to be as 
 	human-readable as possible. They are very fast, and tolerant of ill formed 
 	XML documents. For example, an XML document that contains 2 root elements 
-	and 2 declarations, will print.
+	and 2 declarations, will still print.
 
 C style input:
 	- based on FILE*
