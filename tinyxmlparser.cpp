@@ -338,7 +338,7 @@ const char* TiXmlDocument::Parse( const char* p )
 		return 0;
 	}
 
-	m_startLocation = p;
+	startLocation = p;
 	while ( p && *p )
 	{
 		TiXmlNode* node = Identify( p );
@@ -353,7 +353,7 @@ const char* TiXmlDocument::Parse( const char* p )
 		}
 		p = SkipWhiteSpace( p );
 	}
-	m_startLocation = 0;
+	startLocation = 0;
 
 	// All is well.
 	return p;

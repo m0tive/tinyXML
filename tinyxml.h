@@ -971,11 +971,13 @@ public:
 	const int ErrorId()	const				{ return errorId; }
 
 	/** Returns the location (if known) of the error. The first column is column 0, 
-		and the first row is row 0. A value of -1 means the row and columnt wasn't applicable
+		and the first row is row 0. A value of -1 means the row and column wasn't applicable
 		(memory errors, for example, have no row/column) or the parser lost the error. (An
-		error in the error reporting, in that case.)
+		error in the error reporting, in that case.) People generally expect to see rows and
+		columns "1" indexed, so the "human readable" form of the row or column 
+		is ( doc.ErrorRow() + 1 ) or ( doc.ErrorCol() + 1 ).
 
-		There is an additional complication: computing the column is problematic since
+		Subtlety: computing the column is problematic since
 		TinyXml doesn't know the tab size. You can set the tab size (before parsing) with
 		the SetErrorTab() method. If you don't set it, the default value of "4"
 		will be used. If you set the value to "1", the column 
@@ -1018,7 +1020,7 @@ private:
 	int errorRow;
 	int errorCol;
 	int errorTab;
-	const char* m_startLocation;
+	const char* startLocation;
 };
 
 
@@ -1110,10 +1112,33 @@ public:
 	/// Copy constructor
 	TiXmlHandle( const TiXmlHandle& ref )	{ this->node = ref.node; }
 
+	/// Return a handle to the first child node.
+	TiXmlHandle FirstChild() const;
 	/// Return a handle to the first child node with the given name.
 	TiXmlHandle FirstChild( const char * value ) const;
-	/// Return a pointer to the "index" child. The first child is 0, the second 1, etc.
+	/// Return a handle to the first child element.
+	TiXmlHandle FirstChildElement() const;
+	/// Return a handle to the first child element with the given name.
+	TiXmlHandle FirstChildElement( const char * value ) const;
+
+	/** Return a handle to the "index" child with the given name. 
+		The first child is 0, the second 1, etc.
+	*/
 	TiXmlHandle Child( const char* value, int index ) const;
+	/** Return a handle to the "index" child. 
+		The first child is 0, the second 1, etc.
+	*/
+	TiXmlHandle Child( int index ) const;
+	/** Return a handle to the "index" child element with the given name. 
+		The first child element is 0, the second 1, etc. Note that only TiXmlElements
+		are indexed: other types are not counted.
+	*/
+	TiXmlHandle ChildElement( const char* value, int index ) const;
+	/** Return a handle to the "index" child element. 
+		The first child element is 0, the second 1, etc. Note that only TiXmlElements
+		are indexed: other types are not counted.
+	*/
+	TiXmlHandle ChildElement( int index ) const;
 
 	#ifdef TIXML_USE_STL
 	TiXmlHandle FirstChild( const std::string& _value ) const			{ return FirstChild( _value.c_str() ); }

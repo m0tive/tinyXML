@@ -639,7 +639,7 @@ TiXmlNode* TiXmlElement::Clone() const
 
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	m_startLocation = 0;
+	startLocation = 0;
 	errorTab = 4;
 	ClearError();
 }
@@ -648,7 +648,7 @@ TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode
 {
 	//	ignoreWhiteSpace = true;
 	value = documentName;
-	m_startLocation = 0;
+	startLocation = 0;
 	errorTab = 4;
 	ClearError();
 }
@@ -805,11 +805,11 @@ void TiXmlDocument::SetError( int err, const char* errorLocation )
 
 	errorRow = errorCol = -1;
 
-	if ( m_startLocation && errorLocation )
+	if ( startLocation && errorLocation )
 	{
 		errorRow = 0;
 		errorCol = 0;
-		const char* p = m_startLocation;
+		const char* p = startLocation;
 
 		while ( p < errorLocation )
 		{
@@ -1166,11 +1166,65 @@ TIXML_OSTREAM & operator<< (TIXML_OSTREAM & out, const TiXmlNode & base)
 }
 
 
+TiXmlHandle TiXmlHandle::FirstChild() const
+{
+	if ( node )
+	{
+		TiXmlNode* child = node->FirstChild();
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
+
+
 TiXmlHandle TiXmlHandle::FirstChild( const char * value ) const
 {
 	if ( node )
 	{
 		TiXmlNode* child = node->FirstChild( value );
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
+
+
+TiXmlHandle TiXmlHandle::FirstChildElement() const
+{
+	if ( node )
+	{
+		TiXmlElement* child = node->FirstChildElement();
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
+
+
+TiXmlHandle TiXmlHandle::FirstChildElement( const char * value ) const
+{
+	if ( node )
+	{
+		TiXmlElement* child = node->FirstChildElement( value );
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
+
+TiXmlHandle TiXmlHandle::Child( int count ) const
+{
+	if ( node )
+	{
+		int i;
+		TiXmlNode* child = node->FirstChild();
+		for (	i=0;
+				child && i<count;
+				child = child->NextSibling(), ++i )
+		{
+			// nothing
+		}
 		if ( child )
 			return TiXmlHandle( child );
 	}
@@ -1196,3 +1250,40 @@ TiXmlHandle TiXmlHandle::Child( const char* value, int count ) const
 	return TiXmlHandle( 0 );
 }
 
+
+TiXmlHandle TiXmlHandle::ChildElement( int count ) const
+{
+	if ( node )
+	{
+		int i;
+		TiXmlElement* child = node->FirstChildElement();
+		for (	i=0;
+				child && i<count;
+				child = child->NextSiblingElement(), ++i )
+		{
+			// nothing
+		}
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
+
+
+TiXmlHandle TiXmlHandle::ChildElement( const char* value, int count ) const
+{
+	if ( node )
+	{
+		int i;
+		TiXmlElement* child = node->FirstChildElement( value );
+		for (	i=0;
+				child && i<count;
+				child = child->NextSiblingElement( value ), ++i )
+		{
+			// nothing
+		}
+		if ( child )
+			return TiXmlHandle( child );
+	}
+	return TiXmlHandle( 0 );
+}
