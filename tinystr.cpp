@@ -34,12 +34,12 @@ distribution.
 #include "tinystr.h"
 
 // TiXmlString constructor, based on a C string
-TiXmlString::TiXmlString (const char * instring)
+TiXmlString::TiXmlString (const char* instring)
 {
     unsigned newlen;
     char * newstring;
 
-    if (! instring)
+    if (!instring)
     {
         allocated = 0;
         cstring = NULL;
@@ -53,10 +53,14 @@ TiXmlString::TiXmlString (const char * instring)
 }
 
 // TiXmlString copy constructor
-TiXmlString::TiXmlString (const TiXmlString & copy)
+TiXmlString::TiXmlString (const TiXmlString& copy)
 {
     unsigned newlen;
     char * newstring;
+
+	// Prevent copy to self!
+	if ( &copy == this )
+		return;
 
     if (! copy . allocated)
     {

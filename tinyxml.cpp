@@ -435,13 +435,16 @@ const char * TiXmlElement::Attribute( const char * name ) const
 }
 
 
-const char * TiXmlElement::Attribute( const char * name, int & i ) const
+const char * TiXmlElement::Attribute( const char * name, int* i ) const
 {
 	const char * s = Attribute( name );
-	if ( s )
-		i = atoi( s );
-	else
-		i = 0;
+	if ( i )
+	{
+		if ( s )
+			*i = atoi( s );
+		else
+			*i = 0;
+	}
 	return s;
 }
 
@@ -597,21 +600,21 @@ TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode
 
 bool TiXmlDocument::LoadFile()
 {
-	return LoadFile( value . c_str ());
+	return LoadFile( value.c_str ());
 }
 
 bool TiXmlDocument::SaveFile() const
 {
-	return SaveFile( value . c_str ());
+	return SaveFile( value.c_str ());
 }
 
-bool TiXmlDocument::LoadFile( const char * filename )
+bool TiXmlDocument::LoadFile( const char* filename )
 {
 	// Delete the existing data:
 	Clear();
 	value = filename;
 
-	FILE* file = fopen( value . c_str (), "r" );
+	FILE* file = fopen( value.c_str (), "r" );
 
 	if ( file )
 	{
@@ -674,7 +677,7 @@ TiXmlNode* TiXmlDocument::Clone() const
 
 	CopyToClone( clone );
 	clone->error = error;
-	clone->errorDesc = errorDesc . c_str ();
+	clone->errorDesc = errorDesc.c_str ();
 
 	TiXmlNode* node = 0;
 	for ( node = firstChild; node; node = node->NextSibling() )
@@ -732,7 +735,7 @@ TiXmlAttribute* TiXmlAttribute::Previous() const
 
 void TiXmlAttribute::Print( FILE* cfile, int /*depth*/ ) const
 {
-	if (value . find ('\"') == TIXML_STRING::npos)
+	if (value.find ('\"') == TIXML_STRING::npos)
 		fprintf (cfile, "%s=\"%s\"", Name (), Value ());
 	else
 		fprintf (cfile, "%s='%s'", Name (), Value ());
@@ -772,12 +775,12 @@ void TiXmlAttribute::SetDoubleValue( double value )
 
 const int TiXmlAttribute::IntValue() const
 {
-	return atoi (value . c_str ());
+	return atoi (value.c_str ());
 }
 
 const double  TiXmlAttribute::DoubleValue() const
 {
-	return atof (value . c_str ());
+	return atof (value.c_str ());
 }
 
 void TiXmlComment::Print( FILE* cfile, int depth ) const
@@ -851,11 +854,11 @@ void TiXmlDeclaration::Print( FILE* cfile, int /*depth*/ ) const
 	fprintf (cfile, "<?xml ");
 
 	if ( !version.empty() )
-		fprintf (cfile, "version=\"%s\" ", version . c_str ());
+		fprintf (cfile, "version=\"%s\" ", version.c_str ());
 	if ( !encoding.empty() )
-		fprintf (cfile, "encoding=\"%s\" ", encoding . c_str ());
+		fprintf (cfile, "encoding=\"%s\" ", encoding.c_str ());
 	if ( !standalone.empty() )
-		fprintf (cfile, "standalone=\"%s\" ", standalone . c_str ());
+		fprintf (cfile, "standalone=\"%s\" ", standalone.c_str ());
 	fprintf (cfile, "?>");
 }
 

@@ -55,7 +55,7 @@ class TiXmlString
     }
 
     // TiXmlString copy constructor
-    TiXmlString (const TiXmlString & copy);
+    TiXmlString (const TiXmlString& copy);
 
     // TiXmlString destructor
     ~ TiXmlString ()

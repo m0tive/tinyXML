@@ -95,3 +95,7 @@ Changes in version 2.1.1
 Changes in version 2.1.2
 - Uneeded code is not compiled in the STL case.
 - Changed headers so that STL can be turned on or off in tinyxml.h
+
+Changes in version 2.1.3
+- Fixed non-const reference in API; now uses a pointer.
+- Copy constructor of TiXmlString not checking for assignment to self.

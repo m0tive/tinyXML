@@ -300,7 +300,7 @@ public:
 	void SetValue (const char * _value) { value = _value;}
 
     #ifdef TIXML_USE_STL
-	void SetValue( const std::string& value )    {	  SetValue (value . c_str ());    	}	///< STL std::string form.
+	void SetValue( const std::string& value )    {	  SetValue (value.c_str ());    	}	///< STL std::string form.
 	#endif
 
 	/// Delete all the children of this node. Does not affect 'this'.
@@ -316,8 +316,8 @@ public:
 	TiXmlNode* LastChild( const char * value ) const;			/// The last child of this node matching 'value'. Will be null if there are no children.
 
     #ifdef TIXML_USE_STL
-	TiXmlNode* FirstChild( const std::string& value ) const	{	return FirstChild (value . c_str ());	}	///< STL std::string form.
-	TiXmlNode* LastChild( const std::string& value ) const	{	return LastChild (value . c_str ());	}	///< STL std::string form.
+	TiXmlNode* FirstChild( const std::string& value ) const	{	return FirstChild (value.c_str ());	}	///< STL std::string form.
+	TiXmlNode* LastChild( const std::string& value ) const	{	return LastChild (value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/** An alternate way to walk the children of a node.
@@ -342,7 +342,7 @@ public:
 	TiXmlNode* IterateChildren( const char * value, TiXmlNode* previous ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous ) const	{	return IterateChildren (value . c_str (), previous);	}	///< STL std::string form.
+	TiXmlNode* IterateChildren( const std::string& value, TiXmlNode* previous ) const	{	return IterateChildren (value.c_str (), previous);	}	///< STL std::string form.
 	#endif
 
 	/** Add a new node related to this. Adds a child past the LastChild.
@@ -375,8 +375,8 @@ public:
 	TiXmlNode* PreviousSibling( const char * ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlNode* PreviousSibling( const std::string& value ) const	{	return PreviousSibling (value . c_str ());	}	///< STL std::string form.
-	TiXmlNode* NextSibling( const std::string& value) const	{	return NextSibling (value . c_str ());	}	///< STL std::string form.
+	TiXmlNode* PreviousSibling( const std::string& value ) const	{	return PreviousSibling (value.c_str ());	}	///< STL std::string form.
+	TiXmlNode* NextSibling( const std::string& value) const	{	return NextSibling (value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/// Navigate to a sibling node.
@@ -398,7 +398,7 @@ public:
 	TiXmlElement* NextSiblingElement( const char * ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlElement* NextSiblingElement( const std::string& value) const	{	return NextSiblingElement (value . c_str ());	}	///< STL std::string form.
+	TiXmlElement* NextSiblingElement( const std::string& value) const	{	return NextSiblingElement (value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/// Convenience function to get through elements.
@@ -408,7 +408,7 @@ public:
 	TiXmlElement* FirstChildElement( const char * value ) const;
 
     #ifdef TIXML_USE_STL
-	TiXmlElement* FirstChildElement( const std::string& value ) const	{	return FirstChildElement (value . c_str ());	}	///< STL std::string form.
+	TiXmlElement* FirstChildElement( const std::string& value ) const	{	return FirstChildElement (value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/// Query the type (as an enumerated value, above) of this node.
@@ -488,8 +488,8 @@ public:
 	/// std::string constructor.
 	TiXmlAttribute( const std::string& _name, const std::string& _value )
 	{
-		name = _name . c_str ();
-		value = _value . c_str ();
+		name = _name.c_str();
+		value = _value.c_str();
 	}
 	#endif
 
@@ -507,8 +507,8 @@ public:
 	void SetDoubleValue( double value );								///< Set the value from a double.
 
     #ifdef TIXML_USE_STL
-	void SetName( const std::string& _name )	{	SetName (_name . c_str ());	}	///< STL std::string form.
-	void SetValue( const std::string& _value )	{	SetValue (_value . c_str ());	}	///< STL std::string form.
+	void SetName( const std::string& _name )	{	SetName (_name.c_str ());	}	///< STL std::string form.
+	void SetValue( const std::string& _value )	{	SetValue (_value.c_str ());	}	///< STL std::string form.
 	#endif
 
 	/// Get the next sibling attribute in the DOM. Returns null at end.
@@ -588,7 +588,7 @@ public:
 	TiXmlElement( const std::string& _value ) : 	TiXmlNode( TiXmlNode::ELEMENT )
 	{
 		firstChild = lastChild = 0;
-		value = _value . c_str ();
+		value = _value.c_str ();
 	}
 	#endif
 
@@ -597,21 +597,27 @@ public:
 	/** Given an attribute name, attribute returns the value
 		for the attribute of that name, or null if none exists.
 	*/
-	const char * Attribute( const char * name ) const;
+	const char* Attribute( const char* name ) const;
 
 	/** Given an attribute name, attribute returns the value
 		for the attribute of that name, or null if none exists.
+		If the attribute exists and can be converted to an integer,
+		the integer value will be put in the return 'i', if 'i'
+		is non-null.
 	*/
-	const char * Attribute( const char * name, int & i ) const;
+	const char* Attribute( const char* name, int* i ) const;
 
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.
 	*/
-	void SetAttribute( const char * name, const char * value );
+	void SetAttribute( const char* name, const char * value );
 
     #ifdef TIXML_USE_STL
-	void SetAttribute( const std::string& name, const std::string& value )	{	SetAttribute (name . c_str (), value . c_str ());	}	///< STL std::string form.
-	void SetAttribute( const std::string& name, int value )	{	SetAttribute (name . c_str (), value);	}	///< STL std::string form.
+	const char* Attribute( const std::string& name ) const				{ return Attribute( name.c_str() ); }
+	const char* Attribute( const std::string& name, int* i ) const		{ return Attribute( name.c_str(), i ); }
+
+	void SetAttribute( const std::string& name, const std::string& value )	{	SetAttribute (name.c_str (), value.c_str ());	}	///< STL std::string form.
+	void SetAttribute( const std::string& name, int value )	{	SetAttribute (name.c_str (), value);	}	///< STL std::string form.
 	#endif
 
 	/** Sets an attribute of name to a given value. The attribute
@@ -623,7 +629,7 @@ public:
 	*/
 	void RemoveAttribute( const char * name );
     #ifdef TIXML_USE_STL
-	void RemoveAttribute( const std::string& name )	{	RemoveAttribute (name . c_str ());	}	///< STL std::string form.
+	void RemoveAttribute( const std::string& name )	{	RemoveAttribute (name.c_str ());	}	///< STL std::string form.
 	#endif
 
 	TiXmlAttribute* FirstAttribute() const	{ return attributeSet.First(); }		///< Access the first attribute in this element.
@@ -755,9 +761,9 @@ public:
 						const std::string& _standalone )
 					: TiXmlNode( TiXmlNode::DECLARATION )
 	{
-		version = _version . c_str ();
-		encoding = _encoding . c_str ();
-		standalone = _standalone . c_str ();
+		version = _version.c_str ();
+		encoding = _encoding.c_str ();
+		standalone = _standalone.c_str ();
 	}
 #endif
 
@@ -769,11 +775,11 @@ public:
 	virtual ~TiXmlDeclaration()	{}
 
 	/// Version. Will return empty if none was found.
-	const char * Version() const		{ return version . c_str (); }
+	const char * Version() const		{ return version.c_str (); }
 	/// Encoding. Will return empty if none was found.
-	const char * Encoding() const		{ return encoding . c_str (); }
+	const char * Encoding() const		{ return encoding.c_str (); }
 	/// Is this a standalone document?
-	const char * Standalone() const		{ return standalone . c_str (); }
+	const char * Standalone() const		{ return standalone.c_str (); }
 
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;
@@ -888,7 +894,7 @@ public:
 	bool Error() const						{ return error; }
 
 	/// Contains a textual (english) description of the error if one occurs.
-	const char * ErrorDesc() const	{ return errorDesc . c_str (); }
+	const char * ErrorDesc() const	{ return errorDesc.c_str (); }
 
 	/** Generally, you probably want the error string ( ErrorDesc() ). But if you
 			prefer the ErrorId, this function will fetch it.
@@ -899,7 +905,7 @@ public:
 	void ClearError()						{ error = false; errorId = 0; errorDesc = ""; }
 
 	/** Dump the document to standard out. */
-	void Print() const								{ Print( stdout, 0 ); }
+	void Print() const						{ Print( stdout, 0 ); }
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth = 0 ) const;
