@@ -202,7 +202,7 @@ private:
 	{
 		const char*     str;
 		unsigned int	strLength;
-		int			    chr;
+		char		    chr;
 	};
 	enum
 	{

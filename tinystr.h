@@ -25,6 +25,8 @@ distribution.
 #ifndef TIXML_STRING_INCLUDED
 #define TIXML_STRING_INCLUDED
 
+#pragma warning( disable : 4514 )
+
 #include <assert.h>
 
 /*
@@ -212,18 +214,6 @@ public :
     {
         append (in . c_str ());
         return (* this);
-    }
-
-    void write (const char * out, int length)
-    {
-        if (length > 0)
-            append (out, length);
-    }
-
-    // Put a simple char to the output stream
-    void put (char outchar)
-    {
-        append (outchar);
     }
 } ;
 
