@@ -79,8 +79,8 @@ Changes in version 2.0.0 BETA
 
 Changes in version 2.0.1
 - Fixed hanging on loading a 0 length file. Thanks to Jeff Scozzafava.
-- Fixed crashing on InsertBeforeChild and InsertAfterChild. Also possibility of bad links being 
-  created by same function. Thanks to FIXME.
-- Added missing licence text. Thanks to FIXME.
-- Added <ctype.h> included, at the suggestion of FIXME. Some compilers seem to be really picky about that one.
+- Fixed crashing on InsertBeforeChild and InsertAfterChild. Also possibility of bad links being
+  created by same function. Thanks to Frank De prins.
+- Added missing licence text. Thanks to Lars Willemsens.
+- Added <ctype.h> include, at the suggestion of Steve Walters.
 

@@ -25,6 +25,7 @@ cp xmltest.cpp tinyxml
 
 cp tinyxml.h tinyxml
 cp tinyxml.dsp tinyxml
+recode lat1..ibmpc ./tinyxml/tinyxml.dsp
 
 mkdir ./tinyxml/docs
 cp ./docs/* ./tinyxml/docs
