@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2000 Lee Thomason (www.grinninglizard.com)
+www.sourceforge.net/projects/tinyxml
+Original code (2.0 and earlier )copyright (c) 2000-2002 Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied 
 warranty. In no event will the authors be held liable for any 
@@ -21,8 +22,10 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-#ifndef TIXML_STRING
-#define TIXML_STRING
+#ifndef TIXML_STRING_INCLUDED
+#define TIXML_STRING_INCLUDED
+
+#include <assert.h>
 
 /**
    TiXmlString is an emulation of the std::string template. \n
@@ -101,10 +104,10 @@ public :
    bool isblank () const;
 
    /// single char extraction
-   char at (unsigned index) const
+   const char& at (unsigned index) const
    {
-      if (index >= length ())
-         return 0;
+      assert( index >= 0 );
+	  assert( index < length ());
       return cstring [index];
    }
 
@@ -127,8 +130,9 @@ public :
       return notfound;
    }
 
-   /// Function to reserve a big amount of data when we know we'll need it. Be aware that this
-   /// function clears the content of the TiXmlString if any
+   /** Function to reserve a big amount of data when we know we'll need it. Be aware that this
+	   function clears the content of the TiXmlString if any exists.
+   */
    void reserve (unsigned size)
    {
       empty_it ();
@@ -140,13 +144,17 @@ public :
       }
    }
    /// [] operator : Maps to at
-   char operator [] (int index) const
+   char& operator [] (unsigned index) const
    {
-      return at (index);
+	  assert( index < length ());
+      return cstring [index];
    }
 
    /// Error value for find primitive 
-	enum {notfound = 0xffffffff};
+	enum {	notfound = 0xffffffff,
+			npos = notfound };
+
+   void append (const char *str, int len );
 
 protected :
 
@@ -171,7 +179,7 @@ protected :
       allocated = 0;
    }
 
-   void append (const char * suffix);
+   void append (const char *suffix );
 
    /// append function for another TiXmlString
    void append (const TiXmlString & suffix)
@@ -245,66 +253,66 @@ public :
 /**
    TiXmlInStreamOwn is the custom implementation of an input stream
 */
-class TiXmlInStreamOwn : public TiXmlInStream
-{
-public :
-   TiXmlInStreamOwn::TiXmlInStreamOwn (const char * instring);
-   /// TiXmlInStream destructor
-   virtual ~ TiXmlInStreamOwn ()
-   {
-      if (valid && cstring)
-         delete [] cstring;
-   }
+//class TiXmlInStreamOwn : public TiXmlInStream
+//{
+//public :
+//   TiXmlInStreamOwn::TiXmlInStreamOwn (const char * instring);
+//   /// TiXmlInStream destructor
+//   virtual ~ TiXmlInStreamOwn ()
+//   {
+//      if (valid && cstring)
+//         delete [] cstring;
+//   }
+//
+//   /// Check if there are still some chars to consume
+//   virtual bool good () const
+//   {
+//      if (! valid || ! * consumer)
+//         return false;
+//      return true;
+//   }
+//   /// Consume one char
+//   virtual char get ()
+//   {
+//      if (! good ())
+//         return 0;
+//      consumer++;
+//      return * (consumer - 1);
+//   }
+//   /// Check for the next char but don't consume it
+//   virtual char peek () 
+//   {
+//      if (! good ())
+//         return 0;
+//      return * consumer;
+//   }
+//protected :
+//   /// The input stream contents
+//   char * cstring;
+//   /// The current consumer pointer
+//   char * consumer;
+//   /// true if the string is valid
+//   bool valid;
+//} ;
 
-   /// Check if there are still some chars to consume
-   virtual bool good () const
-   {
-      if (! valid || ! * consumer)
-         return false;
-      return true;
-   }
-   /// Consume one char
-   virtual char get ()
-   {
-      if (! good ())
-         return 0;
-      consumer++;
-      return * (consumer - 1);
-   }
-   /// Check for the next char but don't consume it
-   virtual char peek () 
-   {
-      if (! good ())
-         return 0;
-      return * consumer;
-   }
-protected :
-   /// The input stream contents
-   char * cstring;
-   /// The current consumer pointer
-   char * consumer;
-   /// true if the string is valid
-   bool valid;
-} ;
-
-#ifdef TIXML_USE_STL
-   /**
-      TiXmlInStreamStl is the implementation of an input stream that consumes every input
-      from the std::istream
-   */
-   class TiXmlInStreamStl : public TiXmlInStream 
-   {
-   public :
-      TiXmlInStreamStl (std::istream & _s) : s (_s), TiXmlInStream ()
-      {
-      }
-      virtual ~ TiXmlInStreamStl () {}
-      virtual bool good () const {return s . good ();}
-      virtual char get () {return s . get ();}
-      virtual char peek () {return s . peek ();}
-   protected :
-      std::istream s;
-   } ;
-#endif
+//#ifdef TIXML_USE_STL
+//   /**
+//      TiXmlInStreamStl is the implementation of an input stream that consumes every input
+//      from the std::istream
+//   */
+//   class TiXmlInStreamStl : public TiXmlInStream 
+//   {
+//   public :
+//      TiXmlInStreamStl (std::istream & _s) : s (_s), TiXmlInStream ()
+//      {
+//      }
+//      virtual ~ TiXmlInStreamStl () {}
+//      virtual bool good () const {return s . good ();}
+//      virtual char get () {return s . get ();}
+//      virtual char peek () {return s . peek ();}
+//   protected :
+//      std::istream s;
+//   } ;
+//#endif
 
 #endif

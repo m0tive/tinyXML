@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2000 Lee Thomason (www.grinninglizard.com)
+www.sourceforge.net/projects/tinyxml
+Original code (2.0 and earlier )copyright (c) 2000-2002 Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied 
 warranty. In no event will the authors be held liable for any 
@@ -117,7 +118,45 @@ bool TiXmlString::isblank () const
 }
 
 /// append a const char * to an existing TiXmlString
-void TiXmlString::append (const char * suffix)
+void TiXmlString::append( const char* str, int len )
+{
+   char * new_string;
+   unsigned new_alloc, new_size;
+
+   new_size = length () + len + 1;
+   // check if we need to expand
+   if (new_size > allocated)
+   {
+      // compute new size
+      new_alloc = assign_new_size (new_size);
+
+      // allocate new buffer
+      new_string = new char [new_alloc];        
+      new_string [0] = 0;
+
+      // copy the previous allocated buffer into this one
+      if (allocated && cstring)
+         strcpy (new_string, cstring);
+
+      // append the suffix. It does exist, otherwize we wouldn't be expanding 
+      strncat (new_string, str, len);
+
+      // return previsously allocated buffer if any
+      if (allocated && cstring)
+         delete [] cstring;
+
+      // update member variables
+      cstring = new_string;
+      allocated = new_alloc;
+   }
+   else
+      // we know we can safely append the new string
+      strncat (cstring, str, len);
+}
+
+
+/// append a const char * to an existing TiXmlString
+void TiXmlString::append( const char * suffix )
 {
    char * new_string;
    unsigned new_alloc, new_size;
@@ -186,16 +225,17 @@ void TiXmlOutStream::write (const char * out, int length)
 // ========== TiXmlInStream member functions ==========
 
 /// TiXmlInStream constructor
-TiXmlInStreamOwn::TiXmlInStreamOwn (const char * instring) : TiXmlInStream ()
-{
-   cstring = NULL;
-   consumer = NULL;
-   valid = false;
-   if (instring && strlen (instring))
-   {
-      cstring = new char [strlen (instring) + 1];
-      strcpy (cstring, instring);
-      valid = true;
-      consumer = cstring;
-   }
-}
+//TiXmlInStreamOwn::TiXmlInStreamOwn (const char * instring) : TiXmlInStream ()
+//{
+//   cstring = NULL;
+//   consumer = NULL;
+//   valid = false;
+//   if (instring && strlen (instring))
+//   {
+//      cstring = new char [strlen (instring) + 1];
+//      strcpy (cstring, instring);
+//      valid = true;
+//      consumer = cstring;
+//   }
+//}
+//

@@ -1,4 +1,4 @@
-# Microsoft Developer Studio Project File - Name="tinyxml" 
+# Microsoft Developer Studio Project File - Name="tinyxml" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
@@ -23,7 +23,9 @@ CFG=tinyxml - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-CPP=xicl6.exe
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "tinyxml - Win32 Release"
@@ -45,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 
@@ -69,7 +71,7 @@ LINK32=xilink6.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 
@@ -89,6 +91,14 @@ SOURCE=.\readme.txt
 # End Source File
 # Begin Source File
 
+SOURCE=.\tinystr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\tinystr.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\tinyxml.cpp
 # End Source File
 # Begin Source File
@@ -102,14 +112,6 @@ SOURCE=.\tinyxmlerror.cpp
 # Begin Source File
 
 SOURCE=.\tinyxmlparser.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\tinystr.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\tinystr.h
 # End Source File
 # Begin Source File
 

@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2000-2002 Lee Thomason (www.grinninglizard.com)
+www.sourceforge.net/projects/tinyxml
+Original code (2.0 and earlier )copyright (c) 2000-2002 Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied 
 warranty. In no event will the authors be held liable for any 
@@ -53,7 +54,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	return p;
 }
 
-/*static*/ bool TiXmlBase::StreamWhiteSpace( TiXmlInStream * in, TiXmlString * tag )
+/*static*/ bool TiXmlBase::StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	for( ;; )
 	{
@@ -66,7 +67,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	}
 }
 
-/*static*/ bool TiXmlBase::StreamTo( TiXmlInStream * in, int character, TiXmlString * tag )
+/*static*/ bool TiXmlBase::StreamTo( TIXML_ISTREAM * in, int character, TIXML_STRING * tag )
 {
 	while ( in->good() )
 	{
@@ -80,7 +81,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	return false;
 }
 
-const char* TiXmlBase::ReadName( const char* p, TiXmlString * name )
+const char* TiXmlBase::ReadName( const char* p, TIXML_STRING * name )
 {
 	*name = "";
 	assert( p );
@@ -109,7 +110,7 @@ const char* TiXmlBase::ReadName( const char* p, TiXmlString * name )
 const char* TiXmlBase::GetEntity( const char* p, char* value )
 {
 	// Presume an entity, and pull it out.
-   TiXmlString ent;
+   TIXML_STRING ent;
 	int i;
 
 	// Ignore the &#x entities.
@@ -182,7 +183,7 @@ bool TiXmlBase::StringEqual( const char* p,
 }
 
 const char* TiXmlBase::ReadText(	const char* p, 
-									TiXmlString * text, 
+									TIXML_STRING * text, 
 									bool trimWhiteSpace, 
 									const char* endTag, 
 									bool caseInsensitive )
@@ -238,7 +239,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 	return p + strlen( endTag );
 }
 
-void TiXmlDocument::StreamIn( TiXmlInStream * in, TiXmlString * tag )
+void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	// The basic issue with a document is that we don't know what we're
 	// streaming. Read something presumed to be a tag (and hope), then
@@ -401,7 +402,7 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 	return returnNode;
 }
 
-void TiXmlElement::StreamIn (TiXmlInStream * in, TiXmlString * tag)
+void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 {
 	// We're called with some amount of pre-parsing. That is, some of "this"
 	// element is in "tag". Go ahead and stream to the closing ">"
@@ -525,7 +526,7 @@ const char* TiXmlElement::Parse( const char* p )
 		return false;
 	}
 
-   TiXmlString endTag ("</");
+   TIXML_STRING endTag ("</");
 	endTag += value;
 	endTag += ">";
 
@@ -658,7 +659,7 @@ const char* TiXmlElement::ReadValue( const char* p )
 	return p;
 }
 
-void TiXmlUnknown::StreamIn( TiXmlInStream * in, TiXmlString * tag )
+void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
 	{
@@ -700,7 +701,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 	return p;
 }
 
-void TiXmlComment::StreamIn( TiXmlInStream * in, TiXmlString * tag )
+void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
 	{
@@ -795,7 +796,7 @@ const char* TiXmlAttribute::Parse( const char* p )
 	return p;
 }
 
-void TiXmlText::StreamIn( TiXmlInStream * in, TiXmlString * tag )
+void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
 	{
@@ -823,7 +824,7 @@ const char* TiXmlText::Parse( const char* p )
 	return 0;
 }
 
-void TiXmlDeclaration::StreamIn( TiXmlInStream * in, TiXmlString * tag )
+void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
 	{
@@ -900,6 +901,9 @@ const char* TiXmlDeclaration::Parse( const char* p )
 
 bool TiXmlText::Blank() const
 {
-   return value . isblank ();
+	for ( unsigned i=0; i<value.length(); i++ )
+		if ( !isspace( value[i] ) )
+			return false;
+	return true;
 }
 
