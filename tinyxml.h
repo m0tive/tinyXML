@@ -49,9 +49,15 @@ distribution.
 #define TIXML_LOG printf
 #endif
 
+// Uncomment the following definition for Apple's Project Builder 
+// #define TIXML_NEED_STREAM
 
 #ifdef TIXML_USE_STL
 	#include <string>
+    #ifdef TIXML_NEED_STREAM
+        #include <istream>
+        #include <ostream>
+    #endif
 	#define TIXML_STRING	std::string
 	#define TIXML_ISTREAM	std::istream
 	#define TIXML_OSTREAM	std::ostream

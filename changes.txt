@@ -116,3 +116,6 @@ Changes in version 2.1.5 (in progress)
 - Bug fix by kylotan : infinite loop on some input (tinyxmlparser.cpp rev 1.27)
 - Contributed by Ivica Aracic (bytelord) : 1 new VC++ project to compile versions as static libraries (tinyxml_lib.dsp), 
   and an example usage in xmltest.dsp
+  (Patch request ID 678605)
+- A suggestion by Ronald Fenner Jr (dormlock) to add #include <istream> and <ostream> for Apple's Project Builder 
+  (Patch request ID 697642)
