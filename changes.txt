@@ -145,5 +145,8 @@ Changes in version 2.1.5
 - Fixed bug where entities with one character would confuse parser. (Thanks Roman)
 
 2.2.1
+- Additional testing (no more bugs found to be fixed in this release)
+- Significant performance improvement to the cursor code.
+
 
 
