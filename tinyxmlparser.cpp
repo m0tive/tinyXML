@@ -196,13 +196,13 @@ bool TiXmlBase::StringEqual( const char* p,
 
 const char* TiXmlBase::ReadText(	const char* p, 
 									string* text, 
-									bool ignoreWhiteSpace, 
+									bool trimWhiteSpace, 
 									const char* endTag, 
 									bool caseInsensitive )
 {
 	*text = "";
 
-	if (    !ignoreWhiteSpace		// certain tags always keep whitespace
+	if (    !trimWhiteSpace			// certain tags always keep whitespace
 		 || !condenseWhiteSpace )	// if true, whitespace is always kept
 	{
 		// Keep all the white space.
@@ -753,8 +753,8 @@ const char* TiXmlComment::Parse( const char* p )
 		document->SetError( TIXML_ERROR_PARSING_COMMENT );
 		return 0;
 	}
-	p += strlen( startTag );;
-	p = ReadText( p, &value, true, endTag, false );
+	p += strlen( startTag );
+	p = ReadText( p, &value, false, endTag, false );
 	return p;
 }
 

@@ -38,19 +38,21 @@ int main()
 	//
 	const char* demoStart = 
 		"<?xml version=\"1.0\"  standalone='no' >\n"
-		"<!-- Our to do list \n data -->"
+		"<!-- Our to do list data -->"
 		"<ToDo>\n"
-		"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
-		"<Item priority=\"2\" distance='none'> Do bills   </Item>"
-		"<Item priority=\"2\" distance='far &amp; back'> Look for Evil Dinosaurs! </Item>"
+			"<!-- Do I need a secure PDA? -->\n"
+			"<Item priority=\"1\" distance='close'> Go to the <bold>Toy store!</bold></Item>"
+			"<Item priority=\"2\" distance='none'> Do bills   </Item>"
+			"<Item priority=\"2\" distance='far &amp; back'> Look for Evil Dinosaurs! </Item>"
 		"</ToDo>";
 
 	/*	What the todo list should look like after processing.
 		In stream (no formatting) representation. */
 	const char* demoEnd = 
 		"<?xml version=\"1.0\" standalone=\"no\" ?>"
-		"<!--Our to do list data-->"
+		"<!-- Our to do list data -->"
 		"<ToDo>"
+			"<!-- Do I need a secure PDA? -->"
 		    "<Item priority=\"2\" distance=\"close\">Go to the"
 		        "<bold>Toy store!"
 		        "</bold>"
@@ -98,7 +100,7 @@ int main()
 	TiXmlElement* todoElement = 0;
 	TiXmlElement* itemElement = 0;
 
-	//exit(0);
+
 	// --------------------------------------------------------
 	// An example of changing existing attributes, and removing
 	// an element from the document.
@@ -113,7 +115,7 @@ int main()
 
 	// Going to the toy store is now our second priority...
 	// So set the "priority" attribute of the first item in the list.
-	node = todoElement->FirstChild();
+	node = todoElement->FirstChildElement();	// This skips the "PDA" comment.
 	assert( node );
 	itemElement = node->ToElement();
 	assert( itemElement  );
@@ -200,7 +202,9 @@ int main()
 	XmlTest( "Root element exists.", true, ( node != 0 && node->ToElement() ) );	
 	XmlTest( "Root element value is 'ToDo'.", string( "ToDo" ), node->Value() );
 	node = node->FirstChild();
-	XmlTest( "First child exists.", true, ( node != 0 && node->ToElement() ) );
+	XmlTest( "First child exists & is a comment.", true, ( node != 0 && node->ToComment() ) );
+	node = node->NextSibling();
+	XmlTest( "Sibling element exists & is an element.", true, ( node != 0 && node->ToElement() ) );
 	XmlTest( "Value is 'Item'.", string( "Item" ), node->Value() );
 	node = node->FirstChild();
 	XmlTest( "First child exists.", true, ( node != 0 && node->ToText() ) );
