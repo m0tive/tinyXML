@@ -83,7 +83,12 @@ struct TiXmlCursor
 	const char* last;	// After parsing, this is a pointer to dangling memory! It should
 						// never be used.
 
-	void Stamp( const char* now, const TiXmlCursor* prev, int tabsize );
+	void Stamp( const char* now, const TiXmlCursor* prev, int tabsize )
+	{
+		if ( tabsize > 0 )
+			StampImpl( now, prev, tabsize );
+	}
+	void StampImpl( const char* now, const TiXmlCursor* prev, int tabsize );
 };
 
 // Only used by Attribute::Query functions
@@ -136,7 +141,7 @@ public:
 	/**	The world does not agree on whether white space should be kept or
 		not. In order to make everyone happy, these global, static functions
 		are provided to set whether or not TinyXml will condense all white space
-		into a single space or not. The default is to condense. Note changing these
+		into a single space or not. The default is to condense. Note changing this
 		values is not thread safe.
 	*/
 	static void SetCondenseWhiteSpace( bool condense )		{ condenseWhiteSpace = condense; }
@@ -150,12 +155,15 @@ public:
 		a row and column value.
 
 		Generally, the row and column value will be set when the TiXmlDocument::Load(),
-		TiXmlDocument::LoadFile(), or any Parse() is called. It will NOT be set
+		TiXmlDocument::LoadFile(), or any TiXmlNode::Parse() is called. It will NOT be set
 		when the DOM was created from operator>>.
 
 		The values reflect the initial load. Once the DOM is modified programmatically
 		(by adding or changing nodes and attributes) the new values will NOT update to
 		reflect changes in the document.
+
+		There is a minor performance cost to computing the row and column. Computation
+		can be disabled if TiXmlDocument::SetTabSize() is called with 0 as the value.
 
 		@sa TiXmlDocument::SetTabSize()
 	*/
@@ -272,7 +280,7 @@ private:
 
 
 /** The parent class for everything in the Document Object Model.
-	(Except for attributes, which are contained in elements.)
+	(Except for attributes).
 	Nodes have siblings, a parent, and children. A node can be
 	in a document, or stand on its own. The type of a TiXmlNode
 	can be queried, and it can be cast to its more defined type.
@@ -303,7 +311,8 @@ public:
 		    the text needs to define an element or junk will result. This is
 		    true of all input streams, but it's worth keeping in mind.
 
-		    A TiXmlDocument will read nodes until it reads a root element.
+		    A TiXmlDocument will read nodes until it reads a root element, and
+			all the children of that root element.
 	    */	
 	    friend std::ostream & operator<< (std::ostream& out, const TiXmlNode& base);
 
@@ -482,7 +491,10 @@ public:
 	TiXmlElement* FirstChildElement( const std::string& _value ) const	{	return FirstChildElement (_value.c_str ());	}	///< STL std::string form.
 	#endif
 
-	/// Query the type (as an enumerated value, above) of this node.
+	/** Query the type (as an enumerated value, above) of this node.
+		The possible types are: DOCUMENT, ELEMENT, COMMENT,
+								UNKNOWN, TEXT, and DECLARATION.
+	*/
 	virtual int Type() const	{ return type; }
 
 	/** Return a pointer to the Document this node lives in.
@@ -867,7 +879,7 @@ protected :
 	/*	[internal use]
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
-		*/
+	*/
 	virtual const char* Parse( const char* p, const TiXmlCursor* position );
 	// [internal use]
 	#ifdef TIXML_USE_STL
@@ -1036,8 +1048,7 @@ public:
 	/** If an error occurs, Error will be set to true. Also,
 		- The ErrorId() will contain the integer identifier of the error (not generally useful)
 		- The ErrorDesc() method will return the name of the error. (very useful)
-		- The ErrorRow() and ErrorCol() will return the location of the error if
-		  row and column tracking is on.
+		- The ErrorRow() and ErrorCol() will return the location of the error (if known)
 	*/	
 	bool Error() const						{ return error; }
 
@@ -1061,11 +1072,13 @@ public:
 
 	/** By calling this method, with a tab size
 		greater than 0, the row and column of each node and attribute is stored
-		with the data. Very useful for tracking the DOM back in the source file.
+		when the file is loaded. Very useful for tracking the DOM back in to
+		the source file.
 
 		The tab size is required for calculating the location of nodes. If not
-		set, the default of 4 is used. You can set to 0 to disable row/column computation.
-		The tabsize is set per document.
+		set, the default of 4 is used. The tabsize is set per document. Setting
+		the tabsize to 0 disables row/column tracking (which has a minor performance
+		cost.)
 
 		Note that row and column tracking is not supported when using operator>>.
 

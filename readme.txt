@@ -9,7 +9,7 @@ integrating into other programs.
 <h2> What it does. </h2>
 	
 In brief, TinyXml parses an XML document, and builds from that a 
-Document Object Model that can be read, modified, and saved.
+Document Object Model (DOM) that can be read, modified, and saved.
 
 XML stands for "eXtensible Markup Language." It allows you to create 
 your own document markups. Where HTML does a very good job of marking 
@@ -20,7 +20,7 @@ All those random file formats created to store application data can
 all be replaced with XML. One parser for everything.
 
 There are different ways to access and interact with XML data.
-TinyXml uses a Document Object Model, meaning the XML data is parsed
+TinyXml uses a Document Object Model (DOM), meaning the XML data is parsed
 into a tree objects that can be browsed and manipulated, and then 
 written back to disk. You can also construct an XML document from
 scratch with C++ objects and write this to disk (or another output
@@ -41,8 +41,9 @@ compiled with or without STL support.
 <h2> What it doesn't do. </h2>
 
 It doesnt parse or use DTDs (Document Type Definitions) or XSLs
-(eXtensible Stylesheet Language.) It is only tested in English - 
-although people have reported success in passing through Latin-1 
+(eXtensible Stylesheet Language.) It is only tested on Latin-1 
+characters (which is the Western European character set). 
+Although people have reported success in passing through Latin-1 
 and UTF-8 data. There are other parsers out there (check out
 www.sourceforge.org, search for XML) that are much more fully
 featured. But they are also much bigger, take longer to set up in
@@ -147,19 +148,21 @@ C++ style input:
 	Reads XML from a stream, making it useful for network transmission. The tricky
 	part is knowing when the XML document is complete, since there will almost
 	certainly be other data in the stream. TinyXml will assume the XML data is
-	complete after it reads the root element. Also not that operator>> is somewhat
-	slower than Parse, due to both implementation of the STL and limitations of
-	TinyXml.
+	complete after it reads the root element. Put another way, documents that
+	are ill-constructed with more than one root element will not read correctly.
+	Also note that operator>> is somewhat slower than Parse, due to both 
+	implementation of the STL and limitations of TinyXml.
 
 <h3> White space </h3>
 The world simply does not agree on whether white space should be kept, or condensed.
 For example, pretend the '_' is a space, and look at "Hello____world". HTML, and 
 at least some XML parsers, will interpret this as "Hello_world". They condense white
 space. Some XML parsers do not, and will leave it as "Hello____world". (Remember
-to keep pretending the _ is a space.)
+to keep pretending the _ is a space.) Others suggest that __Hello___world__ should become
+Hello___world.
 
-It's an issue that hasn't been resolved to my satisfaction. TinyXml supports both
-motifs. Call TiXmlBase::SetCondenseWhiteSpace( bool ) to set the desired behavior.
+It's an issue that hasn't been resolved to my satisfaction. TinyXml supports the
+first 2 approaches. Call TiXmlBase::SetCondenseWhiteSpace( bool ) to set the desired behavior.
 The default is to condense white space.
 
 If you change the default, you should call TiXmlBase::SetCondenseWhiteSpace( bool )
@@ -257,16 +260,6 @@ compliant C++ system. You do not need to enable exceptions or
 RTTI for TinyXml.
 
 
-<h2> Where it may go.  </h2>
-
-At this point, I'm focusing on tightening up remaining issues.
-Bug fixes (though comfortably rare) and minor interface 
-corrections. 
-
-There are some "it would be nice if..." items. I'll keep those
-posted as tasks on SourceForge. (www.sourceforge.net/projects/tinyxml)
-
-
 <h2> How TinyXml works.  </h2>
 
 An example is probably the best way to go. Take:
@@ -311,22 +304,21 @@ relate to the DOM.
 <ToDo>
 @endverbatim
 
-	The ToDo tag defines a TiXmlElement object. This one does not have 
-	any attributes, but will contain 2 other elements, both of which 
-	are items.
+	The "ToDo" tag defines a TiXmlElement object. This one does not have 
+	any attributes, but does contain 2 other elements.
 
 @verbatim
 <Item priority="1"> 
 @endverbatim
 
 	Creates another TiXmlElement which is a child of the "ToDo" element. 
-	This element has 1 attribute, with the name priority and the value 
-	1.
+	This element has 1 attribute, with the name "priority" and the value 
+	"1".
 
 Go to the 
 
 	A TiXmlText. This is a leaf node and cannot contain other nodes. 
-	It is a child of the Item" Element.
+	It is a child of the "Item" TiXmlElement.
 
 @verbatim
 <bold>
@@ -405,6 +397,6 @@ Please post questions, comments, file bugs, or contact us at:
 
 www.sourceforge.net/projects/tinyxml
 
-Lee Thomason
+Lee Thomason,
 Yves Berquin
 */

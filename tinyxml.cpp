@@ -26,7 +26,7 @@ distribution.
 #include "tinyxml.h"
 
 
-void TiXmlCursor::Stamp( const char* now, const TiXmlCursor* prevPosition, int tabsize )
+void TiXmlCursor::StampImpl( const char* now, const TiXmlCursor* prevPosition, int tabsize )
 {
 	// Do nothing if the tabsize is 0.
 	if ( tabsize < 1 )
@@ -48,6 +48,18 @@ void TiXmlCursor::Stamp( const char* now, const TiXmlCursor* prevPosition, int t
 		row = prev.row;
 		col = prev.col;
 
+		// A little optimization:
+		/*
+		assert( '\r' < ' ' );
+		assert( '\n' < ' ' );
+		assert( '\t' < ' ' );
+		while ( p < now && *p >= ' ' )
+		{
+			++p;
+			++col;
+		}
+		*/
+
 		while ( p < now )
 		{
 			// Code contributed by Fletcher Dunn: (modified by lee)
@@ -55,7 +67,7 @@ void TiXmlCursor::Stamp( const char* now, const TiXmlCursor* prevPosition, int t
 				case 0:
 					// We *should* never get here, but in case we do, don't
 					// advance past the terminating null character, ever
-					break;
+					return;
 
 				case '\r':
 					// bump down to the next line

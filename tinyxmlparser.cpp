@@ -421,7 +421,6 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 	{
 		// Set the parent, so it can report errors
 		returnNode->parent = this;
-		//p = returnNode->Parse( p );
 	}
 	else
 	{
@@ -611,7 +610,7 @@ const char* TiXmlElement::Parse( const char* p, const TiXmlCursor* prevPosition 
 		}
 		else
 		{
-			// Try to read an element:
+			// Try to read an attribute:
 			TiXmlAttribute* attrib = new TiXmlAttribute();
 			if ( !attrib )
 			{
