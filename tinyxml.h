@@ -28,7 +28,10 @@ distribution.
 #pragma warning( disable : 4530 )
 #pragma warning( disable : 4786 )
 
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "tinystr.h"
