@@ -122,7 +122,7 @@ class TiXmlBase
 	friend class TiXmlDocument;
 
 public:
-	TiXmlBase()								{}
+	TiXmlBase()								{userData = 0;}
 	virtual ~TiXmlBase()					{}
 
 	/**	All TinyXml classes can print themselves to a filestream.
@@ -163,6 +163,10 @@ public:
 	*/
 	int Row() const			{ return location.row + 1; }
 	int Column() const		{ return location.col + 1; }	///< See Row()
+
+	void  SetUserData( void* user )			{ userData = user; }
+	void* GetUserData()						{ return userData; }
+
 
 protected:
 	// See STL_STRING_BUG
@@ -254,6 +258,9 @@ protected:
 	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
 
 	TiXmlCursor location;
+
+    /// Field containing a generic user pointer
+	void*			userData;
 
 private:
 	struct Entity
@@ -511,9 +518,6 @@ public:
 
 	virtual TiXmlNode* Clone() const = 0;
 
-	void  SetUserData( void* user )			{ userData = user; }
-	void* GetUserData()						{ return userData; }
-
 protected:
 	TiXmlNode( NodeType type );
 
@@ -540,7 +544,6 @@ protected:
 
 	TiXmlNode*		prev;
 	TiXmlNode*		next;
-	void*			userData;
 };
 
 
@@ -557,7 +560,7 @@ class TiXmlAttribute : public TiXmlBase
 
 public:
 	/// Construct an empty attribute.
-	TiXmlAttribute()
+	TiXmlAttribute() : TiXmlBase()
 	{
 		document = 0;
 		prev = next = 0;

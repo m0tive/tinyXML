@@ -124,7 +124,7 @@ TiXmlBase::StringToBuffer::~StringToBuffer()
 // End strange bug fix. -->
 
 
-TiXmlNode::TiXmlNode( NodeType _type )
+TiXmlNode::TiXmlNode( NodeType _type ) : TiXmlBase()
 {
 	parent = 0;
 	type = _type;
@@ -132,7 +132,6 @@ TiXmlNode::TiXmlNode( NodeType _type )
 	lastChild = 0;
 	prev = 0;
 	next = 0;
-	userData = 0;
 }
 
 
