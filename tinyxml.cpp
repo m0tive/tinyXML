@@ -980,6 +980,7 @@ TiXmlAttribute*	TiXmlAttributeSet::Find( const char * name ) const
 }
 
 
+#ifdef TIXML_USE_STL	
 TIXML_ISTREAM & operator >> (TIXML_ISTREAM & in, TiXmlNode & base)
 {
 	TIXML_STRING tag;
@@ -989,6 +990,7 @@ TIXML_ISTREAM & operator >> (TIXML_ISTREAM & in, TiXmlNode & base)
 	base.Parse( tag.c_str() );
 	return in;
 }
+#endif
 
 
 TIXML_OSTREAM & operator<< (TIXML_OSTREAM & out, const TiXmlNode & base)

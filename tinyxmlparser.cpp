@@ -54,6 +54,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	return p;
 }
 
+#ifdef TIXML_USE_STL
 /*static*/ bool TiXmlBase::StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	for( ;; )
@@ -80,6 +81,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p )
 	}
 	return false;
 }
+#endif
 
 const char* TiXmlBase::ReadName( const char* p, TIXML_STRING * name )
 {
@@ -239,6 +241,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 	return p + strlen( endTag );
 }
 
+#ifdef TIXML_USE_STL
 void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	// The basic issue with a document is that we don't know what we're
@@ -294,6 +297,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 	// We should have returned sooner. 
 	SetError( TIXML_ERROR );
 }
+#endif
 
 const char* TiXmlDocument::Parse( const char* p )
 {
@@ -402,6 +406,7 @@ TiXmlNode* TiXmlNode::Identify( const char* p )
 	return returnNode;
 }
 
+#ifdef TIXML_USE_STL
 void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 {
 	// We're called with some amount of pre-parsing. That is, some of "this"
@@ -504,6 +509,8 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 		}
 	}
 }
+#endif
+
 
 const char* TiXmlElement::Parse( const char* p )
 {
@@ -659,6 +666,8 @@ const char* TiXmlElement::ReadValue( const char* p )
 	return p;
 }
 
+
+#ifdef TIXML_USE_STL
 void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
@@ -673,6 +682,8 @@ void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 		}
 	}
 }
+#endif
+
 
 const char* TiXmlUnknown::Parse( const char* p )
 {
@@ -701,6 +712,7 @@ const char* TiXmlUnknown::Parse( const char* p )
 	return p;
 }
 
+#ifdef TIXML_USE_STL
 void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
@@ -717,6 +729,8 @@ void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 		}
 	}
 }
+#endif
+
 
 const char* TiXmlComment::Parse( const char* p )
 {
@@ -796,6 +810,7 @@ const char* TiXmlAttribute::Parse( const char* p )
 	return p;
 }
 
+#ifdef TIXML_USE_STL
 void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
@@ -808,6 +823,7 @@ void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 		in->get();
 	}
 }
+#endif
 
 const char* TiXmlText::Parse( const char* p )
 {
@@ -824,6 +840,7 @@ const char* TiXmlText::Parse( const char* p )
 	return 0;
 }
 
+#ifdef TIXML_USE_STL
 void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 {
 	while ( in->good() )
@@ -838,6 +855,7 @@ void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 		}
 	}
 }
+#endif
 
 const char* TiXmlDeclaration::Parse( const char* p )
 {

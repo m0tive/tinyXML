@@ -236,19 +236,19 @@ public :
    It is virtualized so as to be able to have a custom implementation and one that
    consumes a std::istream, depending on the TIXML_USE_STL status
 */
-class TiXmlInStream
-{
-public :
-   TiXmlInStream () {} 
-   /// TiXmlInStream destructor
-   virtual ~ TiXmlInStream () {}
-   /// Check if there are still some chars to consume
-   virtual bool good () const = 0;
-   /// Consume one char
-   virtual char get () = 0;
-   /// Check for the next char but don't consume it
-   virtual char peek () = 0;
-};
+//class TiXmlInStream
+//{
+//public :
+//   TiXmlInStream () {} 
+//   /// TiXmlInStream destructor
+//   virtual ~ TiXmlInStream () {}
+//   /// Check if there are still some chars to consume
+//   virtual bool good () const = 0;
+//   /// Consume one char
+//   virtual char get () = 0;
+//   /// Check for the next char but don't consume it
+//   virtual char peek () = 0;
+//};
 
 /**
    TiXmlInStreamOwn is the custom implementation of an input stream

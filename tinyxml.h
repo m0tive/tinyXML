@@ -56,7 +56,7 @@ distribution.
 #else
 	#include "tinystr.h"
 	#define TIXML_STRING	TiXmlString
-	#define TIXML_ISTREAM	TiXmlInStream
+//	#define TIXML_ISTREAM	TiXmlInStream
 	#define TIXML_OSTREAM	TiXmlOutStream
 #endif
 
@@ -102,18 +102,18 @@ public:
 	virtual ~TiXmlBase()					{}
 
 	/**	All TinyXml classes can print themselves to a filestream.
-			This is a formatted print, and will insert tabs and newlines.
-			
-			(For an unformatted stream, use the << operator.)
-		*/
+		This is a formatted print, and will insert tabs and newlines.
+		
+		(For an unformatted stream, use the << operator.)
+	*/
 	virtual void Print( FILE* cfile, int depth ) const = 0;
 
 	/**	The world does not agree on whether white space should be kept or
-			not. In order to make everyone happy, these global, static functions
-			are provided to set whether or not TinyXml will condense all white space
-			into a single space or not. The default is to condense. Note changing these
-			values is not thread safe.
-		*/
+		not. In order to make everyone happy, these global, static functions
+		are provided to set whether or not TinyXml will condense all white space
+		into a single space or not. The default is to condense. Note changing these
+		values is not thread safe.
+	*/
 	static void SetCondenseWhiteSpace( bool condense )		{ condenseWhiteSpace = condense; }
 
 	/// Return the current white space setting.
@@ -122,21 +122,24 @@ public:
 protected:
 
 	static const char*	SkipWhiteSpace( const char* );
-	static bool			StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	inline static bool	IsWhiteSpace( int c )		{ return ( isspace( c ) || c == '\n' || c == '\r' ); }
 
 	virtual void StreamOut (TIXML_OSTREAM *) const = 0;
 
+	#ifdef TIXML_USE_STL
+	static bool	StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	static bool StreamTo( TIXML_ISTREAM * in, int character, TIXML_STRING * tag );
+	#endif
+
 	/*	Reads an XML name into the string provided. Returns
-			a pointer just past the last character of the name,
-			or 0 if the function has an error.
-		*/
+		a pointer just past the last character of the name,
+		or 0 if the function has an error.
+	*/
 	static const char* ReadName( const char* p, TIXML_STRING* name );
 
 	/*	Reads text. Returns a pointer past the given end tag.
-			Wickedly complex options, but it keeps the (sensitive) code in one place.
-		*/
+		Wickedly complex options, but it keeps the (sensitive) code in one place.
+	*/
 	static const char* ReadText(	const char* in,				// where to start
 									TIXML_STRING* text,			// the string read
 									bool ignoreWhiteSpace,		// whether to keep the white space
@@ -225,11 +228,12 @@ class TiXmlNode : public TiXmlBase
 	friend class TiXmlElement;
 
 public:
+	#ifdef TIXML_USE_STL	
 
 	/** An input stream operator, for every class. Tolerant of newlines and
 		formatting, but doesn't expect them.
 	*/
-	friend TIXML_ISTREAM& operator >> (TIXML_ISTREAM& in, TiXmlNode& base);
+	friend std::istream& operator >> (std::istream& in, TiXmlNode& base);
 
 	/** An output stream operator, for every class. Note that this outputs
 		without any newlines or formatting, as opposed to Print(), which
@@ -246,12 +250,16 @@ public:
 
 		A TiXmlDocument will read nodes until it reads a root element.
 	*/	
-	friend TIXML_OSTREAM & operator<< (TIXML_OSTREAM& out, const TiXmlNode& base);
+	friend std::ostream & operator<< (std::ostream& out, const TiXmlNode& base);
 
+	#else
+	// Used internally, not part of the public API.
+	friend TIXML_OSTREAM& operator<< (TIXML_OSTREAM& out, const TiXmlNode& base);
+	#endif
 
 	/** The types of XML nodes supported by TinyXml. (All the
-				unsupported types are picked up by UNKNOWN.)
-		*/
+			unsupported types are picked up by UNKNOWN.)
+	*/
 	enum NodeType
 	{
 		DOCUMENT,
@@ -266,28 +274,28 @@ public:
 	virtual ~TiXmlNode();
 
 	/** The meaning of 'value' changes for the specific type of
-			TiXmlNode.
-			@verbatim
-			Document:	filename of the xml file
-			Element:	name of the element
-			Comment:	the comment text
-			Unknown:	the tag contents
-			Text:		the text string
-			@endverbatim
+		TiXmlNode.
+		@verbatim
+		Document:	filename of the xml file
+		Element:	name of the element
+		Comment:	the comment text
+		Unknown:	the tag contents
+		Text:		the text string
+		@endverbatim
 
-			The subclasses will wrap this function.
-		*/
+		The subclasses will wrap this function.
+	*/
 	const char * Value () const { return value.c_str (); }
 
 	/** Changes the value of the node. Defined as:
-			@verbatim
-			Document:	filename of the xml file
-			Element:	name of the element
-			Comment:	the comment text
-			Unknown:	the tag contents
-			Text:		the text string
-			@endverbatim
-		*/
+		@verbatim
+		Document:	filename of the xml file
+		Element:	name of the element
+		Comment:	the comment text
+		Unknown:	the tag contents
+		Text:		the text string
+		@endverbatim
+	*/
 	void SetValue (const char * _value) { value = _value;}
 	/// Delete all the children of this node. Does not affect 'this'.
 	void Clear();
@@ -358,15 +366,15 @@ public:
 	TiXmlNode* NextSibling( const char * ) const;
 
 	/** Convenience function to get through elements.
-			Calls NextSibling and ToElement. Will skip all non-Element
-			nodes. Returns 0 if there is not another element.
-		*/
+		Calls NextSibling and ToElement. Will skip all non-Element
+		nodes. Returns 0 if there is not another element.
+	*/
 	TiXmlElement* NextSiblingElement() const;
 
 	/** Convenience function to get through elements.
-			Calls NextSibling and ToElement. Will skip all non-Element
-			nodes. Returns 0 if there is not another element.
-		*/
+		Calls NextSibling and ToElement. Will skip all non-Element
+		nodes. Returns 0 if there is not another element.
+	*/
 	TiXmlElement* NextSiblingElement( const char * ) const;
 
 	/// Convenience function to get through elements.
@@ -433,8 +441,10 @@ public:
 protected:
 	TiXmlNode( NodeType type );
 
+	#ifdef TIXML_USE_STL
 	// The real work of the input operator.
 	virtual void StreamIn( TIXML_ISTREAM* in, TIXML_STRING* tag ) = 0;
+	#endif
 
 	// The node is passed in by ownership. This object will delete it.
 	TiXmlNode* LinkEndChild( TiXmlNode* addThis );
@@ -579,27 +589,27 @@ public:
 	virtual ~TiXmlElement();
 
 	/** Given an attribute name, attribute returns the value
-			for the attribute of that name, or null if none exists.
-		*/
+		for the attribute of that name, or null if none exists.
+	*/
 	const char * Attribute( const char * name ) const;
 
 	/** Given an attribute name, attribute returns the value
-			for the attribute of that name, or null if none exists.
-		*/
+		for the attribute of that name, or null if none exists.
+	*/
 	const char * Attribute( const char * name, int & i ) const;
 
 	/** Sets an attribute of name to a given value. The attribute
-			will be created if it does not exist, or changed if it does.
-		*/
+		will be created if it does not exist, or changed if it does.
+	*/
 	void SetAttribute( const char * name, const char * value );
 
 	/** Sets an attribute of name to a given value. The attribute
-			will be created if it does not exist, or changed if it does.
-		*/
+		will be created if it does not exist, or changed if it does.
+	*/
 	void SetAttribute( const char * name, int value );
 
 	/** Deletes an attribute with the given name.
-		*/
+	*/
 	void RemoveAttribute( const char * name );
 	TiXmlAttribute* FirstAttribute() const	{ return attributeSet.First(); }		///< Access the first attribute in this element.
 	TiXmlAttribute* LastAttribute()	const 	{ return attributeSet.Last(); }		///< Access the last attribute in this element.
@@ -633,7 +643,9 @@ public:
 protected:
 
 	// Used to be public [internal use]
+	#ifdef TIXML_USE_STL
 	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	#endif
 	virtual void StreamOut( TIXML_OSTREAM * out ) const;
 
 	/*	[internal use]
@@ -668,7 +680,9 @@ public:
 	virtual void Print( FILE* cfile, int depth ) const;
 protected:
 	// used to be public
+	#ifdef TIXML_USE_STL
 	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	#endif
 	virtual void StreamOut( TIXML_OSTREAM * out ) const;
 	/*	[internal use]
 			Attribtue parsing starts: at the ! of the !--
@@ -708,7 +722,9 @@ protected :
 		*/
 	virtual const char* Parse( const char* p );
 	// [internal use]
+	#ifdef TIXML_USE_STL
 	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	#endif
 };
 
 
@@ -764,7 +780,9 @@ public:
 #endif
 protected:
 	// used to be public
+	#ifdef TIXML_USE_STL
 	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	#endif
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
 	//	[internal use]
 	//	Attribtue parsing starts: next char past '<'
@@ -796,7 +814,9 @@ public:
 	virtual void Print( FILE* cfile, int depth ) const;
 protected:
 	// used to be public
+	#ifdef TIXML_USE_STL
 	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	#endif
 	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
 	/*	[internal use]
 		Attribute parsing starts: First char of the text
@@ -881,7 +901,9 @@ protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
 	// [internal use]
 	virtual TiXmlNode* Clone() const;
+	#ifdef TIXML_USE_STL
 	virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+	#endif
 
 private:
 	bool error;
