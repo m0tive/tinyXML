@@ -168,6 +168,11 @@ TiXmlDocument				"demo.xml"
 		TiXmlText			"bills"
 @endverbatim
 
+<b> Documentation </b>
+
+The documentation is build with Doxygen, using the 'dox' 
+configuration file.
+
 <b>	License	</b>
 
 TinyXml is released under the zlib license:
