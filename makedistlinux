@@ -1,7 +1,6 @@
-rm -rf ./tinyxml_unix
-rm -rf ./docs
+echo "Windows makedistwin.bat must be run before the linux script."
 
-doxygen dox
+rm -rf ./tinyxml_unix
 
 mkdir tinyxml_unix
 mkdir tinyxml_unix/docs
@@ -18,3 +17,5 @@ cp test2.xml ./tinyxml_unix
 cp ./docs/*.* ./tinyxml_unix/docs
 
 tar -zcf tinyxml-unix.tar.gz tinyxml_unix
+zip -r -q tinyxml_win.zip tinyxml_win
+

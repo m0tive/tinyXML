@@ -21,22 +21,6 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-/** @page Contributors
-	Thanks very much to everyone who sends suggestions, bugs, ideas,
-	and encouragement.
-
-	Folks who have contributed code:
-
-	1.0.0, 1.0.1, and 1.0.2 by Lee Thomason (www.grinninglizard.com)
-
-	1.1 Ayende Rahien presented many ideas, changes, and code.
-		Integration and additional coding by Lee Thomason.
-
-	Extensive feedback about tinyxml:
-
-	Ville Nurmi
-*/
-
 
 #ifndef TINYXML_INCLUDED
 #define TINYXML_INCLUDED
@@ -466,6 +450,14 @@ class TiXmlText : public TiXmlNode
 	@verbatim
 		<?xml version="1.0" standalone="yes"?>
 	@endverbatim
+
+	TinyXml will happily read or write files without a declaration,
+	however. There are 3 possible attributes to the declaration: 
+	version, encoding, and standalone.
+
+	Note: In this version of the code, the attributes are
+	handled as special cases, not generic attributes, simply
+	because there can only be at most 3 and they are always the same.
 */
 class TiXmlDeclaration : public TiXmlNode
 {

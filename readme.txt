@@ -69,15 +69,17 @@ To Compile and Run xmltest:
 A Visual C++ .dsp file is provided. Simply compile and run. It will 
 write 4 xml files to disk. Hopefully the output matches the input! 
 It also briefly demonstrates walking the DOM by printing out the 
-top level element names.
+top level element names, and runs some other tests.
 
 A linux makefile is also provided. It is very generic and will
-probably run on other systems, but is only tested on linux.
+probably run on other systems, but is only tested on linux. Make
+sure to run 'make depend' before you make, so you don't pick
+up incorrect dependencies.
 
 
 To Use in an Application:
 
-Add tinyxml.cpp, tinyxml.h, and tinyxmlparser.cpp to your 
+Add tinyxml.cpp, tinyxml.h, tinyxmlerror, and tinyxmlparser.cpp to your 
 project or make file. That's it! It should compile on any reasonably
 compliant C++ system. You do not need to enable exceptions or
 RTTI for TinyXml.
@@ -157,7 +159,7 @@ Etc.
 Looking at the entire object tree, you end up with:
 @verbatim
 TiXmlDocument				"demo.xml"
-	TiXmlDeclaration		"?xml version="1.0" standalone=‘no’"
+	TiXmlDeclaration		"version='1.0'" "standalone=‘no’"
 	TiXmlComment			" Our to do list data"
 	TiXmlElement			"ToDo"
 		TiXmlElement		"Item"		Attribtutes: priority = 1
@@ -167,6 +169,19 @@ TiXmlDocument				"demo.xml"
 	TiXmlElement			"Item"		Attributes: priority=2
 		TiXmlText			"bills"
 @endverbatim
+
+<b> Contributors </b>
+
+Thanks very much to everyone who sends suggestions, bugs, ideas, and 
+encouragement. It all helps.
+
+Major contributors to the project:
+<ul>
+<li> Lee Thomason wrote the original code and maintains the project.</li>
+<li> Ayende Rahien presented code, ideas, and changes that became
+the 1.1.0 version of TinyXml.</li>
+<li> Ville Nurmi provided ideas, bugs, and feedback.</li>
+</ul>
 
 <b> Documentation </b>
 
@@ -203,11 +218,6 @@ XML, and there web pages contain huge amounts of information. I also
 recommend "XML Pocket Reference" by Robert Eckstein and published by 
 O’Reilly.
 
-<b> Special Thanks </b>
-
-Thanks to those using TinyXml and sending me bugs. I hope it is 
-helpful and I appreciate the feedback.
-
 <b> Contact Me: </b>
 
 I’d appreciates your suggestions, and would love to know if you 
@@ -215,5 +225,5 @@ use TinyXml. I hope you enjoy it and find it useful.
 
 Lee Thomason
 
-leethomason@users.sourceforge.net
+leethomason@mindspring.com
 */

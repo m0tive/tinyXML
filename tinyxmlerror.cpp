@@ -1,5 +1,11 @@
 #include "tinyxml.h"
 
+// The goal of the seperate error file is to make the first
+// step towards localization. tinyxml (currently) only supports
+// latin-1, but at least the error messages could now be translated.
+//
+// It also cleans up the code a bit.
+
 const char* TiXmlBase::errorString[ ERROR_STRING_COUNT ] =
 {
 	"No error",

@@ -99,13 +99,16 @@ int main()
 				printf( "    %s=%s\n", attribute->Name().c_str(), attribute->Value().c_str() );
 			}
 
-			// walk the document:
+			/*	This is another way to walk child nodes. Commented
+				out because it generates confusing output.
+
 			printf( "\nWalking the document:\n" );
 			TiXmlNode* child = 0;
 			while ( ( child = doc.IterateChildren( child ) ) != 0 )
 			{
 				printf( "  value: %s\n", child->Value().c_str() );
 			}
+			*/
 		}
 	}
 
