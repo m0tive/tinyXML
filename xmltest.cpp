@@ -492,6 +492,7 @@ int main()
 	//	2. Row, Col functionality
 	//	3. Correct output
 	// --------------------------------------------------------
+	printf ("\n** UTF-8 **\n");
 	{
 		TiXmlDocument doc( "utf8test.xml" );
 		doc.LoadFile();
