@@ -26,7 +26,7 @@ distribution.
 #include "tinyxml.h"
 
 
-void TiXmlPosition::Stamp( const char* now, const TiXmlPosition* prevPosition, int tabsize )
+void TiXmlPosition::StampImpl( const char* now, const TiXmlPosition* prevPosition, int tabsize )
 {
 	// Do nothing if the tabsize is 0.
 	if ( tabsize < 1 )
@@ -751,13 +751,13 @@ TiXmlNode* TiXmlElement::Clone() const
 
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	tabsize = 4;
+	tabsize = 0;
 	ClearError();
 }
 
 TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	tabsize = 4;
+	tabsize = 0;
 	value = documentName;
 	ClearError();
 }
@@ -1217,7 +1217,7 @@ TIXML_ISTREAM & operator >> (TIXML_ISTREAM & in, TiXmlNode & base)
 	tag.reserve( 8 * 1000 );
 	base.StreamIn( &in, &tag );
 
-	base.Parse( tag.c_str(), 0 );	// fixme: support location?
+	base.Parse( tag.c_str(), 0 );
 	return in;
 }
 #endif

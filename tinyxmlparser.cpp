@@ -314,7 +314,7 @@ void TiXmlDocument::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 
 #endif
 
-const char* TiXmlDocument::Parse( const char* p, TiXmlPosition* prevLocation )
+const char* TiXmlDocument::Parse( const char* p, const TiXmlPosition* prevLocation )
 {
 	ClearError();
 
@@ -537,7 +537,7 @@ void TiXmlElement::StreamIn (TIXML_ISTREAM * in, TIXML_STRING * tag)
 }
 #endif
 
-const char* TiXmlElement::Parse( const char* p, TiXmlPosition* prevPosition )
+const char* TiXmlElement::Parse( const char* p, const TiXmlPosition* prevPosition )
 {
 	p = SkipWhiteSpace( p );
 	TiXmlDocument* document = GetDocument();
@@ -646,7 +646,7 @@ const char* TiXmlElement::Parse( const char* p, TiXmlPosition* prevPosition )
 }
 
 
-const char* TiXmlElement::ReadValue( const char* p, TiXmlPosition* prevPosition )
+const char* TiXmlElement::ReadValue( const char* p, const TiXmlPosition* prevPosition )
 {
 	TiXmlDocument* document = GetDocument();
 
@@ -723,7 +723,7 @@ void TiXmlUnknown::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 #endif
 
 
-const char* TiXmlUnknown::Parse( const char* p, TiXmlPosition* prevLocation )
+const char* TiXmlUnknown::Parse( const char* p, const TiXmlPosition* prevLocation )
 {
 	TiXmlDocument* document = GetDocument();
 	p = SkipWhiteSpace( p );
@@ -772,7 +772,7 @@ void TiXmlComment::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 #endif
 
 
-const char* TiXmlComment::Parse( const char* p, TiXmlPosition* prevLocation )
+const char* TiXmlComment::Parse( const char* p, const TiXmlPosition* prevLocation )
 {
 	TiXmlDocument* document = GetDocument();
 	value = "";
@@ -794,7 +794,7 @@ const char* TiXmlComment::Parse( const char* p, TiXmlPosition* prevLocation )
 }
 
 
-const char* TiXmlAttribute::Parse( const char* p, TiXmlPosition* prevLocation )
+const char* TiXmlAttribute::Parse( const char* p, const TiXmlPosition* prevLocation )
 {
 	p = SkipWhiteSpace( p );
 	if ( !p || !*p ) return 0;
@@ -874,7 +874,7 @@ void TiXmlText::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 }
 #endif
 
-const char* TiXmlText::Parse( const char* p, TiXmlPosition* prevPosition )
+const char* TiXmlText::Parse( const char* p, const TiXmlPosition* prevPosition )
 {
 	value = "";
 	location.Stamp( p, prevPosition, TabSize() );
@@ -906,7 +906,7 @@ void TiXmlDeclaration::StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag )
 }
 #endif
 
-const char* TiXmlDeclaration::Parse( const char* p, TiXmlPosition* prevPosition )
+const char* TiXmlDeclaration::Parse( const char* p, const TiXmlPosition* prevPosition )
 {
 	p = SkipWhiteSpace( p );
 	// Find the beginning, find the end, and look for

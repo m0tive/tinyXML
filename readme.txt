@@ -166,6 +166,54 @@ before making any calls to Parse XML data, and I don't recommend changing it aft
 it has been set.
 
 
+<h3> Handles </h3>
+
+Where browsing an XML document in a robust way, it is important to check
+for null returns from method calls. An error safe implementation can
+generate a lot of code like:
+
+@verbatim
+TiXmlElement* root = document.FirstChildElement( "Document" );
+if ( root )
+{
+	TiXmlElement* element = root->FirstChildElement( "Element" );
+	if ( element )
+	{
+		TiXmlElement* child = element->FirstChildElement( "Child" );
+		if ( child )
+		{
+			TiXmlElement* child2 = child->NextSiblingElement( "Child" );
+			if ( child2 )
+			{
+				// Finally do something useful.
+@endverbatim
+
+Handles have been introduced to clean this up. Using the TiXmlHandle class,
+the previous code reduces to:
+
+@verbatim
+TiXmlHandle docHandle( &document );
+TiXmlElement* child2 = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).Child( "Child", 1 ).Element();
+if ( child2 )
+{
+	// do something useful
+@endverbatim
+
+Which is much easier to deal with. See TiXmlHandle for more information.
+
+
+<h3> Row and Column tracking </h3>
+Being able to track nodes and attributes back to their origin location
+in source files can be very important for some applications. Additionally,
+knowing where parsing errors occured in the original source can be very
+time saving.
+
+TinyXml can track the row and column origin of all nodes and attributes
+in a text file. The feature is turned on by calling TiXmlDocument::TrackRowCol().
+There is a performance impact for using this feature. (Although, like most
+performance impacts, it probably isn't significant for most applications.)
+
+
 <h2> Using and Installing </h2>
 
 To Compile and Run xmltest:
@@ -240,7 +288,9 @@ Its not much of a To Do list, but it will do. To read this file
 And its ready to go. Now lets look at some lines and how they 
 relate to the DOM.
 
+@verbatim
 <?xml version="1.0" standalone=no>
+@endverbatim
 
 	The first line is a declaration, and gets turned into the
 	TiXmlDeclaration class. It will be the first child of the
@@ -250,17 +300,23 @@ relate to the DOM.
 	Generally directive targs are stored in TiXmlUnknown so the 
 	commands wont be lost when it is saved back to disk.
 
+@verbatim
 <!-- Our to do list data -->
+@endverbatim
 
 	A comment. Will become a TiXmlComment object.
 
+@verbatim
 <ToDo>
+@endverbatim
 
 	The ToDo tag defines a TiXmlElement object. This one does not have 
 	any attributes, but will contain 2 other elements, both of which 
 	are items.
 
+@verbatim
 <Item priority="1"> 
+@endverbatim
 
 	Creates another TiXmlElement which is a child of the "ToDo" element. 
 	This element has 1 attribute, with the name priority and the value 
@@ -271,7 +327,10 @@ Go to the
 	A TiXmlText. This is a leaf node and cannot contain other nodes. 
 	It is a child of the Item" Element.
 
+@verbatim
 <bold>
+@endverbatim
+
 	
 	Another TiXmlElement, this one a child of the "Item" element.
 

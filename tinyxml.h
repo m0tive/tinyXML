@@ -81,7 +81,12 @@ struct TiXmlPosition
 	int col;	
 	const char* last;
 
-	void Stamp( const char* now, const TiXmlPosition* prev, int tabsize );
+	void Stamp( const char* now, const TiXmlPosition* prev, int tabsize )
+	{
+		if ( tabsize > 0 )
+			StampImpl( now, prev, tabsize );
+	}
+	void StampImpl( const char* now, const TiXmlPosition* prev, int tabsize );
 };
 
 // Only used by Attribute::Query functions
@@ -155,9 +160,9 @@ public:
 		(by adding or changing nodes and attributes) the new values will NOT update to
 		reflect changes in the document.
 
-		The tabsize is assumed to be 4. If you are using a different tabsize, it can
-		be set with TiXmlDocument::SetTabSize(). Setting the tabsize to 0 will turn
-		off row/column calculation, and may have a minor performance improvement.
+		NOTE: You must turn this feature on with the TrackRowCol() method.
+
+		@sa TrackRowCol()
 	*/
 	int Row() const			{ return location.row; }
 	int Column() const		{ return location.col; }	///< See Row()
@@ -198,7 +203,7 @@ protected:
 									const char* endTag,			// what ends this text
 									bool ignoreCase );			// whether to ignore case in the end tag
 
-	virtual const char* Parse( const char* p, TiXmlPosition* position ) = 0; // fixme: make position const
+	virtual const char* Parse( const char* p, const TiXmlPosition* position ) = 0;
 
 	// If an entity has been found, transform it into a character.
 	static const char* GetEntity( const char* in, char* value );
@@ -493,7 +498,7 @@ public:
 	/** Returns the tab size being used to compute the location of nodes and attributes
 		in the document.
 
-		@sa SetTabSize
+		@sa TrackRowCol
 	*/
 	int TabSize() const;
 
@@ -635,7 +640,7 @@ public:
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
-	virtual const char* Parse( const char* p, TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlPosition* position );
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -796,13 +801,13 @@ protected:
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlPosition* position );
 
 	/*	[internal use]
 		Reads the "value" of the element -- another element, or text.
 		This should terminate with the current end tag.
 	*/
-	const char* ReadValue( const char* in, TiXmlPosition* position );
+	const char* ReadValue( const char* in, const TiXmlPosition* position );
 
 private:
 	TiXmlAttributeSet attributeSet;
@@ -832,7 +837,7 @@ protected:
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlPosition* position );
 };
 
 
@@ -870,7 +875,7 @@ protected :
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
 		*/
-	virtual const char* Parse( const char* p, TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlPosition* position );
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -939,7 +944,7 @@ protected:
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 
-	virtual const char* Parse( const char* p, TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlPosition* position );
 
 private:
 	TIXML_STRING version;
@@ -973,7 +978,7 @@ protected:
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, TiXmlPosition* position );
+	virtual const char* Parse( const char* p, const TiXmlPosition* position );
 };
 
 
@@ -1028,7 +1033,7 @@ public:
 
 	/** Parse the given null terminated block of xml data.
 	*/
-	virtual const char* Parse( const char* p, TiXmlPosition* position = 0 );
+	virtual const char* Parse( const char* p, const TiXmlPosition* position = 0 );
 
 	/** Get the root element -- the only top level element -- of the document.
 		In well formed XML, there should only be one. TinyXml is tolerant of
@@ -1039,7 +1044,8 @@ public:
 	/** If an error occurs, Error will be set to true. Also,
 		- The ErrorId() will contain the integer identifier of the error (not generally useful)
 		- The ErrorDesc() method will return the name of the error. (very useful)
-		- The ErrorRow() and ErrorCol() will retur the location of the error.
+		- The ErrorRow() and ErrorCol() will return the location of the error if
+		  row and column tracking is on.
 	*/	
 	bool Error() const						{ return error; }
 
@@ -1058,21 +1064,29 @@ public:
 		columns "1" indexed, so the "human readable" form of the row or column 
 		is ( doc.ErrorRow() + 1 ) or ( doc.ErrorCol() + 1 ).
 
-		Subtlety: computing the column is problematic since
-		TinyXml doesn't know the tab size. You can set the tab size (before parsing) with
-		the SetErrorTab() method. If you don't set it, the default value of "4"
-		will be used. If you set the value to "1", the column 
-		will reflect the number of characters to the error, 
-		not necessarily the actual column.
+		Row and Column tracking must be turned on with the TrackRowCol() method for this
+		to work.
+
+		@sa TrackRowCol, Row, Column
 	*/
 	int ErrorRow()	{ return errorLocation.row; }
 	int ErrorCol()	{ return errorLocation.col; }	///< The column where the error occured. See ErrorRow()
 
-	/** Set the tab size, for calculating the location of nodes. If not
+	/** Turn on row and column tracking. By calling this method, with a tab size
+		greater than 0, the row and column of each node and attribute is stored
+		with the data. Very useful for tracking the DOM back in the source file.
+
+		There is a significant performance overhead for this feature.
+	
+		The tab size is required for calculating the location of nodes. If not
 		set will default to 4. You can set to 0 to disable row/column computation.
 		The tabsize is set per document.
+
+		Note that row and column tracking is not supported when using operator>>.
+
+		@sa Row, Column
 	*/
-	void SetTabSize( int _tabsize )		{ tabsize = _tabsize; }
+	void TrackRowCol( int _tabsize )		{ tabsize = _tabsize; }
 
 	int TabSize() const	{ return tabsize; }
 

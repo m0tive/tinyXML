@@ -14,6 +14,15 @@
 	#include <stdio.h>
 #endif
 
+#if defined( WIN32 ) && defined( TUNE )
+	#include <windows.h>
+	// Apologies to non-windows users! But I need some good timers for
+	// profiling, and these are very platform specific.
+	__int64 start;
+	__int64 end;
+	__int64 freq;
+#endif
+
 static int gPass = 0;
 static int gFail = 0;
 
@@ -108,6 +117,9 @@ int main()
 #endif
 
 	// The example parses from the character string (above):
+	#if defined( WIN32 ) && defined( TUNE )
+	QueryPerformanceCounter( (LARGE_INTEGER*) (&start) );
+	#endif
 
 	{
 		// Write to a file and read it back, to check file I/O.
@@ -341,6 +353,7 @@ int main()
 							"</passages>";
 
         TiXmlDocument doc;
+		doc.TrackRowCol( 4 );
 		doc.Parse( error );
 		XmlTest( "Error row", doc.ErrorRow(), 2 );
 		XmlTest( "Error column", doc.ErrorCol(), 16 );
@@ -355,6 +368,7 @@ int main()
 							"</room>";
 
         TiXmlDocument doc;
+		doc.TrackRowCol( 4 );
 		doc.Parse( str );
 
 		TiXmlHandle docHandle( &doc );
@@ -403,7 +417,7 @@ int main()
 							"</room>";
 
         TiXmlDocument doc;
-		doc.SetTabSize( 8 );
+		doc.TrackRowCol( 8 );
 		doc.Parse( str );
 
 		TiXmlHandle docHandle( &doc );
@@ -601,6 +615,11 @@ int main()
         
     }
 
+	#if defined( WIN32 ) && defined( TUNE )
+	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );
+	QueryPerformanceFrequency( (LARGE_INTEGER*) (&freq) );
+	printf( "Time for run: %f\n", ( double )( end-start ) / (double) freq );
+	#endif
 
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
