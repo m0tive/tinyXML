@@ -36,7 +36,7 @@ distribution.
 // TiXmlString constructor, based on a C string
 TiXmlString::TiXmlString (const char* instring)
 {
-    unsigned newlen;
+    size_t newlen;
     char * newstring;
 
     if (!instring)
@@ -46,9 +46,7 @@ TiXmlString::TiXmlString (const char* instring)
         current_length = 0;
         return;
     }
-	//*ME:	warning C4267: convert 'size_t' to 'unsigned int'
-	//*ME:	Use Cast: (unsigned)
-    newlen = (unsigned)strlen (instring) + 1;
+    newlen = strlen (instring) + 1;
     newstring = new char [newlen];
     memcpy (newstring, instring, newlen);
     // strcpy (newstring, instring);
@@ -60,7 +58,7 @@ TiXmlString::TiXmlString (const char* instring)
 // TiXmlString copy constructor
 TiXmlString::TiXmlString (const TiXmlString& copy)
 {
-    unsigned newlen;
+    size_t newlen;
     char * newstring;
 
 	// Prevent copy to self!
@@ -86,7 +84,7 @@ TiXmlString::TiXmlString (const TiXmlString& copy)
 // TiXmlString = operator. Safe when assign own content
 void TiXmlString ::operator = (const char * content)
 {
-    unsigned newlen;
+    size_t newlen;
     char * newstring;
 
     if (! content)
@@ -94,7 +92,7 @@ void TiXmlString ::operator = (const char * content)
         empty_it ();
         return;
     }
-    newlen = (unsigned)strlen (content) + 1;
+    newlen = strlen (content) + 1;
     newstring = new char [newlen];
     // strcpy (newstring, content);
     memcpy (newstring, content, newlen);
@@ -107,7 +105,7 @@ void TiXmlString ::operator = (const char * content)
 // = operator. Safe when assign own content
 void TiXmlString ::operator = (const TiXmlString & copy)
 {
-    unsigned newlen;
+    size_t newlen;
     char * newstring;
 
     if (! copy . length ())
@@ -127,10 +125,10 @@ void TiXmlString ::operator = (const TiXmlString & copy)
 
 
 // append a const char * to an existing TiXmlString
-void TiXmlString::append( const char* str, int len )
+void TiXmlString::append( const char* str, size_t len )
 {
     char * new_string;
-    unsigned new_alloc, new_size, size_suffix;
+    size_t new_alloc, new_size, size_suffix;
 	
 	// don't use strlen - it can overrun the len passed in!
 	const char* p = str;
@@ -191,7 +189,7 @@ void TiXmlString::append( const char* str, int len )
 void TiXmlString::append( const char * suffix )
 {
     char * new_string;
-    unsigned new_alloc, new_size;
+    size_t new_alloc, new_size;
 
     new_size = length () + strlen (suffix) + 1;
     // check if we need to expand
@@ -251,18 +249,13 @@ void TiXmlString::append( const char * suffix )
 
 unsigned TiXmlString::find (char tofind, unsigned offset) const
 {
-	//*ME:	warning C4244: convert '__w64 int' to 'unsigned'
-	//*ME:	Use Array-Arithmetic instead of Pointer
-	//  char * lookup;
+    char * lookup;
 
     if (offset >= length ())
         return (unsigned) notfound;
-	//  for (lookup = cstring + offset; * lookup; lookup++)
-	//	if (* lookup == tofind)
-	//	    return lookup - cstring;
-    for( unsigned n=offset ; cstring[n] != '\0' ; n++ )
-	if( cstring[n] == tofind )
-	    return  n ;
+    for (lookup = cstring + offset; * lookup; lookup++)
+        if (* lookup == tofind)
+            return lookup - cstring;
     return (unsigned) notfound;
 }
 

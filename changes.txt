@@ -186,3 +186,6 @@ Changes in version 2.1.5
 
 2.3.4
 - Fixed additional const errors, thanks Kent Gibson.
+- Correctly re-enable warnings after tinyxml header. Thanks Cory Nelson.
+- Variety of type cleanup and warning fixes. Thanks Warren Stevens.
+

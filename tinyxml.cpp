@@ -722,7 +722,7 @@ void TiXmlElement::SetAttribute( const char * name, int val )
 
 void TiXmlElement::SetDoubleAttribute( const char * name, double val )
 {	
-	char buf[128];
+	char buf[256];
 	sprintf( buf, "%f", val );
 	SetAttribute( name, buf );
 }
@@ -1140,7 +1140,7 @@ void TiXmlAttribute::SetIntValue( int _value )
 
 void TiXmlAttribute::SetDoubleValue( double _value )
 {
-	char buf [64];
+	char buf [256];
 	sprintf (buf, "%lf", _value);
 	SetValue (buf);
 }

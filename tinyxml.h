@@ -1417,6 +1417,10 @@ private:
 	TiXmlNode* node;
 };
 
+#ifdef _MSC_VER
+#pragma warning( default : 4530 )
+#pragma warning( default : 4786 )
+#endif
 
 #endif
 

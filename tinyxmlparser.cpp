@@ -116,7 +116,7 @@ void TiXmlBase::ConvertUTF32ToUTF8( unsigned long input, char* output, int* leng
 }
 
 
-/*static*/ int TiXmlBase::IsAlpha( unsigned char anyByte, TiXmlEncoding )
+/*static*/ int TiXmlBase::IsAlpha( unsigned char anyByte, TiXmlEncoding /*encoding*/ )
 {
 	// This will only work for low-ascii, everything else is assumed to be a valid
 	// letter. I'm not sure this is the best approach, but it is quite tricky trying
@@ -137,7 +137,7 @@ void TiXmlBase::ConvertUTF32ToUTF8( unsigned long input, char* output, int* leng
 }
 
 
-/*static*/ int TiXmlBase::IsAlphaNum( unsigned char anyByte, TiXmlEncoding )
+/*static*/ int TiXmlBase::IsAlphaNum( unsigned char anyByte, TiXmlEncoding /*encoding*/ )
 {
 	// This will only work for low-ascii, everything else is assumed to be a valid
 	// letter. I'm not sure this is the best approach, but it is quite tricky trying
