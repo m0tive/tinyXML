@@ -165,3 +165,9 @@ Changes in version 2.1.5
 - [ 979180 ] Missing ; in entity reference, fix from Rob Laveaux.
 - Copy constructors and assignment have been a long time coming. Thanks to
   Fokke and JP.
+
+2.3.2
+- Made the IsAlpha and IsAlphaNum much more tolerant of non-UTF-8 encodings. Thanks
+  Volker Boerchers for finding the issue.
+- Ran the program though the magnificent Valgrind - http://valgrind.kde.org - to check
+  for memory errors. Fixed some minor issues.
