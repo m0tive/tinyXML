@@ -97,11 +97,17 @@ line of tinyxml.h.
 
 <h3> UTF-8 </h3>
 
-TinyXml supports UTF-8 allowing to manipulate XML files in any language.
+TinyXml supports UTF-8 allowing to manipulate XML files in any language. TinyXml
+also supports "legacy mode" - the encoding used before UTF-8 support and
+probably best described as "extended ascii".
 
-The rules for reading text are:
+Normally, TinyXml will try to detect the correct encoding and use it. However,
+by setting the value of TIXML_DEFAULT_ENCODING in the header file, TinyXml
+can be forced to always use one encoding.
+
+The rules for detecting the encoding are:
 <ol>
-	<li> If the "UTF-8 byte order marks" or "UTF-8 lead bytes" (0xef 0xbb 0xbf) 
+	<li> If the non-standard but common "UTF-8 lead bytes" (0xef 0xbb 0xbf)
 		 begin the file or data stream, TinyXml will read it as UTF-8. </li>
 	<li> If the declaration tag is read, and it has an encoding="UTF-8", then
 		 TinyXml will read it as UTF-8. </li>
@@ -113,17 +119,21 @@ The rules for reading text are:
 		 old content should keep working.</li>
 </ol>
 
-What happens if another encoding is sent to TinyXml to parse? TinyXml will try
+What happens if the encoding is incorrectly set or detected? TinyXml will try
 to read and pass through text seen as improperly encoded. You may get some strange
 results or mangled characters, however. In this case, you may want to force
 TinyXml to Legacy Mode.
 
 <b> You may force TinyXml to Legacy Mode by using LoadFile( TIXML_ENCODING_LEGACY ) or
-LoadFile( filename, TIXML_ENCODING_LEGACY ).</b>
+LoadFile( filename, TIXML_ENCODING_LEGACY ). You may force it to use legacy mode all
+the time by setting TIXML_DEFAULT_ENCODING = TIXML_ENCODING_LEGACY.</b>
 
 For English users, using English XML, UTF-8 is the same as low-ASCII. You
 don't need to be aware of UTF-8 or change your code in any way. You can think
 of UTF-8 as a "superset" of ASCII.
+
+UTF-8 is not a double byte format. TinyXml does not use or support wchar, TCHAR,
+or Microsofts _UNICODE.
 
 For "high-ascii" languages - everything not English, pretty much - TinyXml can
 handle all languages, at the same time, as long as the XML is encoded
@@ -170,7 +180,9 @@ UTF-8 equivalents. For instance, text with the XML of:
 @endverbatim
 
 will have the Value() of "Far & Away" when queried from the TiXmlText object,
-but will be written back to the XML stream/file as a character entitity. 
+and will be written back to the XML stream/file as an ampersand. Older versions
+of TinyXml "preserved" character entities, but the newer versions will translate
+them into characters.
 
 Additionally, any character can be specified by its Unicode code point:
 The syntax "&#xA0;" or "&#160;" are both to the non-breaking space characher. Note

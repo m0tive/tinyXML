@@ -93,5 +93,3 @@ def buildlinuxRule( line ):
 		return line
 
 fileProcess( "makedistlinux", buildlinuxRule )
-
-

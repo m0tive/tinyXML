@@ -1,12 +1,12 @@
-echo "Making tinyxml"
+echo "Making tinyxml 1_1_1"
 
 rm ./docs/*
 
 doxygen dox
 rm -rf ./tinyxml/*
 
-rm tinyxml_1_2_3.zip
-rm tinyxml_1_2_3.tar.gz
+rm tinyxml_2_3_1.zip
+rm tinyxml_2_3_1.tar.gz
 
 rmdir tinyxml
 mkdir tinyxml
@@ -45,6 +45,6 @@ unix2dos ./tinyxml/tinyxml.dsw
 mkdir ./tinyxml/docs
 cp ./docs/* ./tinyxml/docs
 
-tar -zcf tinyxml_1_2_3.tar.gz tinyxml
-zip -r -q -9 tinyxml_1_2_3.zip tinyxml
+tar -zcf tinyxml_2_3_1.tar.gz tinyxml
+zip -r -q -9 tinyxml_2_3_1.zip tinyxml
 
