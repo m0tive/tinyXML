@@ -25,6 +25,89 @@ distribution.
 #include <ctype.h>
 #include "tinyxml.h"
 
+
+void TiXmlPosition::Stamp( const char* now, const TiXmlPosition* prevPosition, int tabsize )
+{
+	// Do nothing if the tabsize is 0.
+	if ( tabsize < 1 )
+		return;
+
+	TiXmlPosition prev;
+
+	if ( prevPosition )
+		prev = *prevPosition;
+	else
+		prev.row = prev.col = 0;
+
+	if ( !prev.last )
+		prev.last = now;
+
+	if ( now )
+	{
+		const char* p = prev.last;
+		row = prev.row;
+		col = prev.col;
+
+		while ( p < now )
+		{
+			// Code contributed by Fletcher Dunn: (modified by lee)
+			switch (*p) {
+				case 0:
+					// We *should* never get here, but in case we do, don't
+					// advance past the terminating null character, ever
+					break;
+
+				case '\r':
+					// bump down to the next line
+					++row;
+					col = 0;				
+					// Eat the character
+					++p;
+
+					// Check for \r\n sequence, and treat this as a single character
+					if (*p == '\n') {
+						++p;
+					}
+					break;
+
+				case '\n':
+					// bump down to the next line
+					++row;
+					col = 0;
+
+					// Eat the character
+					++p;
+
+					// Check for \n\r sequence, and treat this as a single
+					// character.  (Yes, this bizarre thing does occur still
+					// on some arcane platforms...)
+					if (*p == '\r') {
+						++p;
+					}
+					break;
+
+				case '\t':
+					// Eat the character
+					++p;
+
+					// Skip to next tab stop
+					col = (col / tabsize + 1) * tabsize;
+					break;
+	
+				default:
+					// Eat the character
+					++p;
+
+					// Normal char - just advance one column
+					++col;
+					break;
+			}
+		}
+		last = p;
+	}
+}
+
+
 bool TiXmlBase::condenseWhiteSpace = true;
 
 void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_OSTREAM* stream )
@@ -445,6 +528,15 @@ TiXmlDocument* TiXmlNode::GetDocument() const
 }
 
 
+int TiXmlNode::TabSize() const
+{
+	TiXmlDocument* doc = GetDocument();
+	if ( doc )
+		return doc->TabSize();
+	return 4;
+}
+
+
 TiXmlElement::TiXmlElement (const char * _value)
 : TiXmlNode( TiXmlNode::ELEMENT )
 {
@@ -639,17 +731,14 @@ TiXmlNode* TiXmlElement::Clone() const
 
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	startLocation = 0;
-	errorTab = 4;
+	tabsize = 4;
 	ClearError();
 }
 
 TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
-	//	ignoreWhiteSpace = true;
+	tabsize = 4;
 	value = documentName;
-	startLocation = 0;
-	errorTab = 4;
 	ClearError();
 }
 
@@ -722,7 +811,12 @@ bool TiXmlDocument::LoadFile( const char* filename )
 		}
 		fclose( file );
 
-		Parse( data.c_str() );
+		TiXmlPosition start;
+		start.col = 0;
+		start.row = 0;
+		start.last = data.c_str();
+
+		Parse( data.c_str(), &start );
 
 		if (  Error() )
             return false;
@@ -792,7 +886,7 @@ void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
 }
 
 
-void TiXmlDocument::SetError( int err, const char* errorLocation )
+void TiXmlDocument::SetError( int err, const char* pError )
 {	
 	// The first error in a chain is more accurate - don't set again!
 	if ( error )
@@ -803,71 +897,7 @@ void TiXmlDocument::SetError( int err, const char* errorLocation )
 	errorId = err;
 	errorDesc = errorString[ errorId ];
 
-	errorRow = errorCol = -1;
-
-	if ( startLocation && errorLocation )
-	{
-		errorRow = 0;
-		errorCol = 0;
-		const char* p = startLocation;
-
-		while ( p < errorLocation )
-		{
-			// Code contributed by Fletcher Dunn: (modified by lee)
-			switch (*p) {
-				case 0:
-					// We *should* never get here, but in case we do, don't
-					// advance past the terminating null character, ever
-					break;
-
-				case '\r':
-					// bump down to the next line
-					++errorRow;
-					errorCol = 0;				
-					// Eat the character
-					++p;
-
-					// Check for \r\n sequence, and treat this as a single character
-					if (*p == '\n') {
-						++p;
-					}
-					break;
-
-				case '\n':
-					// bump down to the next line
-					++errorRow;
-					errorCol = 0;
-
-					// Eat the character
-					++p;
-
-					// Check for \n\r sequence, and treat this as a single
-					// character.  (Yes, this bizarre thing does occur still
-					// on some arcane platforms...)
-					if (*p == '\r') {
-						++p;
-					}
-					break;
-
-				case '\t':
-					// Eat the character
-					++p;
-
-					// Skip to next tab stop
-					assert(errorTab > 0);
-					errorCol = (errorCol / errorTab + 1) * errorTab;
-					break;
-	
-				default:
-					// Eat the character
-					++p;
-
-					// Normal char - just advance one column
-					++errorCol;
-					break;
-			}
-		}
-	}
+	errorLocation.Stamp( pError, &location, TabSize() );
 }
 
 
@@ -1153,7 +1183,7 @@ TIXML_ISTREAM & operator >> (TIXML_ISTREAM & in, TiXmlNode & base)
 	tag.reserve( 8 * 1000 );
 	base.StreamIn( &in, &tag );
 
-	base.Parse( tag.c_str() );
+	base.Parse( tag.c_str(), 0 );	// fixme: support location?
 	return in;
 }
 #endif

@@ -49,10 +49,6 @@ distribution.
 #define TIXML_LOG printf
 #endif
 
-// Uncomment the following definition for Apple's Project Builder 
-// #define TIXML_NEED_STREAM - seems to be the majority case. Now
-// standard.
-
 #ifdef TIXML_USE_STL
 	#include <string>
  	#include <istream>
@@ -73,6 +69,20 @@ class TiXmlUnknown;
 class TiXmlAttribute;
 class TiXmlText;
 class TiXmlDeclaration;
+
+/*	Internal structure for tracking location of items 
+	in the XML file.
+*/
+struct TiXmlPosition
+{
+	TiXmlPosition() { last = 0; row = col = -1; }
+
+	int row;	// 0 based.
+	int col;	
+	const char* last;
+
+	void Stamp( const char* now, const TiXmlPosition* prev, int tabsize );
+};
 
 
 /** TiXmlBase is a base class for every class in TinyXml.
@@ -125,6 +135,26 @@ public:
 	/// Return the current white space setting.
 	static bool IsWhiteSpaceCondensed()						{ return condenseWhiteSpace; }
 
+	/** Return the position, in the original source file, of this node or attribute.
+		The row and column are 0-based. (That is the first row and first column is
+		0,0). If the returns values are less than 0, then the parser does not have
+		a row and column value.
+
+		Generally, the row and column value will be set when the TiXmlDocument::Load(),
+		TiXmlDocument::LoadFile(), or any Parse() is called. It will NOT be set
+		when the DOM was created from operator>>.
+
+		The values reflect the initial load. Once the DOM is modified programmatically
+		(by adding or changing nodes and attributes) the new values will NOT update to
+		reflect changes in the document.
+
+		The tabsize is assumed to be 4. If you are using a different tabsize, it can
+		be set with TiXmlDocument::SetTabSize(). Setting the tabsize to 0 will turn
+		off row/column calculation, and may have a minor performance improvement.
+	*/
+	int Row() const			{ return location.row; }
+	int Column() const		{ return location.col; }	///< See Row()
+
 protected:
 	// See STL_STRING_BUG
 	// Utility class to overcome a bug.
@@ -161,7 +191,7 @@ protected:
 									const char* endTag,			// what ends this text
 									bool ignoreCase );			// whether to ignore case in the end tag
 
-	virtual const char* Parse( const char* p ) = 0;
+	virtual const char* Parse( const char* p, TiXmlPosition* position ) = 0; // fixme: make position const
 
 	// If an entity has been found, transform it into a character.
 	static const char* GetEntity( const char* in, char* value );
@@ -213,6 +243,8 @@ protected:
 		TIXML_ERROR_STRING_COUNT
 	};
 	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
+
+	TiXmlPosition location;
 
 private:
 	struct Entity
@@ -451,6 +483,13 @@ public:
 	*/
 	TiXmlDocument* GetDocument() const;
 
+	/** Returns the tab size being used to compute the location of nodes and attributes
+		in the document.
+
+		@sa SetTabSize
+	*/
+	int TabSize() const;
+
 	/// Returns true if this node has no children.
 	bool NoChildren() const						{ return !firstChild; }
 
@@ -511,7 +550,11 @@ class TiXmlAttribute : public TiXmlBase
 
 public:
 	/// Construct an empty attribute.
-	TiXmlAttribute() : prev( 0 ), next( 0 )	{}
+	TiXmlAttribute()
+	{
+		document = 0;
+		prev = next = 0;
+	}
 
 	#ifdef TIXML_USE_STL
 	/// std::string constructor.
@@ -525,7 +568,14 @@ public:
 	#endif
 
 	/// Construct an attribute with a name and value.
-	TiXmlAttribute( const char * _name, const char * _value )	: name( _name ), value( _value ), prev( 0 ), next( 0 ), document( 0 ) {}
+	TiXmlAttribute( const char * _name, const char * _value )
+	{
+		name = _name;
+		value = _value;
+		document = 0;
+		prev = next = 0;
+	}
+
 	const char*		Name()  const		{ return name.c_str (); }		///< Return the name of this attribute.
 	const char*		Value() const		{ return value.c_str (); }		///< Return the value of this attribute.
 	const int       IntValue() const;									///< Return the value of this attribute, converted to an integer.
@@ -565,7 +615,7 @@ public:
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
-	virtual const char* Parse( const char* p );
+	virtual const char* Parse( const char* p, TiXmlPosition* position );
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -656,6 +706,9 @@ public:
 	*/
 	const char* Attribute( const char* name, double* d ) const;
 
+	// fixme
+	bool GetIntAttribute( const char* name, int* value, int* errorCode );
+
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.
 	*/
@@ -715,13 +768,13 @@ protected:
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p );
+	virtual const char* Parse( const char* p, TiXmlPosition* position );
 
 	/*	[internal use]
 		Reads the "value" of the element -- another element, or text.
 		This should terminate with the current end tag.
 	*/
-	const char* ReadValue( const char* in );
+	const char* ReadValue( const char* in, TiXmlPosition* position );
 
 private:
 	TiXmlAttributeSet attributeSet;
@@ -751,7 +804,7 @@ protected:
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p );
+	virtual const char* Parse( const char* p, TiXmlPosition* position );
 };
 
 
@@ -789,7 +842,7 @@ protected :
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
 		*/
-	virtual const char* Parse( const char* p );
+	virtual const char* Parse( const char* p, TiXmlPosition* position );
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -858,7 +911,7 @@ protected:
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 
-	virtual const char* Parse( const char* p );
+	virtual const char* Parse( const char* p, TiXmlPosition* position );
 
 private:
 	TIXML_STRING version;
@@ -892,7 +945,7 @@ protected:
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p );
+	virtual const char* Parse( const char* p, TiXmlPosition* position );
 };
 
 
@@ -947,7 +1000,7 @@ public:
 
 	/** Parse the given null terminated block of xml data.
 	*/
-	virtual const char* Parse( const char* p );
+	virtual const char* Parse( const char* p, TiXmlPosition* position = 0 );
 
 	/** Get the root element -- the only top level element -- of the document.
 		In well formed XML, there should only be one. TinyXml is tolerant of
@@ -984,18 +1037,21 @@ public:
 		will reflect the number of characters to the error, 
 		not necessarily the actual column.
 	*/
-	int ErrorRow()	{ return errorRow; }
-	int ErrorCol()	{ return errorCol; }	///< The column where the error occured. See ErrorRow()
+	int ErrorRow()	{ return errorLocation.row; }
+	int ErrorCol()	{ return errorLocation.col; }	///< The column where the error occured. See ErrorRow()
 
-	/** Set the tab size, for calculating the location of parsing errors.
-		@sa ErrorRow
+	/** Set the tab size, for calculating the location of nodes. If not
+		set will default to 4. You can set to 0 to disable row/column computation.
+		The tabsize is set per document.
 	*/
-	int SetErrorTab( int tabsize )	{ errorTab = tabsize; }
+	void SetTabSize( int _tabsize )		{ tabsize = _tabsize; }
+
+	int TabSize() const	{ return tabsize; }
 
 	/** If you have handled the error, it can be reset with this call. The error
 		state is automatically cleared if you Parse a new XML block.
 	*/
-	void ClearError()						{ error = false; errorId = 0; errorDesc = ""; errorRow = errorCol = -1;  }
+	void ClearError()						{ error = false; errorId = 0; errorDesc = ""; errorLocation.row = errorLocation.col = 0; errorLocation.last = 0; }
 
 	/** Dump the document to standard out. */
 	void Print() const						{ Print( stdout, 0 ); }
@@ -1017,10 +1073,8 @@ private:
 	bool error;
 	int  errorId;
 	TIXML_STRING errorDesc;
-	int errorRow;
-	int errorCol;
-	int errorTab;
-	const char* startLocation;
+	int tabsize;
+	TiXmlPosition errorLocation;
 };
 
 
@@ -1147,8 +1201,10 @@ public:
 
 	/// Return the handle as a TiXmlNode. This may return null.
 	TiXmlNode* Node() const			{ return node; } 
-	/// Return the handle as a TiXmlElement. This my return null.
+	/// Return the handle as a TiXmlElement. This may return null.
 	TiXmlElement* Element() const	{ return ( ( node && node->ToElement() ) ? node->ToElement() : 0 ); }
+	/// Return the handle as a TiXmlText. This may return null.
+	TiXmlText* Text() const			{ return ( ( node && node->ToText() ) ? node->ToText() : 0 ); }
 
 private:
 	TiXmlNode* node;

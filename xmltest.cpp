@@ -334,6 +334,90 @@ int main()
 	}
 #endif
 
+	{
+		const char* error =	"<?xml version=\"1.0\" standalone=\"no\" ?>\n"
+							"<passages count=\"006\" formatversion=\"20020620\">\n"
+							"    <wrong error>\n"
+							"</passages>";
+
+        TiXmlDocument doc;
+		doc.Parse( error );
+		XmlTest( "Error row", doc.ErrorRow(), 2 );
+		XmlTest( "Error column", doc.ErrorCol(), 16 );
+		//printf( "error=%d id='%s' row %d col%d\n", (int) doc.Error(), doc.ErrorDesc(), doc.ErrorRow()+1, doc.ErrorCol() + 1 );
+
+	}
+	{
+		const char* str =	"\t<?xml version=\"1.0\" standalone=\"no\" ?>\t<room doors='2'>\n"
+							"  <!-- Silly example -->\n"
+							"    <door wall='north'/>\n"
+							"\t<door wall='east'/>"
+							"</room>";
+
+        TiXmlDocument doc;
+		doc.Parse( str );
+
+		TiXmlHandle docHandle( &doc );
+		TiXmlHandle roomHandle = docHandle.FirstChildElement( "room" );
+		TiXmlHandle commentHandle = docHandle.FirstChildElement( "room" ).FirstChild();
+		TiXmlHandle door0Handle = docHandle.FirstChildElement( "room" ).ChildElement( 0 );
+		TiXmlHandle door1Handle = docHandle.FirstChildElement( "room" ).ChildElement( 1 );
+
+		assert( docHandle.Node() );
+		assert( roomHandle.Element() );
+		assert( commentHandle.Node() );
+		assert( door0Handle.Element() );
+		assert( door1Handle.Element() );
+
+		TiXmlDeclaration* declaration = doc.FirstChild()->ToDeclaration();
+		assert( declaration );
+		TiXmlElement* room = roomHandle.Element();
+		assert( room );
+		TiXmlAttribute* doors = room->FirstAttribute();
+		assert( doors );
+		TiXmlComment* comment = commentHandle.Node()->ToComment();
+		assert( comment );
+		TiXmlElement* door0 = door0Handle.Element();
+		TiXmlElement* door1 = door1Handle.Element();
+
+		XmlTest( "Location tracking: Declaration row", declaration->Row(), 0 );
+		XmlTest( "Location tracking: Declaration col", declaration->Column(), 4 );
+		XmlTest( "Location tracking: room row", room->Row(), 0 );
+		XmlTest( "Location tracking: room col", room->Column(), 44 );
+		XmlTest( "Location tracking: doors row", doors->Row(), 0 );
+		XmlTest( "Location tracking: doors col", doors->Column(), 50 );
+		XmlTest( "Location tracking: Comment row", comment->Row(), 1 );
+		XmlTest( "Location tracking: Comment col", comment->Column(), 2 );
+		XmlTest( "Location tracking: door0 row", door0->Row(), 2 );
+		XmlTest( "Location tracking: door0 col", door0->Column(), 4 );
+		XmlTest( "Location tracking: door1 row", door1->Row(), 3 );
+		XmlTest( "Location tracking: door1 col", door1->Column(), 4 );
+	}
+	{
+		const char* str =	"\t<?xml version=\"1.0\" standalone=\"no\" ?>\t<room doors='2'>\n"
+							"</room>";
+
+        TiXmlDocument doc;
+		doc.SetTabSize( 8 );
+		doc.Parse( str );
+
+		TiXmlHandle docHandle( &doc );
+		TiXmlHandle roomHandle = docHandle.FirstChildElement( "room" );
+
+		assert( docHandle.Node() );
+		assert( roomHandle.Element() );
+
+		TiXmlElement* room = roomHandle.Element();
+		assert( room );
+		TiXmlAttribute* doors = room->FirstAttribute();
+		assert( doors );
+
+		XmlTest( "Location tracking: Tab 8: room row", room->Row(), 0 );
+		XmlTest( "Location tracking: Tab 8: room col", room->Column(), 48 );
+		XmlTest( "Location tracking: Tab 8: doors row", doors->Row(), 0 );
+		XmlTest( "Location tracking: Tab 8: doors col", doors->Column(), 54 );
+	}
+
 #ifdef TIXML_USE_STL
 	{
 		//////////////////////////////////////////////////////
@@ -487,19 +571,7 @@ int main()
         
     }
 
-	{
-		const char* error =	"<?xml version=\"1.0\" standalone=\"no\" ?>\n"
-							"<passages count=\"006\" formatversion=\"20020620\">\n"
-							"    <wrong error>\n"
-							"</passages>";
 
-        TiXmlDocument doc;
-		doc.Parse( error );
-		XmlTest( "Error row", doc.ErrorRow(), 2 );
-		XmlTest( "Error column", doc.ErrorCol(), 16 );
-		//printf( "error=%d id='%s' row %d col%d\n", (int) doc.Error(), doc.ErrorDesc(), doc.ErrorRow()+1, doc.ErrorCol() + 1 );
-
-	}
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }
