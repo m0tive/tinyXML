@@ -640,6 +640,7 @@ TiXmlNode* TiXmlElement::Clone() const
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 	m_startLocation = 0;
+	errorTab = 4;
 	ClearError();
 }
 
@@ -648,6 +649,7 @@ TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode
 	//	ignoreWhiteSpace = true;
 	value = documentName;
 	m_startLocation = 0;
+	errorTab = 4;
 	ClearError();
 }
 
