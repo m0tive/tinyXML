@@ -138,7 +138,7 @@ Changes in version 2.1.5
   modified it to not have performance impact.
 - General cleanup suggestions from Fletcher Dunn.
 - In error handling, general errors will no longer clear the error state of specific ones.
-- Fix error in documentation : comments starting with "<?--" instead of "<--" (thanks ion_pulse)
+- Fix error in documentation : comments starting with "<?--" instead of "<!--" (thanks ion_pulse)
 - Added the TiXmlHandle. An easy, safe way to browse XML DOMs with less code.
 - Added QueryAttribute calls which have better error messaging. (Proposed by Fletcher Dunn)
 
