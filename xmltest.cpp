@@ -421,6 +421,14 @@ int main()
 		#endif
  	}
 
+	// Long filenames crashing STL version
+	{
+		TiXmlDocument doc( "midsummerNightsDreamWithAVeryLongFilenameToConfuseTheStringHandlingRoutines.xml" );
+		bool loadOkay = doc.LoadFile();
+		// Won't pass on non-dev systems. Just a "no crash" check.
+		//XmlTest( "Long filename. ", true, loadOkay );
+	}
+
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }

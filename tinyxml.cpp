@@ -82,6 +82,23 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 }
 
 
+// Strange class for a bug fix. Search for STL_STRING_BUG
+TiXmlBase::StringToBuffer::StringToBuffer( const TIXML_STRING& str )
+{
+	buffer = new char[ str.length()+1 ];
+	if ( buffer )
+	{
+		strcpy( buffer, str.c_str() );
+	}
+}
+
+
+TiXmlBase::StringToBuffer::~StringToBuffer()
+{
+	delete [] buffer;
+}
+
+
 TiXmlNode::TiXmlNode( NodeType _type )
 {
 	parent = 0;
@@ -600,18 +617,40 @@ TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode
 
 bool TiXmlDocument::LoadFile()
 {
-	return LoadFile( value.c_str ());
+	// See STL_STRING_BUG below.
+	StringToBuffer buf( value );
+
+	if ( buf.buffer && LoadFile( buf.buffer ) )
+		return true;
+
+	return false;
 }
+
 
 bool TiXmlDocument::SaveFile() const
 {
-	return SaveFile( value.c_str ());
+	// See STL_STRING_BUG below.
+	StringToBuffer buf( value );
+
+	if ( buf.buffer && SaveFile( buf.buffer ) )
+		return true;
+
+	return false;
 }
 
 bool TiXmlDocument::LoadFile( const char* filename )
 {
 	// Delete the existing data:
 	Clear();
+
+	// There was a really terrifying little bug here. The code:
+	//		value = filename
+	// in the STL case, cause the assignment method of the std::string to
+	// be called. What is strange, is that the std::string had the same
+	// address as it's c_str() method, and so bad things happen. Looks
+	// like a bug in the Microsoft STL implementation.
+	// See STL_STRING_BUG above.
+	// Fixed with the StringToBuffer class.
 	value = filename;
 
 	FILE* file = fopen( value.c_str (), "r" );

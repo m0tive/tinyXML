@@ -121,6 +121,15 @@ public:
 	static bool IsWhiteSpaceCondensed()						{ return condenseWhiteSpace; }
 
 protected:
+	// See STL_STRING_BUG
+	// Utility class to overcome a bug.
+	class StringToBuffer
+	{
+	  public:
+		StringToBuffer( const TIXML_STRING& str );
+		~StringToBuffer();
+		char* buffer;
+	};
 
 	static const char*	SkipWhiteSpace( const char* );
 	inline static bool	IsWhiteSpace( int c )		{ return ( isspace( c ) || c == '\n' || c == '\r' ); }
@@ -300,7 +309,12 @@ public:
 	void SetValue (const char * _value) { value = _value;}
 
     #ifdef TIXML_USE_STL
-	void SetValue( const std::string& value )    {	  SetValue (value.c_str ());    	}	///< STL std::string form.
+	/// STL std::string form.
+	void SetValue( const std::string& value )    
+	{	  
+		StringToBuffer buf( value );
+		SetValue( buf.buffer ? buf.buffer : "" );    	
+	}	
 	#endif
 
 	/// Delete all the children of this node. Does not affect 'this'.
@@ -488,8 +502,8 @@ public:
 	/// std::string constructor.
 	TiXmlAttribute( const std::string& _name, const std::string& _value )
 	{
-		name = _name.c_str();
-		value = _value.c_str();
+		name = _name;
+		value = _value;
 	}
 	#endif
 
@@ -507,8 +521,18 @@ public:
 	void SetDoubleValue( double value );								///< Set the value from a double.
 
     #ifdef TIXML_USE_STL
-	void SetName( const std::string& _name )	{	SetName (_name.c_str ());	}	///< STL std::string form.
-	void SetValue( const std::string& _value )	{	SetValue (_value.c_str ());	}	///< STL std::string form.
+	/// STL std::string form.
+	void SetName( const std::string& _name )	
+	{	
+		StringToBuffer buf( _name );
+		SetName ( buf.buffer ? buf.buffer : "error" );	
+	}
+	/// STL std::string form.	
+	void SetValue( const std::string& _value )	
+	{	
+		StringToBuffer buf( _value );
+		SetValue( buf.buffer ? buf.buffer : "error" );	
+	}
 	#endif
 
 	/// Get the next sibling attribute in the DOM. Returns null at end.
@@ -588,7 +612,7 @@ public:
 	TiXmlElement( const std::string& _value ) : 	TiXmlNode( TiXmlNode::ELEMENT )
 	{
 		firstChild = lastChild = 0;
-		value = _value.c_str ();
+		value = _value;
 	}
 	#endif
 
@@ -616,8 +640,21 @@ public:
 	const char* Attribute( const std::string& name ) const				{ return Attribute( name.c_str() ); }
 	const char* Attribute( const std::string& name, int* i ) const		{ return Attribute( name.c_str(), i ); }
 
-	void SetAttribute( const std::string& name, const std::string& value )	{	SetAttribute (name.c_str (), value.c_str ());	}	///< STL std::string form.
-	void SetAttribute( const std::string& name, int value )	{	SetAttribute (name.c_str (), value);	}	///< STL std::string form.
+	/// STL std::string form.
+	void SetAttribute( const std::string& name, const std::string& value )	
+	{	
+		StringToBuffer n( name );
+		StringToBuffer v( value );
+		if ( n.buffer && v.buffer )
+			SetAttribute (n.buffer, v.buffer );	
+	}	
+	///< STL std::string form.
+	void SetAttribute( const std::string& name, int value )	
+	{	
+		StringToBuffer n( name );
+		if ( n.buffer )
+			SetAttribute (n.buffer, value);	
+	}	
 	#endif
 
 	/** Sets an attribute of name to a given value. The attribute
@@ -761,9 +798,9 @@ public:
 						const std::string& _standalone )
 					: TiXmlNode( TiXmlNode::DECLARATION )
 	{
-		version = _version.c_str ();
-		encoding = _encoding.c_str ();
-		standalone = _standalone.c_str ();
+		version = _version;
+		encoding = _encoding;
+		standalone = _standalone;
 	}
 #endif
 
@@ -873,11 +910,13 @@ public:
 	#ifdef TIXML_USE_STL
 	bool LoadFile( const std::string& filename )			///< STL std::string version.
 	{
-		return LoadFile (filename.c_str ());
+		StringToBuffer f( filename );
+		return ( f.buffer && LoadFile( f.buffer ));
 	}
 	bool SaveFile( const std::string& filename ) const		///< STL std::string version.
 	{
-		return SaveFile (filename.c_str ());
+		StringToBuffer f( filename );
+		return ( f.buffer && SaveFile( f.buffer ));
 	}
 	#endif
 
