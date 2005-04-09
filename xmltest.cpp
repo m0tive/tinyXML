@@ -938,8 +938,13 @@ int main()
 	}
 	#ifndef TIXML_USE_STL
 	{
+		// String equality. [ 1006409 ] string operator==/!= no worky in all cases
 		TiXmlString temp;
-		XmlTest( "Empty tinyxml string compare unequal", ( temp == "" ), false );
+		XmlTest( "Empty tinyxml string compare equal", ( temp == "" ), true );
+
+		TiXmlString    foo;
+		TiXmlString    bar( "" );
+		XmlTest( "Empty tinyxml string compare equal", ( foo == bar ), true );
 	}
 	#endif
 
