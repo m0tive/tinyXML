@@ -47,8 +47,9 @@ distribution.
 class TiXmlString
 {
   public :
-    // TiXmlString constructor, based on a string
-    TiXmlString (const char * instring);
+    // TiXmlString constructor, based on a string, mark explicit to force
+	// us to find unnecessary casting.
+    explicit TiXmlString (const char * instring);
 
     // TiXmlString empty constructor
     TiXmlString ()
@@ -59,7 +60,7 @@ class TiXmlString
     }
 
     // TiXmlString copy constructor
-    TiXmlString (const TiXmlString& copy);
+    explicit TiXmlString (const TiXmlString& copy);
 
     // TiXmlString destructor
     ~ TiXmlString ()
@@ -108,6 +109,7 @@ class TiXmlString
 		return *this;
     }
     bool operator == (const TiXmlString & compare) const;
+    bool operator == (const char* compare) const;
     bool operator < (const TiXmlString & compare) const;
     bool operator > (const TiXmlString & compare) const;
 

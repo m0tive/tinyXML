@@ -1412,7 +1412,7 @@ void TiXmlAttributeSet::Remove( TiXmlAttribute* removeMe )
 	assert( 0 );		// we tried to remove a non-linked attribute.
 }
 
-const TiXmlAttribute*	TiXmlAttributeSet::Find( const char * name ) const
+const TiXmlAttribute* TiXmlAttributeSet::Find( const char * name ) const
 {
 	const TiXmlAttribute* node;
 

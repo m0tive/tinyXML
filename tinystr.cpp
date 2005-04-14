@@ -276,6 +276,21 @@ bool TiXmlString::operator == (const TiXmlString & compare) const
 }
 
 
+bool TiXmlString::operator == (const char* compare) const
+{
+	if ( allocated && compare && *compare )
+	{
+		assert( cstring );
+		return ( strcmp( cstring, compare ) == 0 );
+ 	}
+	else if ( length() == 0 && (!compare || !*compare ) )	// this is a little dubious, but try to duplicate behavior in other operator==
+	{
+		return true;
+	}
+	return false;	
+}
+
+
 bool TiXmlString::operator < (const TiXmlString & compare) const
 {
 	if ( allocated && compare.allocated )

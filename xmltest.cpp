@@ -506,20 +506,20 @@ int main()
 			TiXmlHandle docH( &doc );
 			// Get the attribute "value" from the "Russian" element and check it.
 			TiXmlElement* element = docH.FirstChildElement( "document" ).FirstChildElement( "Russian" ).Element();
-			const char correctValue[] = {	(char)0xd1, (char)0x86, (char)0xd0, (char)0xb5, (char)0xd0, (char)0xbd, (char)0xd0, (char)0xbd, 
-											(char)0xd0, (char)0xbe, (char)0xd1, (char)0x81, (char)0xd1, (char)0x82, (char)0xd1, (char)0x8c, 0 };
+			const unsigned char correctValue[] = {	0xd1U, 0x86U, 0xd0U, 0xb5U, 0xd0U, 0xbdU, 0xd0U, 0xbdU, 
+													0xd0U, 0xbeU, 0xd1U, 0x81U, 0xd1U, 0x82U, 0xd1U, 0x8cU, 0 };
 
-			XmlTest( "UTF-8: Russian value.", correctValue, element->Attribute( "value" ), true );
+			XmlTest( "UTF-8: Russian value.", (const char*)correctValue, element->Attribute( "value" ), true );
 			XmlTest( "UTF-8: Russian value row.", 4, element->Row() );
 			XmlTest( "UTF-8: Russian value column.", 5, element->Column() );
 
-			const char russianElementName[] = {	(char)0xd0, (char)0xa0, (char)0xd1, (char)0x83,
-												(char)0xd1, (char)0x81, (char)0xd1, (char)0x81,
-												(char)0xd0, (char)0xba, (char)0xd0, (char)0xb8,
-												(char)0xd0, (char)0xb9, 0 };
+			const unsigned char russianElementName[] = {	0xd0U, 0xa0U, 0xd1U, 0x83U,
+															0xd1U, 0x81U, 0xd1U, 0x81U,
+															0xd0U, 0xbaU, 0xd0U, 0xb8U,
+															0xd0U, 0xb9U, 0 };
 			const char russianText[] = "<\xD0\xB8\xD0\xBC\xD0\xB5\xD0\xB5\xD1\x82>";
 
-			TiXmlText* text = docH.FirstChildElement( "document" ).FirstChildElement( russianElementName ).Child( 0 ).Text();
+			TiXmlText* text = docH.FirstChildElement( "document" ).FirstChildElement( (const char*) russianElementName ).Child( 0 ).Text();
 			XmlTest( "UTF-8: Browsing russian element name.",
 					 russianText,
 					 text->Value(),
@@ -700,8 +700,8 @@ int main()
 		#else
 			// verifing some basic string functions:
 			TiXmlString a;
-			TiXmlString b = "Hello";
-			TiXmlString c = "ooga";
+			TiXmlString b( "Hello" );
+			TiXmlString c( "ooga" );
 
 			c = " World!";
 			a = b;
