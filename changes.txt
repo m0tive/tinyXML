@@ -188,4 +188,5 @@ Changes in version 2.1.5
 - Fixed additional const errors, thanks Kent Gibson.
 - Correctly re-enable warnings after tinyxml header. Thanks Cory Nelson.
 - Variety of type cleanup and warning fixes. Thanks Warren Stevens.
-
+- Cleaned up unneeded constructor calls in TinyString - thanks to Geoff Carlton and
+  the discussion group on sourceforge.
