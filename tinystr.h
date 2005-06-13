@@ -180,7 +180,12 @@ class TiXmlString
 
 	void clear ()
 	{
-		TiXmlString().swap(*this);
+		//Just too strange, though correct:
+		//TiXmlString().swap(*this);
+
+		//Instead use the quit & re-init -lee
+		quit();
+		init(0,0);
 	}
 
 	/*	Function to reserve a big amount of data when we know we'll need it. Be aware that this

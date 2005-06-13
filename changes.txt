@@ -190,3 +190,8 @@ Changes in version 2.1.5
 - Variety of type cleanup and warning fixes. Thanks Warren Stevens.
 - Cleaned up unneeded constructor calls in TinyString - thanks to Geoff Carlton and
   the discussion group on sourceforge.
+
+2.3.5
+- Improved string class, thanks Tyge Lovset (whose name gets mangled in English - sorry)
+- Type cast compiler warning, thanks Rob van den Bogaard
+- Added GetText() convenience function. Thanks Ilya Parniuk & Andrew Ellers for input.

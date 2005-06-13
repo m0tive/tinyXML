@@ -865,6 +865,19 @@ TiXmlNode* TiXmlElement::Clone() const
 }
 
 
+const char* TiXmlElement::GetText() const
+{
+	const TiXmlNode* child = this->FirstChild();
+	if ( child ) {
+		const TiXmlText* childText = child->ToText();
+		if ( childText ) {
+			return childText->Value();
+		}
+	}
+	return 0;
+}
+
+
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 	tabsize = 4;

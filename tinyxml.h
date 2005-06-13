@@ -420,7 +420,7 @@ public:
 
 		The subclasses will wrap this function.
 	*/
-	const char * Value() const { return value.c_str (); }
+	const char *Value() const { return value.c_str (); }
 
 	/** Changes the value of the node. Defined as:
 		@verbatim
@@ -916,6 +916,40 @@ public:
 	TiXmlAttribute* FirstAttribute() 				{ return attributeSet.First(); }
 	const TiXmlAttribute* LastAttribute()	const 	{ return attributeSet.Last(); }		///< Access the last attribute in this element.
 	TiXmlAttribute* LastAttribute()					{ return attributeSet.Last(); }
+
+	/** Convenience function for easy access to the text inside an element. Although easy
+		and concise, GetText() is limited compared to getting the TiXmlText child
+		and accessing it directly.
+	
+		If the first child of 'this' is a TiXmlText, the GetText()
+		returs the character string of the Text node, else null is returned.
+
+		This is a convenient method for getting the text of simple contained text:
+		@verbatim
+		<foo>This is text</foo>
+		const char* str = fooElement->GetText();
+		@endverbatim
+
+		'str' will be a pointer to "This is text". 
+		
+		Note that this function can be misleading. If the element foo was created from
+		this XML:
+		@verbatim
+		<foo><b>This is text</b></foo> 
+		@endverbatim
+
+		then the value of str would be null. The first child node isn't a text node, it is
+		another element. From this XML:
+		@verbatim
+		<foo>This is <b>text</b></foo> 
+		@endverbatim
+		GetText() will return "This is ".
+
+		WARNING: GetText() accesses a child node - don't become confused with the 
+				 similarly named TiXmlHandle::Text() and TiXmlNode::ToText() which are 
+				 safe type casts on the referenced node.
+	*/
+	const char* GetText() const;
 
 	/// Creates a new Element and returns it - the returned element is a copy.
 	virtual TiXmlNode* Clone() const;

@@ -661,6 +661,34 @@ int main()
 #endif
 
 	//////////////////////////////////////////////////////
+	// GetText();
+	{
+		const char* str = "<foo>This is text</foo>";
+		TiXmlDocument doc;
+		doc.Parse( str );
+		const TiXmlElement* element = doc.RootElement();
+
+		XmlTest( "GetText() normal use.", "This is text", element->GetText() );
+
+		str = "<foo><b>This is text</b></foo>";
+		doc.Clear();
+		doc.Parse( str );
+		element = doc.RootElement();
+
+		XmlTest( "GetText() contained element.", element->GetText() == 0, true );
+
+		str = "<foo>This is <b>text</b></foo>";
+		doc.Clear();
+		TiXmlBase::SetCondenseWhiteSpace( false );
+		doc.Parse( str );
+		TiXmlBase::SetCondenseWhiteSpace( true );
+		element = doc.RootElement();
+
+		XmlTest( "GetText() partial.", "This is ", element->GetText() );
+	}
+
+
+	//////////////////////////////////////////////////////
 	printf ("\n** Bug regression tests **\n");
 
 	// InsertBeforeChild and InsertAfterChild causes crash.
