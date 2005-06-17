@@ -195,3 +195,6 @@ Changes in version 2.1.5
 - Improved string class, thanks Tyge Lovset (whose name gets mangled in English - sorry)
 - Type cast compiler warning, thanks Rob van den Bogaard
 - Added GetText() convenience function. Thanks Ilya Parniuk & Andrew Ellers for input.
+- Many thanks to marlonism for finding an infinite loop in bad xml.
+- A patch to cleanup warnings from Robert Gebis.
+- Added ValueStr() to get the value of a node as a string.

@@ -72,7 +72,7 @@ class TiXmlParsingData;
 
 const int TIXML_MAJOR_VERSION = 2;
 const int TIXML_MINOR_VERSION = 3;
-const int TIXML_PATCH_VERSION = 4;
+const int TIXML_PATCH_VERSION = 5;
 
 /*	Internal structure for tracking location of items 
 	in the XML file.
@@ -295,7 +295,7 @@ protected:
 
 	// Return true if the next characters in the stream are any of the endTag sequences.
 	// Ignore case only works for english, and should only be relied on when comparing
-	// to Engilish words: StringEqual( p, "version", true ) is fine.
+	// to English words: StringEqual( p, "version", true ) is fine.
 	static bool StringEqual(	const char* p,
 								const char* endTag,
 								bool ignoreCase,
@@ -421,6 +421,14 @@ public:
 		The subclasses will wrap this function.
 	*/
 	const char *Value() const { return value.c_str (); }
+
+    #ifdef TIXML_USE_STL
+	/** Return Value() as a std::string. If you only use STL,
+	    this is more efficient than calling Value().
+		Only available in STL mode.
+	*/
+	const std::string& ValueStr() const { return value; }
+	#endif
 
 	/** Changes the value of the node. Defined as:
 		@verbatim
@@ -633,9 +641,6 @@ protected:
 	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
 	TiXmlNode* Identify( const char* start, TiXmlEncoding encoding );
 
-	// Internal Value function returning a TIXML_STRING
-	const TIXML_STRING& SValue() const	{ return value ; }
-
 	TiXmlNode*		parent;
 	NodeType		type;
 
@@ -706,15 +711,15 @@ public:
 		A specialized but useful call. Note that for success it returns 0,
 		which is the opposite of almost all other TinyXml calls.
 	*/
-	int QueryIntValue( int* value ) const;
+	int QueryIntValue( int* _value ) const;
 	/// QueryDoubleValue examines the value string. See QueryIntValue().
-	int QueryDoubleValue( double* value ) const;
+	int QueryDoubleValue( double* _value ) const;
 
 	void SetName( const char* _name )	{ name = _name; }				///< Set the name of this attribute.
 	void SetValue( const char* _value )	{ value = _value; }				///< Set the value.
 
-	void SetIntValue( int value );										///< Set the value from an integer.
-	void SetDoubleValue( double value );								///< Set the value from a double.
+	void SetIntValue( int _value );										///< Set the value from an integer.
+	void SetDoubleValue( double _value );								///< Set the value from a double.
 
     #ifdef TIXML_USE_STL
 	/// STL std::string form.
@@ -855,28 +860,28 @@ public:
 		an integer, it returns TIXML_WRONG_TYPE. If the attribute
 		does not exist, then TIXML_NO_ATTRIBUTE is returned.
 	*/	
-	int QueryIntAttribute( const char* name, int* value ) const;
+	int QueryIntAttribute( const char* name, int* _value ) const;
 	/// QueryDoubleAttribute examines the attribute - see QueryIntAttribute().
-	int QueryDoubleAttribute( const char* name, double* value ) const;
+	int QueryDoubleAttribute( const char* name, double* _value ) const;
 	/// QueryFloatAttribute examines the attribute - see QueryIntAttribute().
-	int QueryDoubleAttribute( const char* name, float* value ) const {
+	int QueryDoubleAttribute( const char* name, float* _value ) const {
 		double d;
 		int result = QueryDoubleAttribute( name, &d );
-		*value = (float)d;
+		*_value = (float)d;
 		return result;
 	}
 
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.
 	*/
-	void SetAttribute( const char* name, const char * value );
+	void SetAttribute( const char* name, const char * _value );
 
     #ifdef TIXML_USE_STL
 	const char* Attribute( const std::string& name ) const				{ return Attribute( name.c_str() ); }
 	const char* Attribute( const std::string& name, int* i ) const		{ return Attribute( name.c_str(), i ); }
 	const char* Attribute( const std::string& name, double* d ) const	{ return Attribute( name.c_str(), d ); }
-	int QueryIntAttribute( const std::string& name, int* value ) const	{ return QueryIntAttribute( name.c_str(), value ); }
-	int QueryDoubleAttribute( const std::string& name, double* value ) const { return QueryDoubleAttribute( name.c_str(), value ); }
+	int QueryIntAttribute( const std::string& name, int* _value ) const	{ return QueryIntAttribute( name.c_str(), _value ); }
+	int QueryDoubleAttribute( const std::string& name, double* _value ) const { return QueryDoubleAttribute( name.c_str(), _value ); }
 
 	/// STL std::string form.
 	void SetAttribute( const std::string& name, const std::string& _value )	
@@ -1397,7 +1402,7 @@ class TiXmlHandle
 {
 public:
 	/// Create a handle from any node (at any depth of the tree.) This can be a null pointer.
-	TiXmlHandle( TiXmlNode* node )					{ this->node = node; }
+	TiXmlHandle( TiXmlNode* _node )					{ this->node = _node; }
 	/// Copy constructor
 	TiXmlHandle( const TiXmlHandle& ref )			{ this->node = ref.node; }
 	TiXmlHandle operator=( const TiXmlHandle& ref ) { this->node = ref.node; return *this; }

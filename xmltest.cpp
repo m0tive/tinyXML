@@ -118,8 +118,8 @@ int main()
 	// The example parses from the character string (above):
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&start) );
-	#endif
-
+	#endif	
+	
 	{
 		// Write to a file and read it back, to check file I/O.
 
@@ -975,6 +975,13 @@ int main()
 		XmlTest( "Empty tinyxml string compare equal", ( foo == bar ), true );
 	}
 	#endif
+	{
+		// Bug [ 1195696 ] from marlonism
+		TiXmlBase::SetCondenseWhiteSpace(false); 
+		TiXmlDocument xml; 
+		xml.Parse("<text><break/>This hangs</text>"); 
+		XmlTest( "Test safe error return.", xml.Error(), false );
+	}
 
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );

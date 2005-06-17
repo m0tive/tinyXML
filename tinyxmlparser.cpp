@@ -1126,9 +1126,10 @@ const char* TiXmlElement::ReadValue( const char* p, TiXmlParsingData* data, TiXm
 {
 	TiXmlDocument* document = GetDocument();
 
-	const char* pWithWhiteSpace = p;
 	// Read in text and elements in any order.
+	const char* pWithWhiteSpace = p;
 	p = SkipWhiteSpace( p, encoding );
+
 	while ( p && *p )
 	{
 		if ( *p != '<' )
@@ -1180,6 +1181,7 @@ const char* TiXmlElement::ReadValue( const char* p, TiXmlParsingData* data, TiXm
 				}
 			}
 		}
+		pWithWhiteSpace = p;
 		p = SkipWhiteSpace( p, encoding );
 	}
 
