@@ -1158,12 +1158,12 @@ void TiXmlAttribute::SetDoubleValue( double _value )
 	SetValue (buf);
 }
 
-const int TiXmlAttribute::IntValue() const
+int TiXmlAttribute::IntValue() const
 {
 	return atoi (value.c_str ());
 }
 
-const double  TiXmlAttribute::DoubleValue() const
+double  TiXmlAttribute::DoubleValue() const
 {
 	return atof (value.c_str ());
 }
@@ -1218,23 +1218,51 @@ TiXmlNode* TiXmlComment::Clone() const
 }
 
 
-void TiXmlText::Print( FILE* cfile, int /*depth*/ ) const
+void TiXmlText::Print( FILE* cfile, int depth ) const
 {
-	TIXML_STRING buffer;
-	PutString( value, &buffer );
-	fprintf( cfile, "%s", buffer.c_str() );
+	if ( cdata )
+	{
+		int i;
+		fprintf( cfile, "\n" );
+		for ( i=0; i<depth; i++ ) {
+			fprintf( cfile, "    " );
+		}
+		fprintf( cfile, "<![CDATA[\n" );
+
+		fprintf( cfile, "%s", value.c_str() );	// unformatted output
+
+		fprintf( cfile, "\n" );
+		for ( i=0; i<depth; i++ ) {
+			fprintf( cfile, "    " );
+		}
+		fprintf( cfile, "]]>\n" );
+	}
+	else
+	{
+		TIXML_STRING buffer;
+		PutString( value, &buffer );
+		fprintf( cfile, "%s", buffer.c_str() );
+	}
 }
 
 
 void TiXmlText::StreamOut( TIXML_OSTREAM * stream ) const
 {
-	PutString( value, stream );
+	if ( cdata )
+	{
+		(*stream) << "<![CDATA[" << value << "]]>";
+	}
+	else
+	{
+		PutString( value, stream );
+	}
 }
 
 
 void TiXmlText::CopyTo( TiXmlText* target ) const
 {
 	TiXmlNode::CopyTo( target );
+	target->cdata = cdata;
 }
 
 

@@ -119,7 +119,7 @@ int main()
 	#if defined( WIN32 ) && defined( TUNE )
 	QueryPerformanceCounter( (LARGE_INTEGER*) (&start) );
 	#endif	
-	
+
 	{
 		// Write to a file and read it back, to check file I/O.
 
@@ -685,6 +685,46 @@ int main()
 		element = doc.RootElement();
 
 		XmlTest( "GetText() partial.", "This is ", element->GetText() );
+	}
+
+
+	//////////////////////////////////////////////////////
+	// CDATA
+	{
+		const char* str =	"<xmlElement>"
+								"<![CDATA["
+									"I am > the rules!\n"
+									"...since I make symbolic puns"
+								"]]>"
+							"</xmlElement>";
+		TiXmlDocument doc;
+		doc.Parse( str );
+		//doc.Print();
+
+		XmlTest( "CDATA parse.", doc.FirstChildElement()->FirstChild()->Value(), 
+								 "I am > the rules!\n...since I make symbolic puns",
+								 true );
+
+		#ifdef TIXML_USE_STL
+		//cout << doc << '\n';
+
+		doc.Clear();
+
+		istringstream parse0( str );
+		parse0 >> doc;
+		//cout << doc << '\n';
+
+		XmlTest( "CDATA stream.", doc.FirstChildElement()->FirstChild()->Value(), 
+								 "I am > the rules!\n...since I make symbolic puns",
+								 true );
+		#endif
+
+		TiXmlDocument doc1 = doc;
+		//doc.Print();
+
+		XmlTest( "CDATA copy.", doc1.FirstChildElement()->FirstChild()->Value(), 
+								 "I am > the rules!\n...since I make symbolic puns",
+								 true );
 	}
 
 

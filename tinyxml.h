@@ -27,6 +27,7 @@ distribution.
 #define TINYXML_INCLUDED
 
 #ifdef _MSC_VER
+#pragma warning( push )
 #pragma warning( disable : 4530 )
 #pragma warning( disable : 4786 )
 #endif
@@ -205,6 +206,7 @@ public:
 		TIXML_ERROR_PARSING_DECLARATION,
 		TIXML_ERROR_DOCUMENT_EMPTY,
 		TIXML_ERROR_EMBEDDED_NULL,
+		TIXML_ERROR_PARSING_CDATA,
 
 		TIXML_ERROR_STRING_COUNT
 	};
@@ -699,8 +701,8 @@ public:
 
 	const char*		Name()  const		{ return name.c_str (); }		///< Return the name of this attribute.
 	const char*		Value() const		{ return value.c_str (); }		///< Return the value of this attribute.
-	const int       IntValue() const;									///< Return the value of this attribute, converted to an integer.
-	const double	DoubleValue() const;								///< Return the value of this attribute, converted to a double.
+	int				IntValue() const;									///< Return the value of this attribute, converted to an integer.
+	double			DoubleValue() const;								///< Return the value of this attribute, converted to a double.
 
 	/** QueryIntValue examines the value string. It is an alternative to the
 		IntValue() method with richer error checking.
@@ -1031,10 +1033,14 @@ class TiXmlText : public TiXmlNode
 {
 	friend class TiXmlElement;
 public:
-	/// Constructor.
-	TiXmlText (const char * initValue) : TiXmlNode (TiXmlNode::TEXT)
+	/** Constructor for text element. By default, it is treated as 
+		normal, encoded text. If you want it be output as a CDATA text
+		element, set the parameter _cdata to 'true'
+	*/
+	TiXmlText (const char * initValue ) : TiXmlNode (TiXmlNode::TEXT)
 	{
 		SetValue( initValue );
+		cdata = false;
 	}
 	virtual ~TiXmlText() {}
 
@@ -1043,6 +1049,7 @@ public:
 	TiXmlText( const std::string& initValue ) : TiXmlNode (TiXmlNode::TEXT)
 	{
 		SetValue( initValue );
+		cdata = false;
 	}
 	#endif
 
@@ -1051,6 +1058,11 @@ public:
 
 	/// Write this text object to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
+
+	/// Queries whether this was parsed as a CDATA section
+	bool CDATA()					{ return cdata; }
+	/// Turns on or off a CDATA representation of text
+	void SetCDATA( bool _cdata )	{ cdata = _cdata; }
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
@@ -1067,7 +1079,52 @@ protected :
 	#endif
 
 private:
+	bool cdata;			// true if this should be input and output as a CDATA style text element
 };
+
+
+///** XML CDATA. The text of a CDATA element isn't parsed, but passed through "raw".
+//*/
+//class TiXmlCData : public TiXmlNode
+//{
+//	friend class TiXmlElement;
+//public:
+//	/// Constructor.
+//	TiXmlCData( const char * initValue ) : TiXmlNode( TiXmlNode::CDATA )
+//	{
+//		SetValue( initValue );
+//	}
+//	virtual ~TiXmlCData() {}
+//
+//	#ifdef TIXML_USE_STL
+//	/// Constructor.
+//	TiXmlCData( const std::string& initValue ) : TiXmlNode( TiXmlNode::CDATA )
+//	{
+//		SetValue( initValue );
+//	}
+//	#endif
+//
+//	TiXmlCData( const TiXmlCData& copy ) : TiXmlNode( TiXmlNode::CDATA )	{ copy.CopyTo( this ); }
+//	void operator=( const TiXmlCData& base )							 	{ base.CopyTo( this ); }
+//
+//	/// Write this CDATA object to a FILE stream.
+//	virtual void Print( FILE* cfile, int depth ) const;
+//
+//	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
+//
+//protected :
+//	///  [internal use] Creates a new Element and returns it.
+//	virtual TiXmlNode* Clone() const;
+//	void CopyTo( TiXmlCData* target ) const;
+//
+//	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
+//	// [internal use]
+//	#ifdef TIXML_USE_STL
+//	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
+//	#endif
+//
+//private:
+//};
 
 
 /** In correct XML the declaration is the first entry in the file.
@@ -1457,8 +1514,7 @@ private:
 };
 
 #ifdef _MSC_VER
-#pragma warning( default : 4530 )
-#pragma warning( default : 4786 )
+#pragma warning( pop )
 #endif
 
 #endif

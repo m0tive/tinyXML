@@ -180,10 +180,10 @@ class TiXmlString
 
 	void clear ()
 	{
-		//Just too strange, though correct:
-		//TiXmlString().swap(*this);
-
-		//Instead use the quit & re-init -lee
+		//Lee:
+		//The original was just too strange, though correct:
+		//	TiXmlString().swap(*this);
+		//Instead use the quit & re-init:
 		quit();
 		init(0,0);
 	}
@@ -226,7 +226,9 @@ class TiXmlString
 			rep_->capacity = cap;
 		}
 		else
+		{
 			rep_ = &nullrep_;
+		}
 	}
 
 	void quit()
@@ -253,7 +255,7 @@ inline bool operator < (const TiXmlString & a, const TiXmlString & b)
 }
 
 inline bool operator != (const TiXmlString & a, const TiXmlString & b) { return !(a == b); }
-inline bool operator > (const TiXmlString & a, const TiXmlString & b) { return b < a; }
+inline bool operator >  (const TiXmlString & a, const TiXmlString & b) { return b < a; }
 inline bool operator <= (const TiXmlString & a, const TiXmlString & b) { return !(b < a); }
 inline bool operator >= (const TiXmlString & a, const TiXmlString & b) { return !(a < b); }
 
