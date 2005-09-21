@@ -1,0 +1,58 @@
+/** @page tutorial_prelim Tutorial Preliminary
+<i> Andrew Ellerton April 2004 </i>
+
+These pages contains a bunch of examples of using TinyXml.
+
+Each demo is written in a standalone function. If you want
+to try the code, all you need to do is copy/paste the code
+into a file, then have a main to call it.
+
+So if the example has a function:
+
+	@verbatim
+	void write_simple_doc()
+	{
+		...
+	}
+	@endverbatim
+
+then the *complete* program you need to try it is:
+
+	@verbatim
+	#include "stdafx.h" // <-- you MIGHT need this
+	#include "tinyxml.h" // <-- you definitely need this ;)
+
+	void write_simple_doc()
+	{
+		...
+	}
+
+	void main( void )
+	{
+		write_simple_doc();
+	}
+	@endverbatim
+
+
+Two example XML datasets/files will be used. The first looks like
+this:
+
+	@verbatim
+	<?xml version="1.0" ?>
+	<Hello>World</Hello>
+	@endverbatim
+
+The other:
+
+	@verbatim
+	<?xml version="1.0" ?>
+	<poetry>
+		<verse>
+			Alas
+			  Great Whatever
+				Alas (again)
+		</verse>
+	</poetry>
+	@endverbatim
+
+*/

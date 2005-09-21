@@ -177,7 +177,7 @@ int main()
 	assert( itemElement );
 	itemElement->SetAttribute( "distance", "here" );
 
-	// Remove the "Look for Evil Dinosours!" item.
+	// Remove the "Look for Evil Dinosaurs!" item.
 	// It is 1 more sibling away. We ask the parent to remove
 	// a particular child.
 	itemElement = itemElement->NextSiblingElement();
@@ -291,7 +291,7 @@ int main()
 	XmlTest( "Top level nodes, using Last / Previous.", 3, count );
 
 	// Walk all the top level nodes of the document,
-	// using a different sytax.
+	// using a different syntax.
 	count = 0;
 	for( node = doc.IterateChildren( 0 );
 		 node;
@@ -559,7 +559,7 @@ int main()
 
 			// On most Western machines, this is an element that contains
 			// the word "resume" with the correct accents, in a latin encoding.
-			// It will be something else comletely on non-wester machines,
+			// It will be something else completely on non-wester machines,
 			// which is why TinyXml is switching to UTF-8.
 			const char latin[] = "<element>r\x82sum\x82</element>";
 
@@ -766,7 +766,7 @@ int main()
 
 			TiXmlText textSTL( name );
 		#else
-			// verifing some basic string functions:
+			// verifying some basic string functions:
 			TiXmlString a;
 			TiXmlString b( "Hello" );
 			TiXmlString c( "ooga" );
@@ -1014,6 +1014,7 @@ int main()
 		TiXmlString    bar( "" );
 		XmlTest( "Empty tinyxml string compare equal", ( foo == bar ), true );
 	}
+
 	#endif
 	{
 		// Bug [ 1195696 ] from marlonism
@@ -1021,6 +1022,21 @@ int main()
 		TiXmlDocument xml; 
 		xml.Parse("<text><break/>This hangs</text>"); 
 		XmlTest( "Test safe error return.", xml.Error(), false );
+	}
+
+	{
+		// Bug [ 1243992 ] - another infinite loop
+		TiXmlDocument doc;
+		doc.SetCondenseWhiteSpace(false);
+		doc.Parse("<p><pb></pb>test</p>");
+	} 
+	{
+		// Low entities
+		TiXmlDocument xml;
+		xml.Parse( "<test>&#x0e;</test>" );
+		const char result[] = { 0x0e, 0 };
+		XmlTest( "Low entities.", xml.FirstChildElement()->GetText(), result );
+		xml.Print();
 	}
 
 	#if defined( WIN32 ) && defined( TUNE )

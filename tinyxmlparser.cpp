@@ -26,7 +26,7 @@ distribution.
 #include <ctype.h>
 #include <stddef.h>
 
-#define DEBUG_PARSER
+//#define DEBUG_PARSER
 
 // Note tha "PutString" hardcodes the same list. This
 // is less flexible than it appears. Changing the entries

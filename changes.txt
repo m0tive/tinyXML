@@ -191,10 +191,16 @@ Changes in version 2.1.5
 - Cleaned up unneeded constructor calls in TinyString - thanks to Geoff Carlton and
   the discussion group on sourceforge.
 
-2.3.5
+2.4.0
 - Improved string class, thanks Tyge Lovset (whose name gets mangled in English - sorry)
 - Type cast compiler warning, thanks Rob van den Bogaard
 - Added GetText() convenience function. Thanks Ilya Parniuk & Andrew Ellers for input.
 - Many thanks to marlonism for finding an infinite loop in bad xml.
 - A patch to cleanup warnings from Robert Gebis.
 - Added ValueStr() to get the value of a node as a string.
+- TiXmlText can now parse and output as CDATA
+- Additional string improvement from James (z2895)
+- Removed extraneous 'const', thanks David Aldrich
+- First pass at switching to the "safe" stdlib functions. Many people have suggested and
+  pushed on this, but Warren Stevens put together the first proposal.
+

@@ -1,0 +1,192 @@
+/** @page gettingStarted Getting Started 
+<i> Andrew Ellerton April 2004 </i>
+
+<h2> Load XML from a file </h2>
+
+Loading a file is as simple as:
+
+	@verbatim
+	void load_file( )
+	{
+		TiXmlDocument doc( "demo.xml" );
+		bool loadOkay = doc.LoadFile();
+
+		if ( loadOkay )
+		{
+			// Your document is loaded - do what you like
+			// with it.
+			//
+			// Here we'll dump the structure to STDOUT,
+			// just for example
+			dump_to_stdout( &doc );
+		}
+		else
+		{
+			// load failed
+		}
+	}
+	@endverbatim
+
+
+The ``dump_to_stdout`` function is defined in the section `Dump structure of a Document to STDOUT`_
+in @ref tutorial_prelim. If you run this program with this XML:
+
+	@verbatim
+	<?xml version="1.0" ?>
+	<Hello>World</Hello>
+	@endverbatim
+
+You'll see this:
+
+	@verbatim
+	DOCUMENT
+	+ DECLARATION
+	+ ELEMENT Hello
+	  + TEXT[World]
+	@endverbatim
+	
+
+
+<h2> Building Documents Programatically </h2>
+
+
+Example:
+
+	@verbatim
+	void write_simple_doc( )
+	{
+		// Make xml: <?xml ..><Hello>World</Hello>
+		TiXmlDocument doc;
+		TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
+		TiXmlElement * element = new TiXmlElement( "Hello" );
+		TiXmlText * text = new TiXmlText( "World" );
+		element->LinkEndChild( text );
+		doc.LinkEndChild( decl );
+		doc.LinkEndChild( element );
+		
+		dump_to_stdout( &doc );
+		doc.SaveFile( "madeByHand.xml" );
+	}
+	@endverbatim
+
+Alternatively:
+
+	@verbatim
+	void write_simple_doc2( )
+	{
+		// same as write_simple_doc1 but add each node
+		// as early as possible into the tree.
+	
+		TiXmlDocument doc;
+		TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
+		doc.LinkEndChild( decl );
+		
+		TiXmlElement * element = new TiXmlElement( "Hello" );
+		doc.LinkEndChild( element );
+		
+		TiXmlText * text = new TiXmlText( "World" );
+		element->LinkEndChild( text );
+		
+		dump_to_stdout( &doc );
+		doc.SaveFile( "madeByHand2.xml" );
+	}
+	@endverbatim
+
+Both of these produce the same XML, namely:
+
+	@verbatim
+	<?xml version="1.0" ?>
+	<Hello>World</Hello>
+	@endverbatim
+
+Or in structure form::
+
+	@verbatim
+	DOCUMENT
+	+ DECLARATION
+	+ ELEMENT Hello
+	  + TEXT[World]
+	@endverbatim
+
+
+
+<h2> Saving Documents to File </h2>
+
+This function:
+
+	@verbatim
+	void write_simple_doc3( )  
+	{  
+		// This example courtesy of polocolege
+	 
+		TiXmlDocument doc;  
+		TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );  
+		doc.LinkEndChild( decl );  
+	 
+		TiXmlElement * element = new TiXmlElement( "Hello" );  
+		doc.LinkEndChild( element );  
+	 
+		TiXmlText * text = new TiXmlText( "Opening a new salutation" );  
+		element->LinkEndChild( text );  
+	 
+		TiXmlElement * element2 = new TiXmlElement( "Greeting" );  
+		element->LinkEndChild( element2 );  
+	 
+		TiXmlText * text2 = new TiXmlText( "How are you?" );  
+		element2->LinkEndChild( text2 );  
+	 
+		TiXmlElement * element3 = new TiXmlElement( "Language" );  
+		element2->LinkEndChild( element3 );  
+	 
+		TiXmlText * text3 = new TiXmlText( "English" );  
+		element3->LinkEndChild( text3 );  
+	 
+		TiXmlElement * element4 = new TiXmlElement( "Exclamation" );  
+		element->LinkEndChild( element4 );  
+	 
+		TiXmlText * text4 = new TiXmlText( "You have children!" );  
+		element4->LinkEndChild( text4 );  
+	 
+		dump_to_stdout( &doc );
+		doc.SaveFile( "madeByHand3.xml" );  
+	}  
+	@endverbatim
+
+Produces this structure:
+
+	@verbatim
+	Document
+	+ Declaration
+	+ Element "Hello"
+	  + Text: [Opening a new salutation]
+	  + Element "Greeting"
+		+ Text: [How are you?]
+		+ Element "Language"
+		  + Text: [English]
+	  + Element "Exclamation"
+		+ Text: [You have children!]
+	@endverbatim
+		
+The file ``madeByHand3.xml`` looks exactly like this (including indents):
+
+	@verbatim
+	<?xml version="1.0" ?>
+	<Hello>Opening a new salutation
+	    <Greeting>How are you?
+	        <Language>English</Language>
+	    </Greeting>
+	    <Exclamation>You have children!</Exclamation>
+	</Hello>
+	@endverbatim
+
+I was surprised that TinyXml, by default, writes the XML in what other
+APIs call a "pretty" format - it modifies the whitespace of text of elements 
+that contain other nodes so that writing the tree includes an indication of 
+nesting level.
+
+I haven't looked yet to see if there is a way to turn off indenting when 
+writing a file - its bound to be easy. (Lee: It's easy in STL mode, just
+use cout << myDoc. Non-STL mode is always in "pretty" format. A switch
+would be a nice feature.)
+
+*/

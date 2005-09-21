@@ -5,8 +5,6 @@
 TinyXml is a simple, small, C++ XML parser that can be easily 
 integrating into other programs.
 
-@subpage howto
-
 <h2> What it does. </h2>
 	
 In brief, TinyXml parses an XML document, and builds from that a 
@@ -69,10 +67,20 @@ The following DTD syntax will not parse at this time in TinyXml:
 because TinyXml sees this as a !DOCTYPE node with an illegally 
 embedded !ELEMENT node. This may be addressed in the future.
 
+<h2> Tutorials. </h2>
+
+For the impatient, here are some tutorials to get you going. They
+are a great way to get started, but it is worth your time to read
+this (very short) manual.
+
+- @subpage tutorial_prelim
+- @subpage gettingStarted
+- @subpage iterating
+
 <h2> Code Status.  </h2>
 
 TinyXml is mature, tested code. It is very stable. If you find
-bugs, please file a bug report is on the sourceforge web site
+bugs, please file a bug report on the sourceforge web site
 (www.sourceforge.net/projects/tinyxml).
 We'll get them straightened out as soon as possible.
 

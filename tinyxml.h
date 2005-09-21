@@ -62,6 +62,22 @@ distribution.
 	#define TIXML_OSTREAM	TiXmlOutStream
 #endif
 
+// Deprecated library function hell. Compilers want to use the
+// new safe versions. This probably doesn't fully address the problem,
+// but it gets closer. There are too many compilers for me to fully
+// test. If you get compilation troubles, undefine TIXML_SAFE
+
+#define TIXML_SAFE		// TinyXml isn't fully buffer overrun protected, safe code. This is work in progress.
+#ifdef TIXML_SAFE
+	#if defined(_MSC_VER)
+		#define TIXML_SNPRINTF _snprintf
+		#define TIXML_SNSCANF  _snscanf
+	#elif defined(__GNUC__)
+		#define TIXML_SNPRINTF snprintf
+		#define TIXML_SNSCANF  snscanf
+	#endif
+#endif	
+
 class TiXmlDocument;
 class TiXmlElement;
 class TiXmlComment;
@@ -72,8 +88,8 @@ class TiXmlDeclaration;
 class TiXmlParsingData;
 
 const int TIXML_MAJOR_VERSION = 2;
-const int TIXML_MINOR_VERSION = 3;
-const int TIXML_PATCH_VERSION = 5;
+const int TIXML_MINOR_VERSION = 4;
+const int TIXML_PATCH_VERSION = 0;
 
 /*	Internal structure for tracking location of items 
 	in the XML file.
@@ -279,7 +295,11 @@ protected:
 		}
 		else if ( *length )
 		{
-			strncpy( _value, p, *length );
+			//strncpy( _value, p, *length );	// lots of compilers don't like this function (unsafe),
+												// and the null terminator isn't needed
+			for( int i=0; p[i] && i<*length; ++i ) {
+				_value[i] = p[i];
+			}
 			return p + (*length);
 		}
 		else
@@ -866,10 +886,12 @@ public:
 	/// QueryDoubleAttribute examines the attribute - see QueryIntAttribute().
 	int QueryDoubleAttribute( const char* name, double* _value ) const;
 	/// QueryFloatAttribute examines the attribute - see QueryIntAttribute().
-	int QueryDoubleAttribute( const char* name, float* _value ) const {
+	int QueryFloatAttribute( const char* name, float* _value ) const {
 		double d;
 		int result = QueryDoubleAttribute( name, &d );
-		*_value = (float)d;
+		if ( result == TIXML_SUCCESS ) {
+			*_value = (float)d;
+		}
 		return result;
 	}
 
@@ -1027,7 +1049,10 @@ private:
 };
 
 
-/** XML text. Contained in an element.
+/** XML text. A text node can have 2 ways to output the next. "Normal" output 
+	and CDATA. It will default to the mode it was parsed from the XML file, and
+	you generally want to leave it alone, but you can change the output mode with 
+	SetCDATA() and query it with CDATA().
 */
 class TiXmlText : public TiXmlNode
 {
@@ -1059,7 +1084,7 @@ public:
 	/// Write this text object to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 
-	/// Queries whether this was parsed as a CDATA section
+	/// Queries whether this is a CDATA section
 	bool CDATA()					{ return cdata; }
 	/// Turns on or off a CDATA representation of text
 	void SetCDATA( bool _cdata )	{ cdata = _cdata; }
@@ -1081,50 +1106,6 @@ protected :
 private:
 	bool cdata;			// true if this should be input and output as a CDATA style text element
 };
-
-
-///** XML CDATA. The text of a CDATA element isn't parsed, but passed through "raw".
-//*/
-//class TiXmlCData : public TiXmlNode
-//{
-//	friend class TiXmlElement;
-//public:
-//	/// Constructor.
-//	TiXmlCData( const char * initValue ) : TiXmlNode( TiXmlNode::CDATA )
-//	{
-//		SetValue( initValue );
-//	}
-//	virtual ~TiXmlCData() {}
-//
-//	#ifdef TIXML_USE_STL
-//	/// Constructor.
-//	TiXmlCData( const std::string& initValue ) : TiXmlNode( TiXmlNode::CDATA )
-//	{
-//		SetValue( initValue );
-//	}
-//	#endif
-//
-//	TiXmlCData( const TiXmlCData& copy ) : TiXmlNode( TiXmlNode::CDATA )	{ copy.CopyTo( this ); }
-//	void operator=( const TiXmlCData& base )							 	{ base.CopyTo( this ); }
-//
-//	/// Write this CDATA object to a FILE stream.
-//	virtual void Print( FILE* cfile, int depth ) const;
-//
-//	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
-//
-//protected :
-//	///  [internal use] Creates a new Element and returns it.
-//	virtual TiXmlNode* Clone() const;
-//	void CopyTo( TiXmlCData* target ) const;
-//
-//	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
-//	// [internal use]
-//	#ifdef TIXML_USE_STL
-//	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
-//	#endif
-//
-//private:
-//};
 
 
 /** In correct XML the declaration is the first entry in the file.
@@ -1302,7 +1283,7 @@ public:
 	/** Generally, you probably want the error string ( ErrorDesc() ). But if you
 		prefer the ErrorId, this function will fetch it.
 	*/
-	const int ErrorId()	const				{ return errorId; }
+	int ErrorId()	const				{ return errorId; }
 
 	/** Returns the location (if known) of the error. The first column is column 1, 
 		and the first row is row 1. A value of 0 means the row and column wasn't applicable
