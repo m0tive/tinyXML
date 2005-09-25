@@ -1295,7 +1295,11 @@ public:
 	int ErrorRow()	{ return errorLocation.row+1; }
 	int ErrorCol()	{ return errorLocation.col+1; }	///< The column where the error occured. See ErrorRow()
 
-	/** By calling this method, with a tab size
+	/** SetTabSize() allows the error reporting functions (ErrorRow() and ErrorCol())
+		to report the correct values for row and column. It does not change the output
+		or input in any way.
+		
+		By calling this method, with a tab size
 		greater than 0, the row and column of each node and attribute is stored
 		when the file is loaded. Very useful for tracking the DOM back in to
 		the source file.
