@@ -717,6 +717,7 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
 			 && *(pU+2) && *(pU+2) == TIXML_UTF_LEAD_2 )
 		{
 			encoding = TIXML_ENCODING_UTF8;
+			useMicrosoftBOM = true;
 		}
 	}
 

@@ -895,6 +895,7 @@ const char* TiXmlElement::GetText() const
 TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 	tabsize = 4;
+	useMicrosoftBOM = false;
 	ClearError();
 }
 
@@ -968,7 +969,8 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 	// Fixed with the StringToBuffer class.
 	value = filename;
 
-	FILE* file = fopen( value.c_str (), "r" );
+	// reading in binary mode so that tinyxml can normalize the EOL
+	FILE* file = fopen( value.c_str (), "rb" );	
 
 	if ( file )
 	{
@@ -990,14 +992,75 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 		TIXML_STRING data;
 		data.reserve( length );
 
-		const int BUF_SIZE = 2048;
-		char buf[BUF_SIZE];
+		// Subtle bug here. TinyXml did use fgets. But from the XML spec:
+		// 2.11 End-of-Line Handling
+		// <snip>
+		// <quote>
+		// ...the XML processor MUST behave as if it normalized all line breaks in external 
+		// parsed entities (including the document entity) on input, before parsing, by translating 
+		// both the two-character sequence #xD #xA and any #xD that is not followed by #xA to 
+		// a single #xA character.
+		// </quote>
+		//
+		// It is not clear fgets does that, and certainly isn't clear it works cross platform. 
+		// Generally, you expect fgets to translate from the convention of the OS to the c/unix
+		// convention, and not work generally.
 
-		while( fgets( buf, BUF_SIZE, file ) )
+		/*
+		while( fgets( buf, sizeof(buf), file ) )
 		{
 			data += buf;
 		}
+		*/
+
+		char* buf = new char[ length+1 ];
+		buf[0] = 0;
+
+		if ( fread( buf, length, 1, file ) != 1 ) {
+			SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TIXML_ENCODING_UNKNOWN );
+			fclose( file );
+			return false;
+		}
 		fclose( file );
+		buf[length] = 0;
+
+		const char* lastPos = buf;
+		const char* p = buf;
+
+		for ( p=buf; *p; ++p ) {
+			if ( *p == 0xa ) {
+				// Newline character. No special rules for this. Append all the characters
+				// since the last string, and include the newline.
+				data.append( lastPos, p-lastPos+1 );	// append, include the newline
+				++p;									// move past the newline
+				lastPos = p;							// and point to the new buffer (may be 0)
+			}
+			else if ( *p == 0xd ) {
+				// Carriage return. Append what we have so far, then
+				// handle moving forward in the buffer.
+				if ( (p-lastPos) > 0 ) {
+					data.append( lastPos, p-lastPos );	// do not add the CR
+				}
+				data += (char)0xa;						// a proper newline
+
+				if ( *(p+1) == 0xa ) {
+					// Carriage return - new line sequence
+					p += 2;
+					lastPos = p;
+				}
+				else {
+					// it was followed by something else...that is presumably characters again.
+					++p;
+					lastPos = p;
+				}
+			}
+		}
+		// Handle any left over characters.
+		if ( p-lastPos ) {
+			data.append( lastPos, p-lastPos );
+		}		
+		delete [] buf;
+		buf = 0;
 
 		Parse( data.c_str(), 0, encoding );
 
@@ -1016,6 +1079,16 @@ bool TiXmlDocument::SaveFile( const char * filename ) const
 	FILE* fp = fopen( filename, "w" );
 	if ( fp )
 	{
+		if ( useMicrosoftBOM ) 
+		{
+			const unsigned char TIXML_UTF_LEAD_0 = 0xefU;
+			const unsigned char TIXML_UTF_LEAD_1 = 0xbbU;
+			const unsigned char TIXML_UTF_LEAD_2 = 0xbfU;
+
+			fputc( TIXML_UTF_LEAD_0, fp );
+			fputc( TIXML_UTF_LEAD_1, fp );
+			fputc( TIXML_UTF_LEAD_2, fp );
+		}
 		Print( fp, 0 );
 		fclose( fp );
 		return true;
