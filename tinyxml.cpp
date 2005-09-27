@@ -1030,7 +1030,7 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 		const char* p = buf;
 
 		buf[length] = 0;
-		for ( p=buf; *p; ++p ) {
+		while( *p ) {
 			assert( p < (buf+length) );
 			if ( *p == 0xa ) {
 				// Newline character. No special rules for this. Append all the characters
@@ -1038,6 +1038,7 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 				data.append( lastPos, p-lastPos+1 );	// append, include the newline
 				++p;									// move past the newline
 				lastPos = p;							// and point to the new buffer (may be 0)
+				assert( p <= (buf+length) );
 			}
 			else if ( *p == 0xd ) {
 				// Carriage return. Append what we have so far, then
@@ -1051,12 +1052,17 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 					// Carriage return - new line sequence
 					p += 2;
 					lastPos = p;
+					assert( p <= (buf+length) );
 				}
 				else {
 					// it was followed by something else...that is presumably characters again.
 					++p;
 					lastPos = p;
+					assert( p <= (buf+length) );
 				}
+			}
+			else {
+				++p;
 			}
 		}
 		// Handle any left over characters.
