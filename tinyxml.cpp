@@ -902,6 +902,7 @@ TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::DOCUMENT )
 TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 	tabsize = 4;
+	useMicrosoftBOM = false;
 	value = documentName;
 	ClearError();
 }
@@ -911,6 +912,7 @@ TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode
 TiXmlDocument::TiXmlDocument( const std::string& documentName ) : TiXmlNode( TiXmlNode::DOCUMENT )
 {
 	tabsize = 4;
+	useMicrosoftBOM = false;
     value = documentName;
 	ClearError();
 }
@@ -1017,17 +1019,19 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 		buf[0] = 0;
 
 		if ( fread( buf, length, 1, file ) != 1 ) {
+		//if ( fread( buf, 1, length, file ) != (size_t)length ) {
 			SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TIXML_ENCODING_UNKNOWN );
 			fclose( file );
 			return false;
 		}
 		fclose( file );
-		buf[length] = 0;
 
 		const char* lastPos = buf;
 		const char* p = buf;
 
+		buf[length] = 0;
 		for ( p=buf; *p; ++p ) {
+			assert( p < (buf+length) );
 			if ( *p == 0xa ) {
 				// Newline character. No special rules for this. Append all the characters
 				// since the last string, and include the newline.
