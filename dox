@@ -452,7 +452,7 @@ WARN_LOGFILE           =
 
 INPUT                  = . \
                          readme.txt \
-                         tutorial_prelim.txt tutorial_gettingStarted.txt tutorial_iterating.txt
+                         tutorial_gettingStarted.txt
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

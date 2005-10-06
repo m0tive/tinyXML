@@ -126,13 +126,5 @@ SOURCE=.\readme.txt
 
 SOURCE=.\tutorial_gettingStarted.txt
 # End Source File
-# Begin Source File
-
-SOURCE=.\tutorial_iterating.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\tutorial_prelim.txt
-# End Source File
 # End Target
 # End Project

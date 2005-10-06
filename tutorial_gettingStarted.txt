@@ -1,5 +1,4 @@
 /** @page tutorial0 TinyXML Tutorial
-<c><i> Andrew Ellerton April 2004 </i></c>
 
 <h1> Tutorial Preliminary </h1>
 
@@ -395,5 +394,11 @@ and:
 	] 
 	@endverbatim
 
+<i> Authors and Changes
+<ul>
+<li> Written by Andrew Ellerton April 2004 </li>
+<li> Minor edits and integration into doc system, Lee Thomason September 2005 </li>
+</ul>
+</i>
 
 */
