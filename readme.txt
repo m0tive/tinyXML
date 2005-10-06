@@ -69,13 +69,10 @@ embedded !ELEMENT node. This may be addressed in the future.
 
 <h2> Tutorials. </h2>
 
-For the impatient, here are some tutorials to get you going. They
-are a great way to get started, but it is worth your time to read
-this (very short) manual.
+For the impatient, here is a tutorial to get you going. A great way to get started, 
+but it is worth your time to read this (very short) manual completely.
 
-- @subpage tutorial_prelim
-- @subpage gettingStarted
-- @subpage iterating
+- @subpage tutorial0
 
 <h2> Code Status.  </h2>
 

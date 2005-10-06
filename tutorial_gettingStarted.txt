@@ -1,5 +1,63 @@
-/** @page gettingStarted Getting Started 
-<i> Andrew Ellerton April 2004 </i>
+/** @page tutorial0 TinyXML Tutorial
+<c><i> Andrew Ellerton April 2004 </i></c>
+
+<h1> Tutorial Preliminary </h1>
+
+These pages contains a bunch of examples of using TinyXml.
+
+Each demo is written in a standalone function. If you want
+to try the code, all you need to do is copy/paste the code
+into a file, then have a main to call it.
+
+So if the example has a function:
+
+	@verbatim
+	void write_simple_doc()
+	{
+		...
+	}
+	@endverbatim
+
+then the *complete* program you need to try it is:
+
+	@verbatim
+	#include "stdafx.h" // <-- you MIGHT need this
+	#include "tinyxml.h" // <-- you definitely need this ;)
+
+	void write_simple_doc()
+	{
+		...
+	}
+
+	void main( void )
+	{
+		write_simple_doc();
+	}
+	@endverbatim
+
+
+Two example XML datasets/files will be used. The first looks like
+this:
+
+	@verbatim
+	<?xml version="1.0" ?>
+	<Hello>World</Hello>
+	@endverbatim
+
+The other:
+
+	@verbatim
+	<?xml version="1.0" ?>
+	<poetry>
+		<verse>
+			Alas
+			  Great Whatever
+				Alas (again)
+		</verse>
+	</poetry>
+	@endverbatim
+
+<h1> Getting Started </h1>
 
 <h2> Load XML from a file </h2>
 
@@ -28,8 +86,8 @@ Loading a file is as simple as:
 	@endverbatim
 
 
-The ``dump_to_stdout`` function is defined in the section `Dump structure of a Document to STDOUT`_
-in @ref tutorial_prelim. If you run this program with this XML:
+The ``dump_to_stdout`` function is defined in the section `Dump structure of a Document to STDOUT` 
+below. If you run this program with this XML:
 
 	@verbatim
 	<?xml version="1.0" ?>
@@ -99,7 +157,7 @@ Both of these produce the same XML, namely:
 	<Hello>World</Hello>
 	@endverbatim
 
-Or in structure form::
+Or in structure form:
 
 	@verbatim
 	DOCUMENT
@@ -185,8 +243,157 @@ that contain other nodes so that writing the tree includes an indication of
 nesting level.
 
 I haven't looked yet to see if there is a way to turn off indenting when 
-writing a file - its bound to be easy. (Lee: It's easy in STL mode, just
-use cout << myDoc. Non-STL mode is always in "pretty" format. A switch
-would be a nice feature.)
+writing a file - its bound to be easy. 
+
+[Lee: It's easy in STL mode, just use cout << myDoc. Non-STL mode is 
+always in "pretty" format. Adding a switch would be a nice feature and
+has been requested.]
+
+<h1> Iterating Over Documents </h1>
+
+<h2> Dump structure of a Document to STDOUT </h2>
+
+Often when you're starting its helpful and reassuring to
+know that you're document got loaded as you expect it to.
+
+Below I've defined a function to walk a document and write
+contents to STDOUT:
+
+	@verbatim
+	// a utility function defining a very simple method to indent a line of text
+	const char * getIndent( unsigned int numIndents )
+	{
+		static const char * pINDENT = "                                      + ";
+		static const unsigned int LENGTH = strlen( pINDENT );
+	
+		if ( numIndents > LENGTH ) numIndents = LENGTH;
+	
+		return &pINDENT[ LENGTH-numIndents ];
+	}
+	
+	void dump_to_stdout( TiXmlNode * pParent, unsigned int indent = 0 )
+	{
+		if ( !pParent ) return;
+	
+		TiXmlText *pText;
+		int t = pParent->Type();
+		printf( "%s", getIndent( indent));
+	
+		switch ( t )
+		{
+		case TiXmlNode::DOCUMENT:
+			printf( "Document" );
+			break;
+	
+		case TiXmlNode::ELEMENT:
+			printf( "Element \"%s\"", pParent->Value() );
+			break;
+	
+		case TiXmlNode::COMMENT:
+			printf( "Comment: \"%s\"", pParent->Value());
+			break;
+	
+		case TiXmlNode::UNKNOWN:
+			printf( "Unknown" );
+			break;
+	
+		case TiXmlNode::TEXT:
+			pText = pParent->ToText();
+			printf( "Text: [%s]", pText->Value() );
+			break;
+	
+		case TiXmlNode::DECLARATION:
+			printf( "Declaration" );
+			break;
+		default:
+			break;
+		}
+		printf( "\n" );
+	
+		TiXmlNode * pChild;
+	
+		for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
+		{
+			dump_to_stdout( pChild, indent+2 );
+		}
+	}
+	@endverbatim
+
+	
+To load a file and dump its structure:
+
+	@verbatim
+	void load_and_display( )
+	{
+		// important for the poetry demo, but you may not need this 
+		// in your own projects
+		TiXmlBase::SetCondenseWhiteSpace( false );
+	
+		TiXmlDocument doc( "demo.xml" );
+		bool loadOkay = doc.LoadFile();
+	
+		if ( loadOkay )
+		{
+			dump_to_stdout( &doc );
+		}
+		else
+		{
+			printf( "Something went wrong\n" );
+		}
+	}
+	@endverbatim
+
+If you run this with the first XML file you'll see this 
+on STDOUT:
+
+	@verbatim
+	DOCUMENT
+	+ DECLARATION
+	+ ELEMENT Hello
+	  + TEXT[World]
+	@endverbatim
+
+and on the second XML file:
+
+	@verbatim
+	DOCUMENT
+	+ DECLARATION
+	+ ELEMENT poetry
+	  + COMMENT:  my great work of art
+	  + ELEMENT verse
+	    + TEXT[
+	Alas
+	  Great Whatever
+	    Alas (again)
+	]
+	@endverbatim
+
+
+Note that if you call dump_to_stdout like this:
+
+	@verbatim
+	dump_to_stdout( doc.RootElement());
+	@endverbatim
+
+You'll see this instead:
+
+	@verbatim
+	ELEMENT Hello
+	+ TEXT[World]
+	@endverbatim
+
+and:
+
+	@verbatim
+	ELEMENT poetry
+	+ COMMENT:  my great work of art
+	+ ELEMENT verse
+  	+ TEXT[
+	Alas
+	  Great Whatever
+	    Alas (again)
+	] 
+	@endverbatim
+
 
 */
