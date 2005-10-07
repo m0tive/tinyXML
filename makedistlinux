@@ -1,14 +1,18 @@
-echo "Making tinyxml 1_1_1"
+#!/bin/bash
+VERSION=2_4_0
+echo "Making tinyxml $VERSION"
 
-rm ./docs/*
+rm -f ./docs/*
 
 doxygen dox
 rm -rf ./tinyxml/*
 
-rm tinyxml_2_4_0.zip
-rm tinyxml_2_4_0.tar.gz
+rm -f tinyxml_$VERSION.zip
+rm -f tinyxml_$VERSION.tar.gz
 
-rmdir tinyxml
+if [ -d tinyxml ]; then
+	rmdir tinyxml
+fi
 mkdir tinyxml
 
 cp readme.txt ./tinyxml
@@ -45,6 +49,9 @@ unix2dos ./tinyxml/tinyxml.dsw
 mkdir ./tinyxml/docs
 cp ./docs/* ./tinyxml/docs
 
-tar -zcf tinyxml_2_4_0.tar.gz tinyxml
-zip -r -q -9 tinyxml_2_4_0.zip tinyxml
+tar zcf tinyxml_$VERSION.tar.gz tinyxml
+zip -r -q -9 tinyxml_$VERSION.zip tinyxml
+
+echo "Finished:"
+ls -l tinyxml_$VERSION.tar.gz tinyxml_$VERSION.zip
 

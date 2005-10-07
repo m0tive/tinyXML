@@ -396,7 +396,7 @@ and:
 
 <i> Authors and Changes
 <ul>
-<li> Written by Andrew Ellerton April 2004 </li>
+<li> Written by Ellers, April 2005 </li>
 <li> Minor edits and integration into doc system, Lee Thomason September 2005 </li>
 </ul>
 </i>
