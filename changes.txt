@@ -206,5 +206,7 @@ Changes in version 2.1.5
 - TinyXml now will do EOL normalization before parsing, consistent with the W3C XML spec.
 - Documents loaded with the UTF-8 BOM will now save with the UTF-8 BOM. Good suggestion 
   from 'instructor_'
+- Ellers submitted his very popular tutorials, which have been added to the distribution.
+
 
 
