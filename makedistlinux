@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# NOTE: This is set by setversion.py
 VERSION=2_4_0
 echo "Making tinyxml $VERSION"
 

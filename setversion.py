@@ -1,6 +1,8 @@
 # Python program to set the version.
 ##############################################
 
+import re
+import sys
 
 def fileProcess( name, lineFunction ):
 	filestream = open( name, 'r' )
@@ -26,9 +28,7 @@ def fileProcess( name, lineFunction ):
 	
 def echoInput( line ):
 	return line
-	
 
-import sys
 major = input( "Major: " )
 minor = input( "Minor: " )
 build = input( "Build: " )
@@ -80,16 +80,17 @@ fileProcess( "dox", doxRule )
 
 #### Write the makedistlinux #####
 
+# example:
+# VERSION=2_4_0
+linuxRulePattern=re.compile("^VERSION=\d+_\d+_\d+.*$")
+
 def buildlinuxRule( line ):
 
-	i = line.rfind( "_" )
+	m=linuxRulePattern.match(line)
+	if not m: return line
 
-	if i >= 4 and line[i] == "_" and line[i-2] == "_" and line[i-4] == "_":
-		# This is ghetto. Should really use regular expressions.
-		i -= 4
-		print "makedistlinux instance found"
-		return line[0:i] + "_" + `major` + "_" + `minor` + "_" + `build` + line[i+6:]
-	else:
-		return line
+	# if here, matched the line
+	print "makedistlinux instance found"
+	return "VERSION=%d_%d_%d\n"%(major,minor,build)
 
 fileProcess( "makedistlinux", buildlinuxRule )
