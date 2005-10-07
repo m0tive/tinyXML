@@ -208,5 +208,3 @@ Changes in version 2.1.5
   from 'instructor_'
 - Ellers submitted his very popular tutorials, which have been added to the distribution.
 
-
-
