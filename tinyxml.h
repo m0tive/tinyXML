@@ -1053,8 +1053,8 @@ private:
 };
 
 
-/** XML text. A text node can have 2 ways to output the next. "Normal" output 
-	and CDATA. It will default to the mode it was parsed from the XML file, and
+/** XML text. A text node can have 2 ways to output the next. "normal" output 
+	and CDATA. It will default to the mode it was parsed from the XML file and
 	you generally want to leave it alone, but you can change the output mode with 
 	SetCDATA() and query it with CDATA().
 */
@@ -1088,9 +1088,9 @@ public:
 	/// Write this text object to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
 
-	/// Queries whether this is a CDATA section
+	/// Queries whether this represents text using a CDATA section.
 	bool CDATA()					{ return cdata; }
-	/// Turns on or off a CDATA representation of text
+	/// Turns on or off a CDATA representation of text.
 	void SetCDATA( bool _cdata )	{ cdata = _cdata; }
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
