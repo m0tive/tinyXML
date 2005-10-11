@@ -16,14 +16,14 @@ Likewise if you don't know what a DOM is, look elsewhere first.
 
 Some example XML datasets/files will be used. 
 
-Example 1:
+example1.xml:
 
 @verbatim
 <?xml version="1.0" ?>
 <Hello>World</Hello>
 @endverbatim
 
-Example 2:
+example2.xml:
 
 @verbatim
 <?xml version="1.0" ?>
@@ -36,7 +36,7 @@ Example 2:
 </poetry>
 @endverbatim
 
-Example 3:
+example3.xml:
 
 @verbatim
 <?xml version="1.0" ?>
@@ -46,7 +46,7 @@ Example 3:
 </shapes>
 @endverbatim
 
-Example 4:
+example4.xml
 
 @verbatim
 <?xml version="1.0" ?>
@@ -216,7 +216,7 @@ window->SetDoubleAttribute("radius", 3.14159);
 You can it also work with the TiXmlAttribute objects if you want.
 
 The following code shows one way (not the only way) to get all attributes of an 
-element, print the name and (string) value, and if the value can be converted
+element, print the name and string value, and if the value can be converted
 to an integer or double, print that value too:
 
 @verbatim
@@ -244,7 +244,7 @@ int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
 	}
 	return i;
 }
-@nonverbatim
+@endverbatim
 
 <h2> Writing a document to a file </h2>
 
@@ -371,7 +371,7 @@ has been requested.]
 <h2> Intro </h2>
 
 This example assumes you're loading and saving your app settings in an 
-XML file. The Example 4 XML is the sort of thing.
+XML file, e.g. something like example4.xml.
 
 There are a number of ways to do this. For example, look into the TinyBind
 project at http://sourceforge.net/projects/tinybind
@@ -379,9 +379,9 @@ project at http://sourceforge.net/projects/tinybind
 This section shows a plain-old approach to loading and saving a basic object
 structure using XML.
 
-<h2> Encode C++ state as XML </h2>
+<h2> Set up your object classes </h2>
 
-Start of with some basic objects like these:
+Start off with some basic classes like these:
 
 @verbatim
 #include <string>
@@ -396,7 +396,12 @@ class WindowSettings
 public:
 	int x,y,w,h;
 	string name;
-	
+
+	WindowSettings()
+		: x(0), y(0), w(100), h(100), name("Untitled")
+	{
+	}
+
 	WindowSettings(int x, int y, int w, int h, const string& name)
 	{
 		this->x=x;
@@ -410,33 +415,40 @@ public:
 class ConnectionSettings
 {
 public:
-	string connection;
+	string ip;
 	double timeout;
 };
 
 class AppSettings
 {
 public:
-	MessageMap messages;
-	std::list<WindowSettings> windows;
-	ConnectionSettings connection;
+	string m_name;
+	MessageMap m_messages;
+	list<WindowSettings> m_windows;
+	ConnectionSettings m_connection;
 
-	AppSettings()
-	{
-		messages.put("Welcome", "Welcome to MyApp");
-		messages.put("Farewell", "Thank you for using MyApp");
-		windows.push_back(Window(5,15,400,250,"MainFrame");
-		connection.ip="Unknown";
-		connection.timeout=345.678;
-	}
+	AppSettings() {}
 
 	void save(const char* pFilename);
 	void load(const char* pFilename);
+	
+	// just to show how to do it
+	void setDemoValues()
+	{
+		m_name="MyApp";
+		m_messages.clear();
+		m_messages["Welcome"]="Welcome to "+m_name;
+		m_messages["Farewell"]="Thank you for using "+m_name;
+		m_windows.clear();
+		m_windows.push_back(WindowSettings(15,15,400,250,"Main"));
+		m_connection.ip="Unknown";
+		m_connection.timeout=123.456;
+	}
 };
 @endverbatim
 
-Using this (over-simplified) approach, here is a mainline we'll use to show
-saving and loading state:
+This is a basic main() that shows how to create a default settings object tree,
+save it and load it again:
 
 @verbatim
 int main(void)
@@ -448,6 +460,51 @@ int main(void)
 	return 0;
 }
 @endverbatim
+
+The following main() shows creation, modification, saving and then loading of a
+settings structure:
+
+@verbatim
+int main(void)
+{
+	// block: customise and save settings
+	{
+		AppSettings settings;
+		settings.m_name="HitchHikerApp";
+		settings.m_messages["Welcome"]="Don't Panic";
+		settings.m_messages["Farewell"]="Thanks for all the fish";
+		settings.m_windows.push_back(WindowSettings(15,25,300,250,"BookFrame"));
+		settings.m_connection.ip="192.168.0.77";
+		settings.m_connection.timeout=42.0;
+
+		settings.save("appsettings2.xml");
+	}
+	
+	// block: load settings
+	{
+		AppSettings settings;
+		settings.load("appsettings2.xml");
+		printf("%s: %s\n", settings.m_name.c_str(), 
+			settings.m_messages["Welcome"].c_str());
+		WindowSettings & w=settings.m_windows.front();
+		printf("%s: Show window '%s' at %d,%d (%d x %d)\n", 
+			settings.m_name.c_str(), w.name.c_str(), w.x, w.y, w.w, w.h);
+		printf("%s: %s\n", settings.m_name.c_str(), settings.m_messages["Farewell"].c_str());
+	}
+	return 0;
+}
+@endverbatim
+
+When the save() and load() are completed (see below), running this main() 
+displays on the console:
+
+@verbatim
+HitchHikerApp: Don't Panic
+HitchHikerApp: Show window 'BookFrame' at 15,25 (300 x 100)
+HitchHikerApp: Thanks for all the fish
+@endverbatim
+
+<h2> Encode C++ state as XML </h2>
 
 There are lots of different ways to approach saving this to a file.
 Here's one:
@@ -462,11 +519,11 @@ void AppSettings::save(const char* pFilename)
  	TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );  
 	doc.LinkEndChild( decl ); 
  
-	TiXmlElement * root = new TiXmlElement(name.c_str());  
+	TiXmlElement * root = new TiXmlElement(m_name.c_str());  
 	doc.LinkEndChild( root );  
 
 	comment = new TiXmlComment();
-	s=" Settings for "+name+" ";
+	s=" Settings for "+m_name+" ";
 	comment->SetValue(s.c_str());  
 	root->LinkEndChild( comment );  
 
@@ -477,7 +534,7 @@ void AppSettings::save(const char* pFilename)
 		TiXmlElement * msgs = new TiXmlElement( "Messages" );  
 		root->LinkEndChild( msgs );  
  
-		for (iter=messages.begin(); iter != messages.end(); iter++)
+		for (iter=m_messages.begin(); iter != m_messages.end(); iter++)
 		{
 			const string & key=(*iter).first;
 			const string & value=(*iter).second;
@@ -494,7 +551,7 @@ void AppSettings::save(const char* pFilename)
 
 		list<WindowSettings>::iterator iter;
 
-		for (iter=windows.begin(); iter != windows.end(); iter++)
+		for (iter=m_windows.begin(); iter != m_windows.end(); iter++)
 		{
 			const WindowSettings& w=*iter;
 
@@ -513,31 +570,105 @@ void AppSettings::save(const char* pFilename)
 	{
 		TiXmlElement * cxn = new TiXmlElement( "Connection" );  
 		root->LinkEndChild( cxn );  
-		cxn->SetAttribute("ip", connection.ip.c_str());
-		cxn->SetDoubleAttribute("timeout", connection.timeout); 
+		cxn->SetAttribute("ip", m_connection.ip.c_str());
+		cxn->SetDoubleAttribute("timeout", m_connection.timeout); 
 	}
 
 	doc.SaveFile(pFilename);  
 }
 @endverbatim
 
-Running this produces this file:
+Running this with the modified main produces this file:
 
 @verbatim
 <?xml version="1.0" ?>
-<DemoApp>
-    <!-- Settings for DemoApp -->
+<HitchHikerApp>
+    <!-- Settings for HitchHikerApp -->
     <Messages>
-        <Farewell>Thank you for using DemoApp</Farewell>
-        <Welcome>Welcome to DemoApp</Welcome>
+        <Farewell>Thanks for all the fish</Farewell>
+        <Welcome>Don&apos;t Panic</Welcome>
     </Messages>
     <Windows>
-        <Window name="Main" x="15" y="15" w="400" h="250" />
+        <Window name="BookFrame" x="15" y="25" w="300" h="250" />
     </Windows>
-    <Connection ip="Unknown" timeout="345.678000" />
-</DemoApp>
+    <Connection ip="192.168.0.77" timeout="42.000000" />
+</HitchHikerApp>
 @endverbatim
 
+
+<h2> Decoding state from XML </h2>
+
+As with encoding objects, there are a number of approaches to decoding XML
+into your own C++ object structure. The following approach uses TiXmlHandles.
+
+@verbatim
+void AppSettings::load(const char* pFilename)
+{
+	TiXmlDocument doc(pFilename);
+	if (!doc.LoadFile()) return;
+
+	TiXmlHandle hDoc(&doc);
+	TiXmlElement* pElem;
+	TiXmlHandle hRoot(0);
+
+	// block: name
+	{
+		pElem=hDoc.FirstChildElement().Element();
+		// should always have a valid root but handle gracefully if it does
+		if (!pElem) return;
+		m_name=pElem->Value();
+
+		// save this for later
+		hRoot=TiXmlHandle(pElem);
+	}
+
+	// block: string table
+	{
+		m_messages.clear(); // trash existing table
+
+		pElem=hRoot.FirstChild( "Messages" ).FirstChild().Element();
+		for( pElem; pElem; pElem=pElem->NextSiblingElement())
+		{
+			const char *pKey=pElem->Value();
+			const char *pText=pElem->GetText();
+			if (pKey && pText) 
+			{
+				m_messages[pKey]=pText;
+			}
+		}
+	}
+
+	// block: windows
+	{
+		m_windows.clear(); // trash existing list
+
+		TiXmlElement* pWindowNode=hRoot.FirstChild( "Windows" ).FirstChild().Element();
+		for( pWindowNode; pWindowNode; pWindowNode=pWindowNode->NextSiblingElement())
+		{
+			WindowSettings w;
+			const char *pName=pWindowNode->Attribute("name");
+			if (pName) w.name=pName;
+			
+			pWindowNode->QueryIntAttribute("x", &w.x); // If this fails, original value is left as-is
+			pWindowNode->QueryIntAttribute("y", &w.y);
+			pWindowNode->QueryIntAttribute("w", &w.w);
+			pWindowNode->QueryIntAttribute("hh", &w.h);
+
+			m_windows.push_back(w);
+		}
+	}
+
+	// block: connection
+	{
+		pElem=hRoot.FirstChild("Connection").Element();
+		if (pElem)
+		{
+			m_connection.ip=pElem->Attribute("ip");
+			pElem->QueryDoubleAttribute("timeout",&m_connection.timeout);
+		}
+	}
+}
+@endverbatim
 
 <h1> Full listing for dump_to_stdout </h1>
 
