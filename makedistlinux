@@ -6,6 +6,10 @@ echo "Making tinyxml $VERSION"
 
 rm -f ./docs/*
 
+# do this so all files/dirs created here are world readable
+# (reasonable for a distribution system I think)
+umask 2
+
 doxygen dox
 rm -rf ./tinyxml/*
 

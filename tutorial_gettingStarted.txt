@@ -1,240 +1,357 @@
 /** @page tutorial0 TinyXML Tutorial
 
-<h1> Tutorial Preliminary </h1>
+<h1> What is this? </h1>
 
-These pages contains a bunch of examples of using TinyXml.
+This tutorial has a few tips and suggestions on how to use TinyXML
+effectively.
 
-Each demo is written in a standalone function. If you want
-to try the code, all you need to do is copy/paste the code
-into a file, then have a main to call it.
+I've also tried to include some C++ tips like how to convert strings to
+integers and vice versa. This isn't anything to do with TinyXML itself, but
+it may helpful for your project so I've put it in anyway.
 
-So if the example has a function:
+If you don't know basic C++ concepts this tutorial won't be useful.
+Likewise if you don't know what a DOM is, look elsewhere first.
 
-	@verbatim
-	void write_simple_doc()
-	{
-		...
-	}
-	@endverbatim
+<h1> Before we start </h1>
 
-then the *complete* program you need to try it is:
+Some example XML datasets/files will be used. 
 
-	@verbatim
-	#include "stdafx.h" // <-- you MIGHT need this
-	#include "tinyxml.h" // <-- you definitely need this ;)
+Example 1:
 
-	void write_simple_doc()
-	{
-		...
-	}
+@verbatim
+<?xml version="1.0" ?>
+<Hello>World</Hello>
+@endverbatim
 
-	void main( void )
-	{
-		write_simple_doc();
-	}
-	@endverbatim
+Example 2:
 
+@verbatim
+<?xml version="1.0" ?>
+<poetry>
+	<verse>
+		Alas
+		  Great World
+			Alas (again)
+	</verse>
+</poetry>
+@endverbatim
 
-Two example XML datasets/files will be used. The first looks like
-this:
+Example 3:
 
-	@verbatim
-	<?xml version="1.0" ?>
-	<Hello>World</Hello>
-	@endverbatim
+@verbatim
+<?xml version="1.0" ?>
+<shapes>
+	<circle name="int-based" x="20" y="30" r="50" />
+	<point name="float-based" x="3.5" y="52.1" />
+</shapes>
+@endverbatim
 
-The other:
+Example 4:
 
-	@verbatim
-	<?xml version="1.0" ?>
-	<poetry>
-		<verse>
-			Alas
-			  Great Whatever
-				Alas (again)
-		</verse>
-	</poetry>
-	@endverbatim
+@verbatim
+<?xml version="1.0" ?>
+<MyApp>
+    <!-- Settings for MyApp -->
+    <Messages>
+        <Welcome>Welcome to MyApp</Welcome>
+        <Farewell>Thank you for using MyApp</Farewell>
+    </Messages>
+    <Windows>
+        <Window name="MainFrame" x="5" y="15" w="400" h="250" />
+    </Windows>
+    <Connection ip="192.168.0.1" timeout="123.456000" />
+</MyApp>
+@endverbatim
 
 <h1> Getting Started </h1>
 
 <h2> Load XML from a file </h2>
 
-Loading a file is as simple as:
+The simplest way to load a file into a TinyXML DOM is:
 
-	@verbatim
-	void load_file( )
-	{
-		TiXmlDocument doc( "demo.xml" );
-		bool loadOkay = doc.LoadFile();
-
-		if ( loadOkay )
-		{
-			// Your document is loaded - do what you like
-			// with it.
-			//
-			// Here we'll dump the structure to STDOUT,
-			// just for example
-			dump_to_stdout( &doc );
-		}
-		else
-		{
-			// load failed
-		}
-	}
-	@endverbatim
-
-
-The ``dump_to_stdout`` function is defined in the section `Dump structure of a Document to STDOUT` 
-below. If you run this program with this XML:
-
-	@verbatim
-	<?xml version="1.0" ?>
-	<Hello>World</Hello>
-	@endverbatim
-
-You'll see this:
-
-	@verbatim
-	DOCUMENT
-	+ DECLARATION
-	+ ELEMENT Hello
-	  + TEXT[World]
-	@endverbatim
+@verbatim
+TiXmlDocument doc( "demo.xml" );
+doc.LoadFile();
+@endverbatim
 	
+A more real-world usage is shown below. This will load the file and display
+the contents to STDOUT:
 
+@verbatim
+// load the named file and dump its structure to STDOUT
+void dump_to_stdout(const char* pFilename)
+{
+	TiXmlDocument doc(pFilename);
+	bool loadOkay = doc.LoadFile();
+	if (loadOkay)
+	{
+		printf("\n%s:\n", pFilename);
+		dump_to_stdout( &doc ); // defined later in the tutorial
+	}
+	else
+	{
+		printf("Failed to load file \"%s\"\n", pFilename);
+	}
+}
+@endverbatim
+
+A simple demonstration of this function is to use a main like this:
+
+@verbatim
+int main(void)
+{
+	dump_to_stdout("example1.xml");
+	return 0;
+}
+@endverbatim
+
+Recall that Example 1 XML is:
+
+@verbatim
+<?xml version="1.0" ?>
+<Hello>World</Hello>
+@endverbatim
+
+Running the program with this XML will display this in the console/DOS window:
+
+@verbatim
+DOCUMENT
++ DECLARATION
++ ELEMENT Hello
+  + TEXT[World]
+@endverbatim
+
+
+The ``dump_to_stdout`` function is defined later in this tutorial and is
+useful if you want to understand recursive traversal of a DOM.
 
 <h2> Building Documents Programatically </h2>
 
 
-Example:
+This is how to build Example 1 pragmatically:
 
-	@verbatim
-	void write_simple_doc( )
-	{
-		// Make xml: <?xml ..><Hello>World</Hello>
-		TiXmlDocument doc;
-		TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
-		TiXmlElement * element = new TiXmlElement( "Hello" );
-		TiXmlText * text = new TiXmlText( "World" );
-		element->LinkEndChild( text );
-		doc.LinkEndChild( decl );
-		doc.LinkEndChild( element );
-		
-		dump_to_stdout( &doc );
-		doc.SaveFile( "madeByHand.xml" );
-	}
-	@endverbatim
+@verbatim
+void build_simple_doc( )
+{
+	// Make xml: <?xml ..><Hello>World</Hello>
+	TiXmlDocument doc;
+	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
+	TiXmlElement * element = new TiXmlElement( "Hello" );
+	TiXmlText * text = new TiXmlText( "World" );
+	element->LinkEndChild( text );
+	doc.LinkEndChild( decl );
+	doc.LinkEndChild( element );
+	doc.SaveFile( "madeByHand.xml" );
+}
+@endverbatim
 
-Alternatively:
+This can be loaded and displayed on the console with:
 
-	@verbatim
-	void write_simple_doc2( )
-	{
-		// same as write_simple_doc1 but add each node
-		// as early as possible into the tree.
+@verbatim
+dump_to_stdout("madeByHand.xml"); // this func defined later in the tutorial
+@endverbatim
+
+and you'll see it is identical to Example 1:
+
+@verbatim
+madeByHand.xml:
+Document
++ Declaration
++ Element [Hello]
+  + Text: [World]
+@endverbatim
+
+This code produces exactly the same XML DOM but it shows a different ordering
+to node creation and linking:
+
+@verbatim
+void write_simple_doc2( )
+{
+	// same as write_simple_doc1 but add each node
+	// as early as possible into the tree.
+
+	TiXmlDocument doc;
+	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
+	doc.LinkEndChild( decl );
 	
-		TiXmlDocument doc;
-		TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
-		doc.LinkEndChild( decl );
-		
-		TiXmlElement * element = new TiXmlElement( "Hello" );
-		doc.LinkEndChild( element );
-		
-		TiXmlText * text = new TiXmlText( "World" );
-		element->LinkEndChild( text );
-		
-		dump_to_stdout( &doc );
-		doc.SaveFile( "madeByHand2.xml" );
-	}
-	@endverbatim
+	TiXmlElement * element = new TiXmlElement( "Hello" );
+	doc.LinkEndChild( element );
+	
+	TiXmlText * text = new TiXmlText( "World" );
+	element->LinkEndChild( text );
+	
+	doc.SaveFile( "madeByHand2.xml" );
+}
+@endverbatim
 
 Both of these produce the same XML, namely:
 
-	@verbatim
-	<?xml version="1.0" ?>
-	<Hello>World</Hello>
-	@endverbatim
+@verbatim
+<?xml version="1.0" ?>
+<Hello>World</Hello>
+@endverbatim
 
 Or in structure form:
 
-	@verbatim
-	DOCUMENT
-	+ DECLARATION
-	+ ELEMENT Hello
-	  + TEXT[World]
-	@endverbatim
+@verbatim
+DOCUMENT
++ DECLARATION
++ ELEMENT Hello
+  + TEXT[World]
+@endverbatim
 
 
+<h2> Attributes </h2>
 
-<h2> Saving Documents to File </h2>
+Given an existing node, settings attributes is easy:
 
-This function:
+@verbatim
+window = new TiXmlElement( "Demo" );  
+window->SetAttribute("name", "Circle");
+window->SetAttribute("x", 5);
+window->SetAttribute("y", 15);
+window->SetDoubleAttribute("radius", 3.14159);
+@endverbatim
 
-	@verbatim
-	void write_simple_doc3( )  
-	{  
-		// This example courtesy of polocolege
-	 
-		TiXmlDocument doc;  
-		TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );  
-		doc.LinkEndChild( decl );  
-	 
-		TiXmlElement * element = new TiXmlElement( "Hello" );  
-		doc.LinkEndChild( element );  
-	 
-		TiXmlText * text = new TiXmlText( "Opening a new salutation" );  
-		element->LinkEndChild( text );  
-	 
-		TiXmlElement * element2 = new TiXmlElement( "Greeting" );  
-		element->LinkEndChild( element2 );  
-	 
-		TiXmlText * text2 = new TiXmlText( "How are you?" );  
-		element2->LinkEndChild( text2 );  
-	 
-		TiXmlElement * element3 = new TiXmlElement( "Language" );  
-		element2->LinkEndChild( element3 );  
-	 
-		TiXmlText * text3 = new TiXmlText( "English" );  
-		element3->LinkEndChild( text3 );  
-	 
-		TiXmlElement * element4 = new TiXmlElement( "Exclamation" );  
-		element->LinkEndChild( element4 );  
-	 
-		TiXmlText * text4 = new TiXmlText( "You have children!" );  
-		element4->LinkEndChild( text4 );  
-	 
-		dump_to_stdout( &doc );
-		doc.SaveFile( "madeByHand3.xml" );  
-	}  
-	@endverbatim
+You can it also work with the TiXmlAttribute objects if you want.
 
-Produces this structure:
+The following code shows one way (not the only way) to get all attributes of an 
+element, print the name and (string) value, and if the value can be converted
+to an integer or double, print that value too:
 
-	@verbatim
-	Document
-	+ Declaration
-	+ Element "Hello"
-	  + Text: [Opening a new salutation]
-	  + Element "Greeting"
-		+ Text: [How are you?]
-		+ Element "Language"
-		  + Text: [English]
-	  + Element "Exclamation"
-		+ Text: [You have children!]
-	@endverbatim
-		
-The file ``madeByHand3.xml`` looks exactly like this (including indents):
+@verbatim
+// print all attributes of pElement.
+// returns the number of attributes printed
+int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
+{
+	if ( !pElement ) return 0;
 
-	@verbatim
-	<?xml version="1.0" ?>
-	<Hello>Opening a new salutation
-	    <Greeting>How are you?
-	        <Language>English</Language>
-	    </Greeting>
-	    <Exclamation>You have children!</Exclamation>
-	</Hello>
-	@endverbatim
+	TiXmlAttribute* pAttrib=pElement->FirstAttribute();
+	int i=0;
+	int ival;
+	double dval;
+	const char* pIndent=getIndent(indent);
+	printf("\n");
+	while (pAttrib)
+	{
+		printf( "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
+
+		if (pAttrib->QueryIntValue(&ival)==TIXML_SUCCESS)    printf( " int=%d", ival);
+		if (pAttrib->QueryDoubleValue(&dval)==TIXML_SUCCESS) printf( " d=%1.1f", dval);
+		printf( "\n" );
+		i++;
+		pAttrib=pAttrib->Next();
+	}
+	return i;
+}
+@nonverbatim
+
+<h2> Writing a document to a file </h2>
+
+Writing a pre-built DOM to a file is trivial:
+
+@verbatim
+doc.SaveFile( saveFilename );  
+@endverbatim
+
+Recall, for example, example 4:
+
+@verbatim
+<?xml version="1.0" ?>
+<MyApp>
+    <!-- Settings for MyApp -->
+    <Messages>
+        <Welcome>Welcome to MyApp</Welcome>
+        <Farewell>Thank you for using MyApp</Farewell>
+    </Messages>
+    <Windows>
+        <Window name="MainFrame" x="5" y="15" w="400" h="250" />
+    </Windows>
+    <Connection ip="192.168.0.1" timeout="123.456000" />
+</MyApp>
+@endverbatim
+
+The following function builds this DOM and writes the file "appsettings.xml":
+
+@verbatim
+void write_app_settings_doc( )  
+{  
+	TiXmlDocument doc;  
+	TiXmlElement* msg;
+ 	TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );  
+	doc.LinkEndChild( decl );  
+ 
+	TiXmlElement * root = new TiXmlElement( "MyApp" );  
+	doc.LinkEndChild( root );  
+
+	TiXmlComment * comment = new TiXmlComment();
+	comment->SetValue(" Settings for MyApp " );  
+	root->LinkEndChild( comment );  
+ 
+	TiXmlElement * msgs = new TiXmlElement( "Messages" );  
+	root->LinkEndChild( msgs );  
+ 
+	msg = new TiXmlElement( "Welcome" );  
+	msg->LinkEndChild( new TiXmlText( "Welcome to MyApp" ));  
+	msgs->LinkEndChild( msg );  
+ 
+	msg = new TiXmlElement( "Farewell" );  
+	msg->LinkEndChild( new TiXmlText( "Thank you for using MyApp" ));  
+	msgs->LinkEndChild( msg );  
+ 
+	TiXmlElement * windows = new TiXmlElement( "Windows" );  
+	root->LinkEndChild( windows );  
+
+	TiXmlElement * window;
+	window = new TiXmlElement( "Window" );  
+	windows->LinkEndChild( window );  
+	window->SetAttribute("name", "MainFrame");
+	window->SetAttribute("x", 5);
+	window->SetAttribute("y", 15);
+	window->SetAttribute("w", 400);
+	window->SetAttribute("h", 250);
+
+	TiXmlElement * cxn = new TiXmlElement( "Connection" );  
+	root->LinkEndChild( cxn );  
+	cxn->SetAttribute("ip", "192.168.0.1");
+	cxn->SetDoubleAttribute("timeout", 123.456); // floating point attrib
+	
+	dump_to_stdout( &doc );
+	doc.SaveFile( "appsettings.xml" );  
+} 
+@endverbatim
+
+The dump_to_stdout function will show this structure:
+
+@verbatim
+Document
++ Declaration
++ Element [MyApp]
+ (No attributes)
+  + Comment: [ Settings for MyApp ]
+  + Element [Messages]
+ (No attributes)
+    + Element [Welcome]
+ (No attributes)
+      + Text: [Welcome to MyApp]
+    + Element [Farewell]
+ (No attributes)
+      + Text: [Thank you for using MyApp]
+  + Element [Windows]
+ (No attributes)
+    + Element [Window]
+      + name: value=[MainFrame]
+      + x: value=[5] int=5 d=5.0
+      + y: value=[15] int=15 d=15.0
+      + w: value=[400] int=400 d=400.0
+      + h: value=[250] int=250 d=250.0
+      5 attributes
+  + Element [Connection]
+    + ip: value=[192.168.0.1] int=192 d=192.2
+    + timeout: value=[123.456000] int=123 d=123.5
+    2 attributes
+@endverbatim
+
 
 I was surprised that TinyXml, by default, writes the XML in what other
 APIs call a "pretty" format - it modifies the whitespace of text of elements 
@@ -248,156 +365,339 @@ writing a file - its bound to be easy.
 always in "pretty" format. Adding a switch would be a nice feature and
 has been requested.]
 
-<h1> Iterating Over Documents </h1>
 
-<h2> Dump structure of a Document to STDOUT </h2>
+<h1> XML to/from C++ objects </h1>
 
-Often when you're starting its helpful and reassuring to
-know that you're document got loaded as you expect it to.
+<h2> Intro </h2>
 
-Below I've defined a function to walk a document and write
-contents to STDOUT:
+This example assumes you're loading and saving your app settings in an 
+XML file. The Example 4 XML is the sort of thing.
 
-	@verbatim
-	// a utility function defining a very simple method to indent a line of text
-	const char * getIndent( unsigned int numIndents )
+There are a number of ways to do this. For example, look into the TinyBind
+project at http://sourceforge.net/projects/tinybind
+
+This section shows a plain-old approach to loading and saving a basic object
+structure using XML.
+
+<h2> Encode C++ state as XML </h2>
+
+Start of with some basic objects like these:
+
+@verbatim
+#include <string>
+#include <map>
+using namespace std;
+
+typedef std::map<std::string,std::string> MessageMap;
+
+// a basic window abstraction - demo purposes only
+class WindowSettings
+{
+public:
+	int x,y,w,h;
+	string name;
+	
+	WindowSettings(int x, int y, int w, int h, const string& name)
 	{
-		static const char * pINDENT = "                                      + ";
-		static const unsigned int LENGTH = strlen( pINDENT );
-	
-		if ( numIndents > LENGTH ) numIndents = LENGTH;
-	
-		return &pINDENT[ LENGTH-numIndents ];
+		this->x=x;
+		this->y=y;
+		this->w=w;
+		this->h=h;
+		this->name=name;
 	}
-	
-	void dump_to_stdout( TiXmlNode * pParent, unsigned int indent = 0 )
+};
+
+class ConnectionSettings
+{
+public:
+	string connection;
+	double timeout;
+};
+
+class AppSettings
+{
+public:
+	MessageMap messages;
+	std::list<WindowSettings> windows;
+	ConnectionSettings connection;
+
+	AppSettings()
 	{
-		if ( !pParent ) return;
+		messages.put("Welcome", "Welcome to MyApp");
+		messages.put("Farewell", "Thank you for using MyApp");
+		windows.push_back(Window(5,15,400,250,"MainFrame");
+		connection.ip="Unknown";
+		connection.timeout=345.678;
+	}
+
+	void save(const char* pFilename);
+	void load(const char* pFilename);
+};
+@endverbatim
+
+Using this (over-simplified) approach, here is a mainline we'll use to show
+saving and loading state:
+
+@verbatim
+int main(void)
+{
+	AppSettings settings;
 	
-		TiXmlText *pText;
-		int t = pParent->Type();
-		printf( "%s", getIndent( indent));
-	
-		switch ( t )
+	settings.save("appsettings2.xml");
+	settings.load("appsettings2.xml");
+	return 0;
+}
+@endverbatim
+
+There are lots of different ways to approach saving this to a file.
+Here's one:
+
+@verbatim
+void AppSettings::save(const char* pFilename)
+{
+	TiXmlDocument doc;  
+	TiXmlElement* msg;
+	TiXmlComment * comment;
+	string s;
+ 	TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );  
+	doc.LinkEndChild( decl ); 
+ 
+	TiXmlElement * root = new TiXmlElement(name.c_str());  
+	doc.LinkEndChild( root );  
+
+	comment = new TiXmlComment();
+	s=" Settings for "+name+" ";
+	comment->SetValue(s.c_str());  
+	root->LinkEndChild( comment );  
+
+	// block: messages
+	{
+		MessageMap::iterator iter;
+
+		TiXmlElement * msgs = new TiXmlElement( "Messages" );  
+		root->LinkEndChild( msgs );  
+ 
+		for (iter=messages.begin(); iter != messages.end(); iter++)
 		{
-		case TiXmlNode::DOCUMENT:
-			printf( "Document" );
-			break;
-	
-		case TiXmlNode::ELEMENT:
-			printf( "Element \"%s\"", pParent->Value() );
-			break;
-	
-		case TiXmlNode::COMMENT:
-			printf( "Comment: \"%s\"", pParent->Value());
-			break;
-	
-		case TiXmlNode::UNKNOWN:
-			printf( "Unknown" );
-			break;
-	
-		case TiXmlNode::TEXT:
-			pText = pParent->ToText();
-			printf( "Text: [%s]", pText->Value() );
-			break;
-	
-		case TiXmlNode::DECLARATION:
-			printf( "Declaration" );
-			break;
-		default:
-			break;
+			const string & key=(*iter).first;
+			const string & value=(*iter).second;
+			msg = new TiXmlElement(key.c_str());  
+			msg->LinkEndChild( new TiXmlText(value.c_str()));  
+			msgs->LinkEndChild( msg );  
 		}
+	}
+
+	// block: windows
+	{
+		TiXmlElement * windowsNode = new TiXmlElement( "Windows" );  
+		root->LinkEndChild( windowsNode );  
+
+		list<WindowSettings>::iterator iter;
+
+		for (iter=windows.begin(); iter != windows.end(); iter++)
+		{
+			const WindowSettings& w=*iter;
+
+			TiXmlElement * window;
+			window = new TiXmlElement( "Window" );  
+			windowsNode->LinkEndChild( window );  
+			window->SetAttribute("name", w.name.c_str());
+			window->SetAttribute("x", w.x);
+			window->SetAttribute("y", w.y);
+			window->SetAttribute("w", w.w);
+			window->SetAttribute("h", w.h);
+		}
+	}
+
+	// block: connection
+	{
+		TiXmlElement * cxn = new TiXmlElement( "Connection" );  
+		root->LinkEndChild( cxn );  
+		cxn->SetAttribute("ip", connection.ip.c_str());
+		cxn->SetDoubleAttribute("timeout", connection.timeout); 
+	}
+
+	doc.SaveFile(pFilename);  
+}
+@endverbatim
+
+Running this produces this file:
+
+@verbatim
+<?xml version="1.0" ?>
+<DemoApp>
+    <!-- Settings for DemoApp -->
+    <Messages>
+        <Farewell>Thank you for using DemoApp</Farewell>
+        <Welcome>Welcome to DemoApp</Welcome>
+    </Messages>
+    <Windows>
+        <Window name="Main" x="15" y="15" w="400" h="250" />
+    </Windows>
+    <Connection ip="Unknown" timeout="345.678000" />
+</DemoApp>
+@endverbatim
+
+
+<h1> Full listing for dump_to_stdout </h1>
+
+Below is a copy-and-paste demo program for loading arbitrary XML files and
+dumping the structure to STDOUT using the recursive traversal listed above.
+
+@verbatim
+// tutorial demo program
+#include "stdafx.h"
+#include "tinyxml.h"
+
+// ----------------------------------------------------------------------
+// STDOUT dump and indenting utility functions
+// ----------------------------------------------------------------------
+const unsigned int NUM_INDENTS_PER_SPACE=2;
+
+const char * getIndent( unsigned int numIndents )
+{
+	static const char * pINDENT="                                      + ";
+	static const unsigned int LENGTH=strlen( pINDENT );
+	unsigned int n=numIndents*NUM_INDENTS_PER_SPACE;
+	if ( n > LENGTH ) n = LENGTH;
+
+	return &pINDENT[ LENGTH-n ];
+}
+
+// same as getIndent but no "+" at the end
+const char * getIndentAlt( unsigned int numIndents )
+{
+	static const char * pINDENT="                                        ";
+	static const unsigned int LENGTH=strlen( pINDENT );
+	unsigned int n=numIndents*NUM_INDENTS_PER_SPACE;
+	if ( n > LENGTH ) n = LENGTH;
+
+	return &pINDENT[ LENGTH-n ];
+}
+
+int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
+{
+	if ( !pElement ) return 0;
+
+	TiXmlAttribute* pAttrib=pElement->FirstAttribute();
+	int i=0;
+	int ival;
+	double dval;
+	const char* pIndent=getIndent(indent);
+	printf("\n");
+	while (pAttrib)
+	{
+		printf( "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
+
+		if (pAttrib->QueryIntValue(&ival)==TIXML_SUCCESS)    printf( " int=%d", ival);
+		if (pAttrib->QueryDoubleValue(&dval)==TIXML_SUCCESS) printf( " d=%1.1f", dval);
 		printf( "\n" );
-	
-		TiXmlNode * pChild;
-	
-		for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
-		{
-			dump_to_stdout( pChild, indent+2 );
-		}
+		i++;
+		pAttrib=pAttrib->Next();
 	}
-	@endverbatim
+	return i;	
+}
 
-	
-To load a file and dump its structure:
+void dump_to_stdout( TiXmlNode* pParent, unsigned int indent = 0 )
+{
+	if ( !pParent ) return;
 
-	@verbatim
-	void load_and_display( )
+	TiXmlNode* pChild;
+	TiXmlText* pText;
+	int t = pParent->Type();
+	printf( "%s", getIndent(indent));
+	int num;
+
+	switch ( t )
 	{
-		// important for the poetry demo, but you may not need this 
-		// in your own projects
-		TiXmlBase::SetCondenseWhiteSpace( false );
-	
-		TiXmlDocument doc( "demo.xml" );
-		bool loadOkay = doc.LoadFile();
-	
-		if ( loadOkay )
+	case TiXmlNode::DOCUMENT:
+		printf( "Document" );
+		break;
+
+	case TiXmlNode::ELEMENT:
+		printf( "Element [%s]", pParent->Value() );
+		num=dump_attribs_to_stdout(pParent->ToElement(), indent+1);
+		switch(num)
 		{
-			dump_to_stdout( &doc );
+			case 0:  printf( " (No attributes)"); break;
+			case 1:  printf( "%s1 attribute", getIndentAlt(indent)); break;
+			default: printf( "%s%d attributes", getIndentAlt(indent), num); break;
 		}
-		else
-		{
-			printf( "Something went wrong\n" );
-		}
+		break;
+
+	case TiXmlNode::COMMENT:
+		printf( "Comment: [%s]", pParent->Value());
+		break;
+
+	case TiXmlNode::UNKNOWN:
+		printf( "Unknown" );
+		break;
+
+	case TiXmlNode::TEXT:
+		pText = pParent->ToText();
+		printf( "Text: [%s]", pText->Value() );
+		break;
+
+	case TiXmlNode::DECLARATION:
+		printf( "Declaration" );
+		break;
+	default:
+		break;
 	}
-	@endverbatim
+	printf( "\n" );
+	for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
+	{
+		dump_to_stdout( pChild, indent+1 );
+	}
+}
 
-If you run this with the first XML file you'll see this 
-on STDOUT:
+// load the named file and dump its structure to STDOUT
+void dump_to_stdout(const char* pFilename)
+{
+	TiXmlDocument doc(pFilename);
+	bool loadOkay = doc.LoadFile();
+	if (loadOkay)
+	{
+		printf("\n%s:\n", pFilename);
+		dump_to_stdout( &doc ); // defined later in the tutorial
+	}
+	else
+	{
+		printf("Failed to load file \"%s\"\n", pFilename);
+	}
+}
 
-	@verbatim
-	DOCUMENT
-	+ DECLARATION
-	+ ELEMENT Hello
-	  + TEXT[World]
-	@endverbatim
+// ----------------------------------------------------------------------
+// main() for printing files named on the command line
+// ----------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
+	for (int i=1; i<argc; i++)
+	{
+		dump_to_stdout(argv[i]);
+	}
+	return 0;
+}
+@endverbatim
 
-and on the second XML file:
+Run this from the command line or a DOS window, e.g.:
 
-	@verbatim
-	DOCUMENT
-	+ DECLARATION
-	+ ELEMENT poetry
-	  + COMMENT:  my great work of art
-	  + ELEMENT verse
-	    + TEXT[
-	Alas
-	  Great Whatever
-	    Alas (again)
-	]
-	@endverbatim
+@verbatim
+C:\dev\tinyxml> Debug\tinyxml_1.exe example1.xml
 
-
-Note that if you call dump_to_stdout like this:
-
-	@verbatim
-	dump_to_stdout( doc.RootElement());
-	@endverbatim
-
-You'll see this instead:
-
-	@verbatim
-	ELEMENT Hello
-	+ TEXT[World]
-	@endverbatim
-
-and:
-
-	@verbatim
-	ELEMENT poetry
-	+ COMMENT:  my great work of art
-	+ ELEMENT verse
-  	+ TEXT[
-	Alas
-	  Great Whatever
-	    Alas (again)
-	] 
-	@endverbatim
+example1.xml:
+Document
++ Declaration
++ Element [Hello]
+ (No attributes)
+  + Text: [World]
+@endverbatim
 
 <i> Authors and Changes
 <ul>
-<li> Written by Ellers, April 2005 </li>
+<li> Written by Ellers, April, May, June 2005 </li>
 <li> Minor edits and integration into doc system, Lee Thomason September 2005 </li>
+<li> Updated by Ellers, October 2005 </li>
 </ul>
 </i>
 
