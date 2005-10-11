@@ -955,7 +955,7 @@ public:
 		and accessing it directly.
 	
 		If the first child of 'this' is a TiXmlText, the GetText()
-		returs the character string of the Text node, else null is returned.
+		returns the character string of the Text node, else null is returned.
 
 		This is a convenient method for getting the text of simple contained text:
 		@verbatim
