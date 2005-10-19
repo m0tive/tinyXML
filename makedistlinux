@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # NOTE: This is set by setversion.py
-VERSION=2_4_1
+VERSION=2_4_2
 echo "Making tinyxml $VERSION"
 
 rm -rf ./docs/*

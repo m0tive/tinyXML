@@ -239,7 +239,9 @@ class TiXmlString
 	{
 		if (rep_ != &nullrep_)
 		{
-			delete [] rep_;
+			// The rep_ is really an array of ints. (see the allocator, above).
+			// Cast it back before delete, so the compiler won't incorrectly call destructors.
+			delete [] ( reinterpret_cast<int*>( rep_ ) );
 		}
 	}
 
