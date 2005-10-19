@@ -208,3 +208,7 @@ Changes in version 2.1.5
   from 'instructor_'
 - Ellers submitted his very popular tutorials, which have been added to the distribution.
 
+2.4.1
+- Fixed CDATA output formatting
+- Fixed memory allocators in TinyString to work with overloaded new/delete
+

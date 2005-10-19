@@ -699,7 +699,7 @@ int main()
 							"</xmlElement>";
 		TiXmlDocument doc;
 		doc.Parse( str );
-		//doc.Print();
+		doc.Print();
 
 		XmlTest( "CDATA parse.", doc.FirstChildElement()->FirstChild()->Value(), 
 								 "I am > the rules!\n...since I make symbolic puns",
