@@ -622,7 +622,7 @@ public:
 		The possible types are: DOCUMENT, ELEMENT, COMMENT,
 								UNKNOWN, TEXT, and DECLARATION.
 	*/
-	virtual int Type() const	{ return type; }
+	int Type() const	{ return type; }
 
 	/** Return a pointer to the Document this node lives in.
 		Returns null if not in a document.
