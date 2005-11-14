@@ -1035,7 +1035,7 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 			if ( *p == 0xa ) {
 				// Newline character. No special rules for this. Append all the characters
 				// since the last string, and include the newline.
-				data.append( lastPos, p-lastPos+1 );	// append, include the newline
+				data.append( lastPos, (p-lastPos+1) );	// append, include the newline
 				++p;									// move past the newline
 				lastPos = p;							// and point to the new buffer (may be 0)
 				assert( p <= (buf+length) );

@@ -588,7 +588,7 @@ int main()
 		XmlTest( "Copy/Assign: element copy #2.", "value", elementCopy.Attribute( "name" ) );
 		XmlTest( "Copy/Assign: element assign #1.", "element", elementAssign.Value() );
 		XmlTest( "Copy/Assign: element assign #2.", "value", elementAssign.Attribute( "name" ) );
-		XmlTest( "Copy/Assign: element assign #3.", 0, (int) elementAssign.Attribute( "foo" ) );
+		XmlTest( "Copy/Assign: element assign #3.", 0, elementAssign.Attribute( "foo" ) );
 
 		TiXmlComment comment;
 		comment.Parse( "<!--comment-->", 0, TIXML_ENCODING_UNKNOWN );

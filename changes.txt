@@ -212,3 +212,6 @@ Changes in version 2.1.5
 - Fixed CDATA output formatting
 - Fixed memory allocators in TinyString to work with overloaded new/delete
 
+2.4.2
+- solosnake pointed out that TIXML_LOG causes problems on an XBOX. The definition in the header
+  was superflous and was moved inside of DEBUG_PARSING
