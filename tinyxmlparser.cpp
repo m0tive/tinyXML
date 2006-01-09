@@ -1124,7 +1124,7 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 			}
 
 			// Handle the strange case of double attributes:
-			TiXmlAttribute* node = attributeSet.Find( attrib->Name() );
+			TiXmlAttribute* node = attributeSet.Find( attrib->NameTStr() );
 			if ( node )
 			{
 				node->SetValue( attrib->Value() );

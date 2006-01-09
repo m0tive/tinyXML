@@ -27,6 +27,7 @@ distribution.
 
 #ifdef TIXML_USE_STL
 #include <sstream>
+#include <iostream>
 #endif
 
 
@@ -463,7 +464,8 @@ TiXmlNode* TiXmlNode::PreviousSibling( const char * _value )
 
 void TiXmlElement::RemoveAttribute( const char * name )
 {
-	TiXmlAttribute* node = attributeSet.Find( name );
+	TIXML_STRING str( name );
+	TiXmlAttribute* node = attributeSet.Find( str );
 	if ( node )
 	{
 		attributeSet.Remove( node );
@@ -661,7 +663,8 @@ void TiXmlElement::ClearThis()
 
 const char * TiXmlElement::Attribute( const char * name ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
+	TIXML_STRING str( name );
+	const TiXmlAttribute* node = attributeSet.Find( str );
 
 	if ( node )
 		return node->Value();
@@ -700,7 +703,8 @@ const char * TiXmlElement::Attribute( const char * name, double* d ) const
 
 int TiXmlElement::QueryIntAttribute( const char* name, int* ival ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
+	TIXML_STRING str( name );
+	const TiXmlAttribute* node = attributeSet.Find( str );
 	if ( !node )
 		return TIXML_NO_ATTRIBUTE;
 
@@ -710,7 +714,8 @@ int TiXmlElement::QueryIntAttribute( const char* name, int* ival ) const
 
 int TiXmlElement::QueryDoubleAttribute( const char* name, double* dval ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
+	TIXML_STRING str( name );
+	const TiXmlAttribute* node = attributeSet.Find( str );
 	if ( !node )
 		return TIXML_NO_ATTRIBUTE;
 
@@ -730,6 +735,16 @@ void TiXmlElement::SetAttribute( const char * name, int val )
 }
 
 
+#ifdef TIXML_USE_STL
+void TiXmlElement::SetAttribute( const std::string& name, int val )
+{	
+   std::ostringstream oss;
+   oss << val;
+   SetAttribute( name, oss.str() );
+}
+#endif
+
+
 void TiXmlElement::SetDoubleAttribute( const char * name, double val )
 {	
 	char buf[256];
@@ -742,7 +757,33 @@ void TiXmlElement::SetDoubleAttribute( const char * name, double val )
 }
 
 
-void TiXmlElement::SetAttribute( const char * name, const char * _value )
+void TiXmlElement::SetAttribute( const char * cname, const char * cvalue )
+{
+	TIXML_STRING _name( cname );
+	TIXML_STRING _value( cvalue );
+
+	TiXmlAttribute* node = attributeSet.Find( _name );
+	if ( node )
+	{
+		node->SetValue( cvalue );
+		return;
+	}
+
+	TiXmlAttribute* attrib = new TiXmlAttribute( cname, cvalue );
+	if ( attrib )
+	{
+		attributeSet.Add( attrib );
+	}
+	else
+	{
+		TiXmlDocument* document = GetDocument();
+		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0, 0, TIXML_ENCODING_UNKNOWN );
+	}
+}
+
+
+#ifdef TIXML_USE_STL
+void TiXmlElement::SetAttribute( const std::string& name, const std::string& _value )
 {
 	TiXmlAttribute* node = attributeSet.Find( name );
 	if ( node )
@@ -762,6 +803,8 @@ void TiXmlElement::SetAttribute( const char * name, const char * _value )
 		if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0, 0, TIXML_ENCODING_UNKNOWN );
 	}
 }
+#endif
+
 
 void TiXmlElement::Print( FILE* cfile, int depth ) const
 {
@@ -1525,7 +1568,7 @@ TiXmlAttributeSet::~TiXmlAttributeSet()
 
 void TiXmlAttributeSet::Add( TiXmlAttribute* addMe )
 {
-	assert( !Find( addMe->Name() ) );	// Shouldn't be multiply adding to the set.
+	assert( !Find( TIXML_STRING( addMe->Name() ) ) );	// Shouldn't be multiply adding to the set.
 
 	addMe->next = &sentinel;
 	addMe->prev = sentinel.prev;
@@ -1552,7 +1595,7 @@ void TiXmlAttributeSet::Remove( TiXmlAttribute* removeMe )
 	assert( 0 );		// we tried to remove a non-linked attribute.
 }
 
-const TiXmlAttribute* TiXmlAttributeSet::Find( const char * name ) const
+const TiXmlAttribute* TiXmlAttributeSet::Find( const TIXML_STRING& name ) const
 {
 	const TiXmlAttribute* node;
 
@@ -1564,7 +1607,7 @@ const TiXmlAttribute* TiXmlAttributeSet::Find( const char * name ) const
 	return 0;
 }
 
-TiXmlAttribute*	TiXmlAttributeSet::Find( const char * name )
+TiXmlAttribute*	TiXmlAttributeSet::Find( const TIXML_STRING& name )
 {
 	TiXmlAttribute* node;
 

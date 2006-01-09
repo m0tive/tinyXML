@@ -71,13 +71,11 @@ distribution.
 		//#pragma message( "Using _sn* functions." )
 		#define TIXML_SNPRINTF _snprintf
 		#define TIXML_SNSCANF  _snscanf
-		#define TIXML_FOPEN fopen
 	#elif defined(__GNUC__) && (__GNUC__ >= 3 )
 		// GCC version 3 and higher.s
 		//#warning( "Using sn* functions." )
 		#define TIXML_SNPRINTF snprintf
 		#define TIXML_SNSCANF  snscanf
-		#define TIXML_FOPEN	   fopen
 	#endif
 #endif	
 
@@ -92,7 +90,7 @@ class TiXmlParsingData;
 
 const int TIXML_MAJOR_VERSION = 2;
 const int TIXML_MINOR_VERSION = 4;
-const int TIXML_PATCH_VERSION = 2;
+const int TIXML_PATCH_VERSION = 3;
 
 /*	Internal structure for tracking location of items 
 	in the XML file.
@@ -468,11 +466,7 @@ public:
 
     #ifdef TIXML_USE_STL
 	/// STL std::string form.
-	void SetValue( const std::string& _value )    
-	{	  
-		StringToBuffer buf( _value );
-		SetValue( buf.buffer ? buf.buffer : "" );    	
-	}	
+	void SetValue( const std::string& _value )	{ value = _value; }
 	#endif
 
 	/// Delete all the children of this node. Does not affect 'this'.
@@ -727,6 +721,9 @@ public:
 	int				IntValue() const;									///< Return the value of this attribute, converted to an integer.
 	double			DoubleValue() const;								///< Return the value of this attribute, converted to a double.
 
+	// Get the tinyxml string representation
+	const TIXML_STRING& NameTStr() const { return name; }
+
 	/** QueryIntValue examines the value string. It is an alternative to the
 		IntValue() method with richer error checking.
 		If the value is an integer, it is stored in 'value' and 
@@ -748,17 +745,9 @@ public:
 
     #ifdef TIXML_USE_STL
 	/// STL std::string form.
-	void SetName( const std::string& _name )	
-	{	
-		StringToBuffer buf( _name );
-		SetName ( buf.buffer ? buf.buffer : "error" );	
-	}
+	void SetName( const std::string& _name )	{ name = _name; }	
 	/// STL std::string form.	
-	void SetValue( const std::string& _value )	
-	{	
-		StringToBuffer buf( _value );
-		SetValue( buf.buffer ? buf.buffer : "error" );	
-	}
+	void SetValue( const std::string& _value )	{ value = _value; }
 	#endif
 
 	/// Get the next sibling attribute in the DOM. Returns null at end.
@@ -823,8 +812,8 @@ public:
 	const TiXmlAttribute* Last() const		{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 	TiXmlAttribute* Last()					{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 
-	const TiXmlAttribute*	Find( const char * name ) const;
-	TiXmlAttribute*	Find( const char * name );
+	const TiXmlAttribute*	Find( const TIXML_STRING& name ) const;
+	TiXmlAttribute*	Find( const TIXML_STRING& name );
 
 private:
 	//*ME:	Because of hidden/disabled copy-construktor in TiXmlAttribute (sentinel-element),
@@ -911,20 +900,9 @@ public:
 	int QueryDoubleAttribute( const std::string& name, double* _value ) const { return QueryDoubleAttribute( name.c_str(), _value ); }
 
 	/// STL std::string form.
-	void SetAttribute( const std::string& name, const std::string& _value )	
-	{	
-		StringToBuffer n( name );
-		StringToBuffer v( _value );
-		if ( n.buffer && v.buffer )
-			SetAttribute (n.buffer, v.buffer );	
-	}	
+	void SetAttribute( const std::string& name, const std::string& _value );
 	///< STL std::string form.
-	void SetAttribute( const std::string& name, int _value )	
-	{	
-		StringToBuffer n( name );
-		if ( n.buffer )
-			SetAttribute (n.buffer, _value);	
-	}	
+	void SetAttribute( const std::string& name, int _value );
 	#endif
 
 	/** Sets an attribute of name to a given value. The attribute

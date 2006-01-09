@@ -215,3 +215,10 @@ Changes in version 2.1.5
 2.4.2
 - solosnake pointed out that TIXML_LOG causes problems on an XBOX. The definition in the header
   was superflous and was moved inside of DEBUG_PARSING
+
+2.4.3
+- Fixed a test bug that caused a crash in 'xmltest'. TinyXML was fine, but it isn't good
+  to ship with a broken test suite.
+- Started converting some functions to not cast between std::string and const char* 
+  quite as often.
+

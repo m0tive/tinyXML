@@ -14,12 +14,9 @@
 #endif
 
 #if defined( WIN32 ) && defined( TUNE )
-	#include <windows.h>
-	// Apologies to non-windows users! But I need some good timers for
-	// profiling, and these are very platform specific.
-	__int64 start;
-	__int64 end;
-	__int64 freq;
+	#include <crtdbg.h>
+	_CrtMemState startMemState;
+	_CrtMemState endMemState;
 #endif
 
 static int gPass = 0;
@@ -117,7 +114,7 @@ int main()
 
 	// The example parses from the character string (above):
 	#if defined( WIN32 ) && defined( TUNE )
-	QueryPerformanceCounter( (LARGE_INTEGER*) (&start) );
+	_CrtMemCheckpoint( &startMemState );
 	#endif	
 
 	{
@@ -588,7 +585,7 @@ int main()
 		XmlTest( "Copy/Assign: element copy #2.", "value", elementCopy.Attribute( "name" ) );
 		XmlTest( "Copy/Assign: element assign #1.", "element", elementAssign.Value() );
 		XmlTest( "Copy/Assign: element assign #2.", "value", elementAssign.Attribute( "name" ) );
-		XmlTest( "Copy/Assign: element assign #3.", 0, elementAssign.Attribute( "foo" ) );
+		XmlTest( "Copy/Assign: element assign #3.", true, ( 0 == elementAssign.Attribute( "foo" )) );
 
 		TiXmlComment comment;
 		comment.Parse( "<!--comment-->", 0, TIXML_ENCODING_UNKNOWN );
@@ -648,15 +645,15 @@ int main()
 #ifdef TIXML_USE_STL
 	printf ("\n** Parsing, no Condense Whitespace **\n");
 	TiXmlBase::SetCondenseWhiteSpace( false );
+	{
+		istringstream parse1( "<start>This  is    \ntext</start>" );
+		TiXmlElement text1( "text" );
+		parse1 >> text1;
 
-	istringstream parse1( "<start>This  is    \ntext</start>" );
-	TiXmlElement text1( "text" );
-	parse1 >> text1;
-
-	XmlTest ( "Condense white space OFF.", "This  is    \ntext",
-				text1.FirstChild()->Value(),
-				true );
-
+		XmlTest ( "Condense white space OFF.", "This  is    \ntext",
+					text1.FirstChild()->Value(),
+					true );
+	}
 	TiXmlBase::SetCondenseWhiteSpace( true );
 #endif
 
@@ -1040,9 +1037,12 @@ int main()
 	}
 
 	#if defined( WIN32 ) && defined( TUNE )
-	QueryPerformanceCounter( (LARGE_INTEGER*) (&end) );
-	QueryPerformanceFrequency( (LARGE_INTEGER*) (&freq) );
-	printf( "Time for run: %f\n", ( double )( end-start ) / (double) freq );
+	_CrtMemCheckpoint( &endMemState );
+	//_CrtMemDumpStatistics( &endMemState );
+
+	_CrtMemState diffMemState;
+	_CrtMemDifference( &diffMemState, &startMemState, &endMemState );
+	_CrtMemDumpStatistics( &diffMemState );
 	#endif
 
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
