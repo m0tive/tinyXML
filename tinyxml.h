@@ -645,7 +645,7 @@ public:
 	*/
 	virtual TiXmlNode* Clone() const = 0;
 
-protected:
+fprotected:
 	TiXmlNode( NodeType _type );
 
 	// Copy to the allocated object. Shared functionality between Clone, Copy constructor,
