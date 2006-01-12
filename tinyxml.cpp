@@ -193,6 +193,9 @@ void TiXmlNode::Clear()
 
 TiXmlNode* TiXmlNode::LinkEndChild( TiXmlNode* node )
 {
+	assert( node->parent == 0 || node->parent == this );
+	assert( node->GetDocument() == 0 || node->GetDocument() == this->GetDocument() );
+
 	node->parent = this;
 
 	node->prev = lastChild;
@@ -1029,6 +1032,7 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 		if ( length == 0 )
 		{
 			fclose( file );
+			SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, TIXML_ENCODING_UNKNOWN );
 			return false;
 		}
 
