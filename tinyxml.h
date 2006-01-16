@@ -245,6 +245,12 @@ protected:
 	{ 
 		return ( isspace( (unsigned char) c ) || c == '\n' || c == '\r' ); 
 	}
+	inline static bool	IsWhiteSpace( int c )
+	{
+		if ( c < 256 )
+			return IsWhiteSpace( (char) c );
+		return false;	// Again, only truly correct for English/Latin...but usually works.
+	}
 
 	virtual void StreamOut (TIXML_OSTREAM *) const = 0;
 
@@ -645,7 +651,7 @@ public:
 	*/
 	virtual TiXmlNode* Clone() const = 0;
 
-fprotected:
+protected:
 	TiXmlNode( NodeType _type );
 
 	// Copy to the allocated object. Shared functionality between Clone, Copy constructor,
@@ -1239,6 +1245,14 @@ public:
 	bool LoadFile( const char * filename, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
 	/// Save a file using the given filename. Returns true if successful.
 	bool SaveFile( const char * filename ) const;
+	/** Load a file using the given FILE*. Returns true if successful. Note that this method
+		doesn't stream - the entire object pointed at by the FILE*
+		will be interpreted as an XML file. TinyXML doesn't stream in XML from the current
+		file location. Streaming may be added in the future.
+	*/
+	bool LoadFile( FILE*, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
+	/// Save a file using the given FILE*. Returns true if successful.
+	bool SaveFile( FILE* ) const;
 
 	#ifdef TIXML_USE_STL
 	bool LoadFile( const std::string& filename, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING )			///< STL std::string version.

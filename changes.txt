@@ -221,5 +221,6 @@ Changes in version 2.1.5
   to ship with a broken test suite.
 - Started converting some functions to not cast between std::string and const char* 
   quite as often.
+- Added FILE* versions of the document loads - good suggestion from Wade Brainerd
 - Empty documents might not always return the errors they should. [1398915] Thanks to igor v.
 - Added some asserts for multiply adding a node, regardng bug [1391937] suggested by Paco Arjonilla.
