@@ -1084,6 +1084,7 @@ bool TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
 	buf[0] = 0;
 
 	if ( fread( buf, length, 1, file ) != 1 ) {
+		delete [] buf;
 		SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TIXML_ENCODING_UNKNOWN );
 		return false;
 	}
