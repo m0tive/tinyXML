@@ -20,11 +20,10 @@ progname = 'xmltest'
 env = Environment(options = opts, ENV = os.environ )
 
 # If we are in a MSYS shell, prefer the mingw compiler.
-if env[ "ENV" ].has_key( "MSYSTEM" ):
+if os.name == 'nt' and env[ "ENV" ].has_key( "MSYSTEM" ):
 	if env[ "ENV" ]["MSYSTEM"] == "MINGW32":
 		print( "Note: switching to gcc tools. This can be disabled in SConstruct." )
 		env.Tool( 'mingw' )
-
 
 ### Option Logic ###########################
 
