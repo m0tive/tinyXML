@@ -224,6 +224,7 @@ public:
 		TIXML_ERROR_DOCUMENT_EMPTY,
 		TIXML_ERROR_EMBEDDED_NULL,
 		TIXML_ERROR_PARSING_CDATA,
+		TIXML_ERROR_DOCUMENT_TOP_ONLY,
 
 		TIXML_ERROR_STRING_COUNT
 	};
@@ -722,8 +723,11 @@ public:
 		prev = next = 0;
 	}
 
-	const char*		Name()  const		{ return name.c_str (); }		///< Return the name of this attribute.
-	const char*		Value() const		{ return value.c_str (); }		///< Return the value of this attribute.
+	const char*		Name()  const		{ return name.c_str(); }		///< Return the name of this attribute.
+	const char*		Value() const		{ return value.c_str(); }		///< Return the value of this attribute.
+	#ifdef TIXML_USE_STL
+	const std::string& ValueStr() const	{ return value; }				///< Return the value of this attribute.
+	#endif
 	int				IntValue() const;									///< Return the value of this attribute, converted to an integer.
 	double			DoubleValue() const;								///< Return the value of this attribute, converted to a double.
 
@@ -892,6 +896,26 @@ public:
 		}
 		return result;
 	}
+    #ifdef TIXML_USE_STL
+	/** Template form of the attribute query which will try to read the
+		attribute into the specified type. Very easy, very powerful, but
+		be careful to make sure to call this with the correct type.
+
+		@return TIXML_SUCCESS, TIXML_WRONG_TYPE, or TIXML_NO_ATTRIBUTE
+	*/
+	template< typename T > int QueryValueAttribute( const std::string& name, T* outValue ) const
+	{
+		const TiXmlAttribute* node = attributeSet.Find( name );
+		if ( !node )
+			return TIXML_NO_ATTRIBUTE;
+
+		std::stringstream sstream( node->ValueStr() );
+		sstream >> *outValue;
+		if ( !sstream.fail() )
+			return TIXML_SUCCESS;
+		return TIXML_WRONG_TYPE;
+	}
+	#endif
 
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.

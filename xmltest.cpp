@@ -1035,6 +1035,54 @@ int main()
 		XmlTest( "Low entities.", xml.FirstChildElement()->GetText(), result );
 		xml.Print();
 	}
+	{
+		// Bug [ 1451649 ] Attribute values with trailing quotes not handled correctly
+		TiXmlDocument xml;
+		xml.Parse( "<foo attribute=bar\" />" );
+		XmlTest( "Throw error with bad end quotes.", xml.Error(), true );
+	}
+	#ifdef TIXML_USE_STL
+	{
+		// Bug [ 1449463 ] Consider generic query
+		TiXmlDocument xml;
+		xml.Parse( "<foo bar='3' />" );
+		TiXmlElement* ele = xml.FirstChildElement();
+		double d;
+		int i;
+		float f;
+		bool b;
+
+		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &d ), TIXML_SUCCESS );
+		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &i ), TIXML_SUCCESS );
+		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &f ), TIXML_SUCCESS );
+		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &b ), TIXML_WRONG_TYPE );
+		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "nobar", &b ), TIXML_NO_ATTRIBUTE );
+
+		XmlTest( "QueryValueAttribute", (d==3.0), true );
+		XmlTest( "QueryValueAttribute", (i==3), true );
+		XmlTest( "QueryValueAttribute", (f==3.0f), true );
+	}
+	#endif
+	{
+		// [ 1356059 ] Allow TiXMLDocument to only be at the top level
+		TiXmlDocument xml, xml2;
+		xml.InsertEndChild( xml2 );
+		XmlTest( "Document only at top level.", xml.Error(), true );
+		XmlTest( "Document only at top level.", xml.ErrorId(), TiXmlBase::TIXML_ERROR_DOCUMENT_TOP_ONLY );
+	}
+
+	/*  1417717 experiment
+	{
+		TiXmlDocument xml;
+		xml.Parse("<text>Dan & Tracie</text>");
+		xml.Print(stdout);
+	}
+	{
+		TiXmlDocument xml;
+		xml.Parse("<text>Dan &foo; Tracie</text>");
+		xml.Print(stdout);
+	}
+	*/
 
 	#if defined( WIN32 ) && defined( TUNE )
 	_CrtMemCheckpoint( &endMemState );

@@ -224,3 +224,10 @@ Changes in version 2.1.5
 - Added FILE* versions of the document loads - good suggestion from Wade Brainerd
 - Empty documents might not always return the errors they should. [1398915] Thanks to igor v.
 - Added some asserts for multiply adding a node, regardng bug [1391937] suggested by Paco Arjonilla.
+
+2.4.4
+- Bug find thanks to andre-gross found a memory leak that occured when a document failed to load.
+- Bug find (and good analysis) by VirtualJim who found a case where attribute parsing 
+  should be throwing an error and wasn't.
+- Steve Hyatt suggested the QueryValueAttribute method, which is now implemented.
+- DavidA identified a chunk of dead code.

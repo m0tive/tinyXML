@@ -514,6 +514,8 @@ const char* TiXmlBase::GetEntity( const char* p, char* value, int* length, TiXml
 
 	// So it wasn't an entity, its unrecognized, or something like that.
 	*value = *p;	// Don't put back the last one, since we return it!
+	//*length = 1;	// Leave unrecognized entities - this doesn't really work.
+					// Just writes strange XML.
 	return p+1;
 }
 
@@ -1328,9 +1330,9 @@ const char* TiXmlAttribute::Parse( const char* p, TiXmlParsingData* data, TiXmlE
 	p = SkipWhiteSpace( p, encoding );
 	if ( !p || !*p ) return 0;
 
-	int tabsize = 4;
-	if ( document )
-		tabsize = document->TabSize();
+//	int tabsize = 4;
+//	if ( document )
+//		tabsize = document->TabSize();
 
 	if ( data )
 	{
@@ -1361,17 +1363,19 @@ const char* TiXmlAttribute::Parse( const char* p, TiXmlParsingData* data, TiXmlE
 	}
 	
 	const char* end;
+	const char SINGLE_QUOTE = '\'';
+	const char DOUBLE_QUOTE = '\"';
 
-	if ( *p == '\'' )
+	if ( *p == SINGLE_QUOTE )
 	{
 		++p;
-		end = "\'";
+		end = "\'";		// single quote in string
 		p = ReadText( p, &value, false, end, false, encoding );
 	}
-	else if ( *p == '"' )
+	else if ( *p == DOUBLE_QUOTE )
 	{
 		++p;
-		end = "\"";
+		end = "\"";		// double quote in string
 		p = ReadText( p, &value, false, end, false, encoding );
 	}
 	else
@@ -1380,10 +1384,17 @@ const char* TiXmlAttribute::Parse( const char* p, TiXmlParsingData* data, TiXmlE
 		// But this is such a common error that the parser will try
 		// its best, even without them.
 		value = "";
-		while (    p && *p										// existence
+		while (    p && *p											// existence
 				&& !IsWhiteSpace( *p ) && *p != '\n' && *p != '\r'	// whitespace
-				&& *p != '/' && *p != '>' )						// tag end
+				&& *p != '/' && *p != '>' )							// tag end
 		{
+			if ( *p == SINGLE_QUOTE || *p == DOUBLE_QUOTE ) {
+				// [ 1451649 ] Attribute values with trailing quotes not handled correctly
+				// We did not have an opening quote but seem to have a 
+				// closing one. Give up and throw an error.
+				if ( document ) document->SetError( TIXML_ERROR_READING_ATTRIBUTES, p, data, encoding );
+				return 0;
+			}
 			value += *p;
 			++p;
 		}

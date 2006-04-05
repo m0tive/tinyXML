@@ -196,6 +196,13 @@ TiXmlNode* TiXmlNode::LinkEndChild( TiXmlNode* node )
 	assert( node->parent == 0 || node->parent == this );
 	assert( node->GetDocument() == 0 || node->GetDocument() == this->GetDocument() );
 
+	if ( node->Type() == TiXmlNode::DOCUMENT )
+	{
+		delete node;
+		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		return 0;
+	}
+
 	node->parent = this;
 
 	node->prev = lastChild;
@@ -213,6 +220,11 @@ TiXmlNode* TiXmlNode::LinkEndChild( TiXmlNode* node )
 
 TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 {
+	if ( addThis.Type() == TiXmlNode::DOCUMENT )
+	{
+		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		return 0;
+	}
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
 		return 0;
@@ -223,8 +235,14 @@ TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 
 TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode& addThis )
 {	
-	if ( !beforeThis || beforeThis->parent != this )
+	if ( !beforeThis || beforeThis->parent != this ) {
 		return 0;
+	}
+	if ( addThis.Type() == TiXmlNode::DOCUMENT )
+	{
+		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		return 0;
+	}
 
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
@@ -249,8 +267,14 @@ TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode&
 
 TiXmlNode* TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& addThis )
 {
-	if ( !afterThis || afterThis->parent != this )
+	if ( !afterThis || afterThis->parent != this ) {
 		return 0;
+	}
+	if ( addThis.Type() == TiXmlNode::DOCUMENT )
+	{
+		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		return 0;
+	}
 
 	TiXmlNode* node = addThis.Clone();
 	if ( !node )
