@@ -22,6 +22,15 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+#ifdef USE_MMGR
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include "mmgr.h"
+#endif
+
 #include "tinyxml.h"
 
 // The goal of the seperate error file is to make the first

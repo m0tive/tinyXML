@@ -22,9 +22,17 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-#include "tinyxml.h"
 #include <ctype.h>
 #include <stddef.h>
+
+#ifdef USE_MMGR
+#include <string.h>
+#include <assert.h>
+#include <stdio.h>
+#include "mmgr.h"
+#endif
+
+#include "tinyxml.h"
 
 //#define DEBUG_PARSER
 #if defined( DEBUG_PARSER )

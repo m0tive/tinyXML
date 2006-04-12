@@ -3,8 +3,6 @@
 */
 
 
-#include "tinyxml.h"
-
 #ifdef TIXML_USE_STL
 	#include <iostream>
 	#include <sstream>
@@ -18,6 +16,18 @@
 	_CrtMemState startMemState;
 	_CrtMemState endMemState;
 #endif
+
+
+#ifdef USE_MMGR
+#include <string.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include "mmgr.h"
+#endif
+
+#include "tinyxml.h"
 
 static int gPass = 0;
 static int gFail = 0;

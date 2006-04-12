@@ -32,11 +32,13 @@ distribution.
 #pragma warning( disable : 4786 )
 #endif
 
+#ifndef USE_MMGR
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#endif
 
 // Help out windows:
 #if defined( _DEBUG ) && !defined( DEBUG )
