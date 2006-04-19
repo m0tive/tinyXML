@@ -733,8 +733,28 @@ int main()
 								 "I am > the rules!\n...since I make symbolic puns",
 								 true );
 	}
+	//////////////////////////////////////////////////////
+	printf( "\n** Fuzzing **\n" );
 
+	const int FUZZ_ITERATION = 300;
 
+	// The only goal is not to crash on bad input.
+	int len = strlen( demoStart );
+	for( int i=0; i<FUZZ_ITERATION; ++i ) 
+	{
+		char* demoCopy = new char[ len+1 ];
+		strcpy( demoCopy, demoStart );
+
+		demoCopy[ i%len ] = (char)((i+1)*3);
+		demoCopy[ (i*7)%len ] = '>';
+		demoCopy[ (i*11)%len ] = '<';
+
+		TiXmlDocument xml;
+		xml.Parse( demoCopy );
+
+		delete [] demoCopy;
+	}
+	
 	//////////////////////////////////////////////////////
 	printf ("\n** Bug regression tests **\n");
 
