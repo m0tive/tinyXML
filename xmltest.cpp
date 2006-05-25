@@ -17,16 +17,6 @@
 	_CrtMemState endMemState;
 #endif
 
-
-#ifdef USE_MMGR
-#include <string.h>
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include "mmgr.h"
-#endif
-
 #include "tinyxml.h"
 
 static int gPass = 0;
@@ -734,7 +724,7 @@ int main()
 								 true );
 	}
 	//////////////////////////////////////////////////////
-	printf( "\n** Fuzzing **\n" );
+	printf( "\n** Fuzzing... **\n" );
 
 	const int FUZZ_ITERATION = 300;
 
@@ -754,6 +744,7 @@ int main()
 
 		delete [] demoCopy;
 	}
+	printf( "** Fuzzing Complete. **\n" );
 	
 	//////////////////////////////////////////////////////
 	printf ("\n** Bug regression tests **\n");
@@ -838,7 +829,7 @@ int main()
 		FILE* textfile = fopen( "textfile.txt", "w" );
 		if ( textfile )
 		{
-			psg->Print( textfile, 0 );
+			psg->Print( textfile, 0, 0 );
 			fclose( textfile );
 		}
 		textfile = fopen( "textfile.txt", "r" );

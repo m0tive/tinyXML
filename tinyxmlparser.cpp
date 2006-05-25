@@ -25,13 +25,6 @@ distribution.
 #include <ctype.h>
 #include <stddef.h>
 
-#ifdef USE_MMGR
-#include <string.h>
-#include <assert.h>
-#include <stdio.h>
-#include "mmgr.h"
-#endif
-
 #include "tinyxml.h"
 
 //#define DEBUG_PARSER
@@ -293,7 +286,7 @@ void TiXmlParsingData::Stamp( const char* now, TiXmlEncoding encoding )
 				if ( encoding == TIXML_ENCODING_UTF8 )
 				{
 					// Eat the 1 to 4 byte utf8 character.
-					int step = TiXmlBase::utf8ByteTable[*((unsigned char*)p)];
+					int step = TiXmlBase::utf8ByteTable[*((const unsigned char*)p)];
 					if ( step == 0 )
 						step = 1;		// Error case from bad encoding, but handle gracefully.
 					p += step;
@@ -628,7 +621,9 @@ const char* TiXmlBase::ReadText(	const char* p,
 			}
 		}
 	}
-	return p + strlen( endTag );
+	if ( p ) 
+		p += strlen( endTag );
+	return p;
 }
 
 #ifdef TIXML_USE_STL
@@ -1123,7 +1118,7 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 			}
 
 			attrib->SetDocument( document );
-			const char* pErr = p;
+			pErr = p;
 			p = attrib->Parse( p, data, encoding );
 
 			if ( !p || !*p )

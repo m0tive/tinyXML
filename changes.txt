@@ -231,3 +231,4 @@ Changes in version 2.1.5
   should be throwing an error and wasn't.
 - Steve Hyatt suggested the QueryValueAttribute method, which is now implemented.
 - DavidA identified a chunk of dead code.
+- Andrew Baxter sent in some compiler warnings that were good clean up points.

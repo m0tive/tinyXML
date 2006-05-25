@@ -29,13 +29,6 @@ distribution.
 
 #ifndef TIXML_USE_STL
 
-#ifdef USE_MMGR
-#include <assert.h>
-#include <string.h>
-
-#include "mmgr.h"
-#endif
-
 #include "tinystr.h"
 
 // Error value for find primitive

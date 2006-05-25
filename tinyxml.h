@@ -32,13 +32,11 @@ distribution.
 #pragma warning( disable : 4786 )
 #endif
 
-#ifndef USE_MMGR
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#endif
 
 // Help out windows:
 #if defined( _DEBUG ) && !defined( DEBUG )
@@ -107,6 +105,21 @@ struct TiXmlCursor
 };
 
 
+class TiXmlContentHandler
+{
+public:
+	virtual void StartDocument( const TiXmlDocument& doc, int depth ) = 0;
+	virtual void EndDocument( const TiXmlDocument& doc, int depth ) = 0;
+
+	virtual void StartElement( const TiXmlElement& element, const TiXmlAttribute* firstAttribute, int depth ) = 0;
+	virtual void EndElement( const TiXmlElement& element, int depth ) = 0;
+
+	virtual void OnDeclaration( const TiXmlDeclaration& declaration, int depth ) = 0;
+	virtual void OnText( const TiXmlText& text, int depth ) = 0;
+	virtual void OnComment( const TiXmlComment& comment, int depth ) = 0;
+	virtual void OnUnknown( const TiXmlUnknown& unknown, int depth ) = 0;
+};
+
 // Only used by Attribute::Query functions
 enum 
 { 
@@ -158,18 +171,22 @@ public:
 	TiXmlBase()	:	userData(0) {}
 	virtual ~TiXmlBase()					{}
 
-	/**	All TinyXml classes can print themselves to a filestream.
-		This is a formatted print, and will insert tabs and newlines.
+	/**	All TinyXml classes can print themselves to a filestream
+		or the string class (TiXmlString in non-STL mode, std::string
+		in STL mode.) Either or both cfile and str can be null.
+		
+		This is a formatted print, and will insert 
+		tabs and newlines.
 		
 		(For an unformatted stream, use the << operator.)
 	*/
-	virtual void Print( FILE* cfile, int depth ) const = 0;
+	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const = 0;
 
 	/**	The world does not agree on whether white space should be kept or
 		not. In order to make everyone happy, these global, static functions
 		are provided to set whether or not TinyXml will condense all white space
 		into a single space or not. The default is to condense. Note changing this
-		values is not thread safe.
+		value is not thread safe.
 	*/
 	static void SetCondenseWhiteSpace( bool condense )		{ condenseWhiteSpace = condense; }
 
@@ -257,6 +274,11 @@ protected:
 
 	virtual void StreamOut (TIXML_OSTREAM *) const = 0;
 
+	inline static void DPRINT( FILE* cfile, TIXML_STRING* str, const char* const v ) {
+		if ( cfile ) fprintf( cfile, v );
+		if ( str )   (*str) += v;
+	}
+
 	#ifdef TIXML_USE_STL
 	    static bool	StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag );
 	    static bool StreamTo( TIXML_ISTREAM * in, int character, TIXML_STRING * tag );
@@ -288,7 +310,7 @@ protected:
 		assert( p );
 		if ( encoding == TIXML_ENCODING_UTF8 )
 		{
-			*length = utf8ByteTable[ *((unsigned char*)p) ];
+			*length = utf8ByteTable[ *((const unsigned char*)p) ];
 			assert( *length >= 0 && *length < 5 );
 		}
 		else
@@ -669,6 +691,9 @@ protected:
 	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
 	TiXmlNode* Identify( const char* start, TiXmlEncoding encoding );
 
+	// The node version should never get called in a correctly constructed tree.
+	virtual void Visit( TiXmlContentHandler* /*content*/, int /*depth*/ ) const { assert( 0 ); }
+
 	TiXmlNode*		parent;
 	NodeType		type;
 
@@ -779,7 +804,7 @@ public:
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
 	// Prints this Attribute to a FILE stream.
-	virtual void Print( FILE* cfile, int depth ) const;
+	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
 
 	virtual void StreamOut( TIXML_OSTREAM * out ) const;
 	// [internal use]
@@ -996,7 +1021,7 @@ public:
 	/// Creates a new Element and returns it - the returned element is a copy.
 	virtual TiXmlNode* Clone() const;
 	// Print the Element to a FILE stream.
-	virtual void Print( FILE* cfile, int depth ) const;
+	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
 
 	/*	Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
@@ -1010,6 +1035,7 @@ protected:
 
 	void CopyTo( TiXmlElement* target ) const;
 	void ClearThis();	// like clear, but initializes 'this' object as well
+	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	// Used to be public [internal use]
 	#ifdef TIXML_USE_STL
@@ -1043,8 +1069,8 @@ public:
 
 	/// Returns a copy of this Comment.
 	virtual TiXmlNode* Clone() const;
-	/// Write this Comment to a FILE stream.
-	virtual void Print( FILE* cfile, int depth ) const;
+	// Write this Comment to a FILE stream.
+	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
 
 	/*	Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
@@ -1056,6 +1082,7 @@ public:
 
 protected:
 	void CopyTo( TiXmlComment* target ) const;
+	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	// used to be public
 	#ifdef TIXML_USE_STL
@@ -1100,8 +1127,8 @@ public:
 	TiXmlText( const TiXmlText& copy ) : TiXmlNode( TiXmlNode::TEXT )	{ copy.CopyTo( this ); }
 	void operator=( const TiXmlText& base )							 	{ base.CopyTo( this ); }
 
-	/// Write this text object to a FILE stream.
-	virtual void Print( FILE* cfile, int depth ) const;
+	// Write this text object to a FILE stream.
+	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
 
 	/// Queries whether this represents text using a CDATA section.
 	bool CDATA()					{ return cdata; }
@@ -1117,6 +1144,7 @@ protected :
 	///  [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	void CopyTo( TiXmlText* target ) const;
+	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
 	bool Blank() const;	// returns true if all white space and new lines
@@ -1175,8 +1203,8 @@ public:
 
 	/// Creates a copy of this Declaration and returns it.
 	virtual TiXmlNode* Clone() const;
-	/// Print this declaration to a FILE stream.
-	virtual void Print( FILE* cfile, int depth ) const;
+	// Print this declaration to a FILE stream.
+	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
@@ -1185,6 +1213,7 @@ public:
 
 protected:
 	void CopyTo( TiXmlDeclaration* target ) const;
+	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 	// used to be public
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -1217,8 +1246,8 @@ public:
 
 	/// Creates a copy of this Unknown and returns it.
 	virtual TiXmlNode* Clone() const;
-	/// Print this Unknown to a FILE stream.
-	virtual void Print( FILE* cfile, int depth ) const;
+	// Print this Unknown to a FILE stream.
+	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
@@ -1227,6 +1256,7 @@ public:
 
 protected:
 	void CopyTo( TiXmlUnknown* target ) const;
+	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -1369,16 +1399,42 @@ public:
 												//errorLocation.last = 0; 
 											}
 
-	/** Dump the document to standard out. */
+	/** Write the document to standard out using formatted printing ("pretty print"). */
 	void Print() const						{ Print( stdout, 0 ); }
 
+	/** Write the document to a string using formatted printing ("pretty print"). 
+		Similar to PrintToMemory(), except that it does not allocate memory - a string 
+		object has to be passed in.
+
+		In Non-STL mode:
+			@verbatim
+			TiXmlString str;
+			doc.Print( &str );
+			@endverbatim
+
+		In STL mode:
+			@verbatim
+			std::string str;
+			doc.Print( &str );
+			@endverbatim
+	*/
+	void Print( TIXML_STRING* str ) const	{ Print( 0, 0, str ); }
+
+	/** Write the document to a string using formatted printing ("pretty print"). This
+		will allocate a character array (new char[]) and return it as a pointer. The
+		calling code pust call delete[] on the return char* to avoid a memory leak.
+	*/
+	char* PrintToMemory() const; 
+
 	/// Print this Document to a FILE stream.
-	virtual void Print( FILE* cfile, int depth = 0 ) const;
+	virtual void Print( FILE* cfile, int depth = 0, TIXML_STRING* str = 0 ) const;
 	// [internal use]
 	void SetError( int err, const char* errorLocation, TiXmlParsingData* prevData, TiXmlEncoding encoding );
 
 	virtual const TiXmlDocument*    ToDocument()    const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 	virtual TiXmlDocument*          ToDocument()          { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
+
+	void Visit( TiXmlContentHandler* content ) const;
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
