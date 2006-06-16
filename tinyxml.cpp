@@ -941,7 +941,7 @@ void TiXmlElement::CopyTo( TiXmlElement* target ) const
 	}
 }
 
-void TiXmlElement::Visit( TiXmlContentHandler* content, int depth ) const
+void TiXmlElement::Visit( TiXmlVisitHandler* content, int depth ) const
 {
 	content->StartElement( *this, attributeSet.First(), depth );
 	for ( const TiXmlNode* node=FirstChild(); node; node=node->NextSibling() )
@@ -1252,7 +1252,7 @@ void TiXmlDocument::Print( FILE* cfile, int depth, TIXML_STRING* str ) const
 char* TiXmlDocument::PrintToMemory() const
 {
 	TIXML_STRING str;
-	Print( &str );
+	Print( 0, 0, &str );
 
 	char* result = new char[ str.size() + 1 ];
 	strcpy( result, str.c_str() );
@@ -1276,9 +1276,8 @@ void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
 }
 
 
-void TiXmlDocument::Visit( TiXmlContentHandler* content ) const
+void TiXmlDocument::Visit( TiXmlVisitHandler* content, int depth ) const
 {
-	int depth = 0;
 	content->StartDocument( *this, depth );
 	for ( const TiXmlNode* node=FirstChild(); node; node=node->NextSibling() )
 	{
@@ -1456,7 +1455,7 @@ void TiXmlComment::CopyTo( TiXmlComment* target ) const
 }
 
 
-void TiXmlComment::Visit( TiXmlContentHandler* content, int depth ) const
+void TiXmlComment::Visit( TiXmlVisitHandler* content, int depth ) const
 {
 	content->OnComment( *this, depth );
 }
@@ -1518,7 +1517,7 @@ void TiXmlText::CopyTo( TiXmlText* target ) const
 }
 
 
-void TiXmlText::Visit( TiXmlContentHandler* content, int depth ) const
+void TiXmlText::Visit( TiXmlVisitHandler* content, int depth ) const
 {
 	content->OnText( *this, depth );
 }
@@ -1630,7 +1629,7 @@ void TiXmlDeclaration::CopyTo( TiXmlDeclaration* target ) const
 }
 
 
-void TiXmlDeclaration::Visit( TiXmlContentHandler* content, int depth ) const
+void TiXmlDeclaration::Visit( TiXmlVisitHandler* content, int depth ) const
 {
 	content->OnDeclaration( *this, depth );
 }
@@ -1669,7 +1668,7 @@ void TiXmlUnknown::CopyTo( TiXmlUnknown* target ) const
 }
 
 
-void TiXmlUnknown::Visit( TiXmlContentHandler* content, int depth ) const
+void TiXmlUnknown::Visit( TiXmlVisitHandler* content, int depth ) const
 {
 	content->OnUnknown( *this, depth );
 }

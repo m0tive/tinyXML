@@ -105,7 +105,7 @@ struct TiXmlCursor
 };
 
 
-class TiXmlContentHandler
+class TiXmlVisitHandler
 {
 public:
 	virtual void StartDocument( const TiXmlDocument& doc, int depth ) = 0;
@@ -676,6 +676,8 @@ public:
 	*/
 	virtual TiXmlNode* Clone() const = 0;
 
+	virtual void Visit( TiXmlVisitHandler* content, int depth=0 ) const = 0;
+
 protected:
 	TiXmlNode( NodeType _type );
 
@@ -690,9 +692,6 @@ protected:
 
 	// Figure out what is at *p, and parse it. Returns null if it is not an xml node.
 	TiXmlNode* Identify( const char* start, TiXmlEncoding encoding );
-
-	// The node version should never get called in a correctly constructed tree.
-	virtual void Visit( TiXmlContentHandler* /*content*/, int /*depth*/ ) const { assert( 0 ); }
 
 	TiXmlNode*		parent;
 	NodeType		type;
@@ -1030,12 +1029,15 @@ public:
 
 	virtual const TiXmlElement*     ToElement()     const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 	virtual TiXmlElement*           ToElement()	          { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
-	
+
+	/** Walk the XML tree visiting this node and all of its children. 
+	*/
+	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+
 protected:
 
 	void CopyTo( TiXmlElement* target ) const;
 	void ClearThis();	// like clear, but initializes 'this' object as well
-	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	// Used to be public [internal use]
 	#ifdef TIXML_USE_STL
@@ -1080,9 +1082,12 @@ public:
 	virtual const TiXmlComment*  ToComment() const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 	virtual TiXmlComment*  ToComment() { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 
+	/** Walk the XML tree visiting this node and all of its children. 
+	*/
+	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+
 protected:
 	void CopyTo( TiXmlComment* target ) const;
-	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	// used to be public
 	#ifdef TIXML_USE_STL
@@ -1140,11 +1145,14 @@ public:
 	virtual const TiXmlText* ToText() const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 	virtual TiXmlText*       ToText()       { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 
+	/** Walk the XML tree visiting this node and all of its children. 
+	*/
+	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+
 protected :
 	///  [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	void CopyTo( TiXmlText* target ) const;
-	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	virtual void StreamOut ( TIXML_OSTREAM * out ) const;
 	bool Blank() const;	// returns true if all white space and new lines
@@ -1211,9 +1219,12 @@ public:
 	virtual const TiXmlDeclaration* ToDeclaration() const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 	virtual TiXmlDeclaration*       ToDeclaration()       { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 
+	/** Walk the XML tree visiting this node and all of its children. 
+	*/
+	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+
 protected:
 	void CopyTo( TiXmlDeclaration* target ) const;
-	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 	// used to be public
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -1254,9 +1265,12 @@ public:
 	virtual const TiXmlUnknown*     ToUnknown()     const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 	virtual TiXmlUnknown*           ToUnknown()	    { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 
+	/** Walk the XML tree visiting this node and all of its children. 
+	*/
+	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+
 protected:
 	void CopyTo( TiXmlUnknown* target ) const;
-	virtual void Visit( TiXmlContentHandler* content, int depth ) const;
 
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -1402,24 +1416,6 @@ public:
 	/** Write the document to standard out using formatted printing ("pretty print"). */
 	void Print() const						{ Print( stdout, 0 ); }
 
-	/** Write the document to a string using formatted printing ("pretty print"). 
-		Similar to PrintToMemory(), except that it does not allocate memory - a string 
-		object has to be passed in.
-
-		In Non-STL mode:
-			@verbatim
-			TiXmlString str;
-			doc.Print( &str );
-			@endverbatim
-
-		In STL mode:
-			@verbatim
-			std::string str;
-			doc.Print( &str );
-			@endverbatim
-	*/
-	void Print( TIXML_STRING* str ) const	{ Print( 0, 0, str ); }
-
 	/** Write the document to a string using formatted printing ("pretty print"). This
 		will allocate a character array (new char[]) and return it as a pointer. The
 		calling code pust call delete[] on the return char* to avoid a memory leak.
@@ -1434,7 +1430,9 @@ public:
 	virtual const TiXmlDocument*    ToDocument()    const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 	virtual TiXmlDocument*          ToDocument()          { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 
-	void Visit( TiXmlContentHandler* content ) const;
+	/** Walk the XML tree visiting this node and all of its children. 
+	*/
+	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
@@ -1496,7 +1494,7 @@ private:
 
 	@verbatim
 	TiXmlHandle docHandle( &document );
-	TiXmlElement* child2 = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).Child( "Child", 1 ).Element();
+	TiXmlElement* child2 = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).Child( "Child", 1 ).ToElement();
 	if ( child2 )
 	{
 		// do something useful
@@ -1515,7 +1513,7 @@ private:
 	int i=0; 
 	while ( true )
 	{
-		TiXmlElement* child = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).Child( "Child", i ).Element();
+		TiXmlElement* child = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).Child( "Child", i ).ToElement();
 		if ( !child )
 			break;
 		// do something
@@ -1528,7 +1526,7 @@ private:
 	to. Instead, prefer:
 
 	@verbatim
-	TiXmlElement* child = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).FirstChild( "Child" ).Element();
+	TiXmlElement* child = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).FirstChild( "Child" ).ToElement();
 
 	for( child; child; child=child->NextSiblingElement() )
 	{
@@ -1581,14 +1579,35 @@ public:
 	TiXmlHandle ChildElement( const std::string& _value, int index ) const	{ return ChildElement( _value.c_str(), index ); }
 	#endif
 
-	/// Return the handle as a TiXmlNode. This may return null.
-	TiXmlNode* Node() const			{ return node; } 
-	/// Return the handle as a TiXmlElement. This may return null.
-	TiXmlElement* Element() const	{ return ( ( node && node->ToElement() ) ? node->ToElement() : 0 ); }
-	/// Return the handle as a TiXmlText. This may return null.
-	TiXmlText* Text() const			{ return ( ( node && node->ToText() ) ? node->ToText() : 0 ); }
-	/// Return the handle as a TiXmlUnknown. This may return null;
-	TiXmlUnknown* Unknown() const			{ return ( ( node && node->ToUnknown() ) ? node->ToUnknown() : 0 ); }
+	/** Return the handle as a TiXmlNode. This may return null.
+	*/
+	TiXmlNode* ToNode() const			{ return node; } 
+	/** Return the handle as a TiXmlElement. This may return null.
+	*/
+	TiXmlElement* ToElement() const		{ return ( ( node && node->ToElement() ) ? node->ToElement() : 0 ); }
+	/**	Return the handle as a TiXmlText. This may return null.
+	*/
+	TiXmlText* ToText() const			{ return ( ( node && node->ToText() ) ? node->ToText() : 0 ); }
+	/** Return the handle as a TiXmlUnknown. This may return null.
+	*/
+	TiXmlUnknown* ToUnknown() const		{ return ( ( node && node->ToUnknown() ) ? node->ToUnknown() : 0 ); }
+
+	/** @deprecated use ToNode. 
+		Return the handle as a TiXmlNode. This may return null.
+	*/
+	TiXmlNode* Node() const			{ return ToNode(); } 
+	/** @deprecated use ToElement. 
+		Return the handle as a TiXmlElement. This may return null.
+	*/
+	TiXmlElement* Element() const	{ return ToElement(); }
+	/**	@deprecated use ToText()
+		Return the handle as a TiXmlText. This may return null.
+	*/
+	TiXmlText* Text() const			{ return ToText(); }
+	/** @deprecated use ToUnknown()
+		Return the handle as a TiXmlUnknown. This may return null.
+	*/
+	TiXmlUnknown* Unknown() const	{ return ToUnknown(); }
 
 private:
 	TiXmlNode* node;
