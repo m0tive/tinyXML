@@ -59,8 +59,8 @@ distribution.
 // new safe versions. This probably doesn't fully address the problem,
 // but it gets closer. There are too many compilers for me to fully
 // test. If you get compilation troubles, undefine TIXML_SAFE
+#define TIXML_SAFE
 
-#define TIXML_SAFE		// TinyXml isn't fully buffer overrun protected, safe code. This is work in progress.
 #ifdef TIXML_SAFE
 	#if defined(_MSC_VER) && (_MSC_VER >= 1400 )
 		// Microsoft visual studio, version 2005 and higher.
@@ -105,6 +105,16 @@ struct TiXmlCursor
 };
 
 
+/**
+	If you call the Visit() method, it requires being passed a TiXmlVisitHandler
+	class to handle callbacks. For nodes that contain other nodes (Document, Element)
+	you will get called with a Start/End pair. Nodes that are always leaves
+	are preceded with "On".
+
+	Generally Visit() is called on the TiXmlDocument, although all nodes suppert Visiting.
+
+	You should never change the document from a callback.
+*/
 class TiXmlVisitHandler
 {
 public:
