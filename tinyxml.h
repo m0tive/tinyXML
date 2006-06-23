@@ -46,6 +46,7 @@ distribution.
 #ifdef TIXML_USE_STL
 	#include <string>
  	#include <iostream>
+	#include <sstream>
 	#define TIXML_STRING	std::string
 	#define TIXML_ISTREAM	std::istream
 	#define TIXML_OSTREAM	std::ostream
@@ -118,6 +119,8 @@ struct TiXmlCursor
 class TiXmlVisitHandler
 {
 public:
+	virtual ~TiXmlVisitHandler() {}
+
 	virtual void StartDocument( const TiXmlDocument& doc, int depth ) = 0;
 	virtual void EndDocument( const TiXmlDocument& doc, int depth ) = 0;
 
