@@ -1463,7 +1463,7 @@ void TiXmlComment::CopyTo( TiXmlComment* target ) const
 
 bool TiXmlComment::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	return visitor->OnComment( *this, depth );
+	return visitor->VisitComment( *this, depth );
 }
 
 
@@ -1525,7 +1525,7 @@ void TiXmlText::CopyTo( TiXmlText* target ) const
 
 bool TiXmlText::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	return visitor->OnText( *this, depth );
+	return visitor->VisitText( *this, depth );
 }
 
 
@@ -1637,7 +1637,7 @@ void TiXmlDeclaration::CopyTo( TiXmlDeclaration* target ) const
 
 bool TiXmlDeclaration::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	return visitor->OnDeclaration( *this, depth );
+	return visitor->VisitDeclaration( *this, depth );
 }
 
 
@@ -1676,7 +1676,7 @@ void TiXmlUnknown::CopyTo( TiXmlUnknown* target ) const
 
 bool TiXmlUnknown::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	return visitor->OnUnknown( *this, depth );
+	return visitor->VisitUnknown( *this, depth );
 }
 
 
