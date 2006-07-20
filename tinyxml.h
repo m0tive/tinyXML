@@ -116,21 +116,21 @@ struct TiXmlCursor
 
 	You should never change the document from a callback.
 */
-class TiXmlVisitHandler
+class TiXmlVisitor
 {
 public:
-	virtual ~TiXmlVisitHandler() {}
+	virtual ~TiXmlVisitor() {}
 
-	virtual void StartDocument( const TiXmlDocument& doc, int depth ) = 0;
-	virtual void EndDocument( const TiXmlDocument& doc, int depth ) = 0;
+	virtual bool EnterDocument( const TiXmlDocument& doc, int depth ) = 0;
+	virtual bool ExitDocument( const TiXmlDocument& doc, int depth ) = 0;
 
-	virtual void StartElement( const TiXmlElement& element, const TiXmlAttribute* firstAttribute, int depth ) = 0;
-	virtual void EndElement( const TiXmlElement& element, int depth ) = 0;
+	virtual bool EnterElement( const TiXmlElement& element, const TiXmlAttribute* firstAttribute, int depth ) = 0;
+	virtual bool ExitElement( const TiXmlElement& element, int depth ) = 0;
 
-	virtual void OnDeclaration( const TiXmlDeclaration& declaration, int depth ) = 0;
-	virtual void OnText( const TiXmlText& text, int depth ) = 0;
-	virtual void OnComment( const TiXmlComment& comment, int depth ) = 0;
-	virtual void OnUnknown( const TiXmlUnknown& unknown, int depth ) = 0;
+	virtual bool OnDeclaration( const TiXmlDeclaration& declaration, int depth ) = 0;
+	virtual bool OnText( const TiXmlText& text, int depth ) = 0;
+	virtual bool OnComment( const TiXmlComment& comment, int depth ) = 0;
+	virtual bool OnUnknown( const TiXmlUnknown& unknown, int depth ) = 0;
 };
 
 // Only used by Attribute::Query functions
@@ -181,8 +181,8 @@ class TiXmlBase
 	friend class TiXmlDocument;
 
 public:
-	TiXmlBase()	:	userData(0) {}
-	virtual ~TiXmlBase()					{}
+	TiXmlBase()	:	userData(0)		{}
+	virtual ~TiXmlBase()			{}
 
 	/**	All TinyXml classes can print themselves to a filestream
 		or the string class (TiXmlString in non-STL mode, std::string
@@ -227,8 +227,9 @@ public:
 	int Row() const			{ return location.row + 1; }
 	int Column() const		{ return location.col + 1; }	///< See Row()
 
-	void  SetUserData( void* user )			{ userData = user; }
-	void* GetUserData()						{ return userData; }
+	void  SetUserData( void* user )			{ userData = user; }	///< Set a pointer to arbitrary user data.
+	void* GetUserData()						{ return userData; }	///< Get a pointer to arbitrary user data.
+	const void* GetUserData() const 		{ return userData; }	///< Get a pointer to arbitrary user data.
 
 	// Table that returs, for a given lead byte, the total number of bytes
 	// in the UTF-8 sequence.
@@ -689,7 +690,7 @@ public:
 	*/
 	virtual TiXmlNode* Clone() const = 0;
 
-	virtual void Visit( TiXmlVisitHandler* content, int depth=0 ) const = 0;
+	virtual bool Accept( TiXmlVisitor* visitor, int depth=0 ) const = 0;
 
 protected:
 	TiXmlNode( NodeType _type );
@@ -1045,7 +1046,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* visitor, int depth = 0 ) const;
 
 protected:
 
@@ -1097,7 +1098,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* visitor, int depth = 0 ) const;
 
 protected:
 	void CopyTo( TiXmlComment* target ) const;
@@ -1160,7 +1161,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* content, int depth = 0 ) const;
 
 protected :
 	///  [internal use] Creates a new Element and returns it.
@@ -1234,7 +1235,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* visitor, int depth = 0 ) const;
 
 protected:
 	void CopyTo( TiXmlDeclaration* target ) const;
@@ -1280,7 +1281,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* content, int depth = 0 ) const;
 
 protected:
 	void CopyTo( TiXmlUnknown* target ) const;
@@ -1445,7 +1446,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual void Visit( TiXmlVisitHandler* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* content, int depth = 0 ) const;
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;

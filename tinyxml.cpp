@@ -941,14 +941,17 @@ void TiXmlElement::CopyTo( TiXmlElement* target ) const
 	}
 }
 
-void TiXmlElement::Visit( TiXmlVisitHandler* content, int depth ) const
+bool TiXmlElement::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	content->StartElement( *this, attributeSet.First(), depth );
-	for ( const TiXmlNode* node=FirstChild(); node; node=node->NextSibling() )
+	if ( visitor->EnterElement( *this, attributeSet.First(), depth ) ) 
 	{
-		node->Visit( content, depth+1 );
+		for ( const TiXmlNode* node=FirstChild(); node; node=node->NextSibling() )
+		{
+			if ( !node->Accept( visitor, depth+1 ) )
+				break;
+		}
 	}
-	content->EndElement( *this, depth );
+	return visitor->ExitElement( *this, depth );
 }
 
 
@@ -1276,14 +1279,17 @@ void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
 }
 
 
-void TiXmlDocument::Visit( TiXmlVisitHandler* content, int depth ) const
+bool TiXmlDocument::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	content->StartDocument( *this, depth );
-	for ( const TiXmlNode* node=FirstChild(); node; node=node->NextSibling() )
+	if ( visitor->EnterDocument( *this, depth ) )
 	{
-		node->Visit( content, depth+1 );
+		for ( const TiXmlNode* node=FirstChild(); node; node=node->NextSibling() )
+		{
+			if ( !node->Accept( visitor, depth+1 ) )
+				break;
+		}
 	}
-	content->EndDocument( *this, depth );
+	return visitor->ExitDocument( *this, depth );
 }
 
 
@@ -1455,9 +1461,9 @@ void TiXmlComment::CopyTo( TiXmlComment* target ) const
 }
 
 
-void TiXmlComment::Visit( TiXmlVisitHandler* content, int depth ) const
+bool TiXmlComment::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	content->OnComment( *this, depth );
+	return visitor->OnComment( *this, depth );
 }
 
 
@@ -1517,9 +1523,9 @@ void TiXmlText::CopyTo( TiXmlText* target ) const
 }
 
 
-void TiXmlText::Visit( TiXmlVisitHandler* content, int depth ) const
+bool TiXmlText::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	content->OnText( *this, depth );
+	return visitor->OnText( *this, depth );
 }
 
 
@@ -1629,9 +1635,9 @@ void TiXmlDeclaration::CopyTo( TiXmlDeclaration* target ) const
 }
 
 
-void TiXmlDeclaration::Visit( TiXmlVisitHandler* content, int depth ) const
+bool TiXmlDeclaration::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	content->OnDeclaration( *this, depth );
+	return visitor->OnDeclaration( *this, depth );
 }
 
 
@@ -1668,9 +1674,9 @@ void TiXmlUnknown::CopyTo( TiXmlUnknown* target ) const
 }
 
 
-void TiXmlUnknown::Visit( TiXmlVisitHandler* content, int depth ) const
+bool TiXmlUnknown::Accept( TiXmlVisitor* visitor, int depth ) const
 {
-	content->OnUnknown( *this, depth );
+	return visitor->OnUnknown( *this, depth );
 }
 
 
