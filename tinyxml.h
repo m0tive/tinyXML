@@ -121,16 +121,16 @@ class TiXmlVisitor
 public:
 	virtual ~TiXmlVisitor() {}
 
-	virtual bool EnterDocument( const TiXmlDocument& doc, int depth ) = 0;
-	virtual bool ExitDocument( const TiXmlDocument& doc, int depth ) = 0;
+	virtual bool EnterDocument( const TiXmlDocument& doc, int depth )	{ return true; }
+	virtual bool ExitDocument( const TiXmlDocument& doc, int depth )	{ return true; }
 
-	virtual bool EnterElement( const TiXmlElement& element, const TiXmlAttribute* firstAttribute, int depth ) = 0;
-	virtual bool ExitElement( const TiXmlElement& element, int depth ) = 0;
+	virtual bool EnterElement( const TiXmlElement& element, const TiXmlAttribute* firstAttribute, int depth )	{ return true; }
+	virtual bool ExitElement( const TiXmlElement& element, int depth )											{ return true; }
 
-	virtual bool VisitDeclaration( const TiXmlDeclaration& declaration, int depth ) = 0;
-	virtual bool VisitText( const TiXmlText& text, int depth ) = 0;
-	virtual bool VisitComment( const TiXmlComment& comment, int depth ) = 0;
-	virtual bool VisitUnknown( const TiXmlUnknown& unknown, int depth ) = 0;
+	virtual bool VisitDeclaration( const TiXmlDeclaration& declaration, int depth )	{ return true; }
+	virtual bool VisitText( const TiXmlText& text, int depth )						{ return true; }
+	virtual bool VisitComment( const TiXmlComment& comment, int depth )				{ return true; }
+	virtual bool VisitUnknown( const TiXmlUnknown& unknown, int depth )				{ return true; }
 };
 
 // Only used by Attribute::Query functions
