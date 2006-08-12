@@ -145,6 +145,11 @@ int main()
 		printf( "** Demo doc read from disk: ** \n\n" );
 		doc.Print( stdout );
 
+		{
+			TiXmlPrinter printer;
+			doc.Accept( &printer );
+			fprintf( stdout, "%s", printer.CStr() );
+		}
 		TiXmlNode* node = 0;
 		TiXmlElement* todoElement = 0;
 		TiXmlElement* itemElement = 0;
@@ -841,7 +846,7 @@ int main()
 		FILE* textfile = fopen( "textfile.txt", "w" );
 		if ( textfile )
 		{
-			psg->Print( textfile, 0, 0 );
+			psg->Print( textfile, 0 );
 			fclose( textfile );
 		}
 		textfile = fopen( "textfile.txt", "r" );

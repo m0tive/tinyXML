@@ -121,16 +121,16 @@ class TiXmlVisitor
 public:
 	virtual ~TiXmlVisitor() {}
 
-	virtual bool EnterDocument( const TiXmlDocument& doc, int depth )	{ return true; }
-	virtual bool ExitDocument( const TiXmlDocument& doc, int depth )	{ return true; }
+	virtual bool VisitEnter( const TiXmlDocument& doc )	{ return true; }
+	virtual bool VisitExit( const TiXmlDocument& doc )	{ return true; }
 
-	virtual bool EnterElement( const TiXmlElement& element, const TiXmlAttribute* firstAttribute, int depth )	{ return true; }
-	virtual bool ExitElement( const TiXmlElement& element, int depth )											{ return true; }
+	virtual bool VisitEnter( const TiXmlElement& element, const TiXmlAttribute* firstAttribute )	{ return true; }
+	virtual bool VisitExit( const TiXmlElement& element )											{ return true; }
 
-	virtual bool VisitDeclaration( const TiXmlDeclaration& declaration, int depth )	{ return true; }
-	virtual bool VisitText( const TiXmlText& text, int depth )						{ return true; }
-	virtual bool VisitComment( const TiXmlComment& comment, int depth )				{ return true; }
-	virtual bool VisitUnknown( const TiXmlUnknown& unknown, int depth )				{ return true; }
+	virtual bool Visit( const TiXmlDeclaration& declaration )		{ return true; }
+	virtual bool Visit( const TiXmlText& text )						{ return true; }
+	virtual bool Visit( const TiXmlComment& comment )				{ return true; }
+	virtual bool Visit( const TiXmlUnknown& unknown )				{ return true; }
 };
 
 // Only used by Attribute::Query functions
@@ -193,7 +193,7 @@ public:
 		
 		(For an unformatted stream, use the << operator.)
 	*/
-	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const = 0;
+	virtual void Print( FILE* cfile, int depth ) const = 0;
 
 	/**	The world does not agree on whether white space should be kept or
 		not. In order to make everyone happy, these global, static functions
@@ -288,10 +288,10 @@ protected:
 
 	virtual void StreamOut (TIXML_OSTREAM *) const = 0;
 
-	inline static void DPRINT( FILE* cfile, TIXML_STRING* str, const char* const v ) {
-		if ( cfile ) fprintf( cfile, v );
-		if ( str )   (*str) += v;
-	}
+//	inline static void DPRINT( FILE* cfile, TIXML_STRING* str, const char* const v ) {
+//		if ( cfile ) fprintf( cfile, v );
+//		if ( str )   (*str) += v;
+//	}
 
 	#ifdef TIXML_USE_STL
 	    static bool	StreamWhiteSpace( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -690,7 +690,7 @@ public:
 	*/
 	virtual TiXmlNode* Clone() const = 0;
 
-	virtual bool Accept( TiXmlVisitor* visitor, int depth=0 ) const = 0;
+	virtual bool Accept( TiXmlVisitor* visitor ) const = 0;
 
 protected:
 	TiXmlNode( NodeType _type );
@@ -817,7 +817,10 @@ public:
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
 	// Prints this Attribute to a FILE stream.
-	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
+	virtual void Print( FILE* cfile, int depth ) const {
+		Print( cfile, depth, 0 );
+	}
+	void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
 
 	virtual void StreamOut( TIXML_OSTREAM * out ) const;
 	// [internal use]
@@ -1034,7 +1037,7 @@ public:
 	/// Creates a new Element and returns it - the returned element is a copy.
 	virtual TiXmlNode* Clone() const;
 	// Print the Element to a FILE stream.
-	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
+	virtual void Print( FILE* cfile, int depth ) const;
 
 	/*	Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
@@ -1046,7 +1049,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* visitor, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* visitor ) const;
 
 protected:
 
@@ -1086,7 +1089,7 @@ public:
 	/// Returns a copy of this Comment.
 	virtual TiXmlNode* Clone() const;
 	// Write this Comment to a FILE stream.
-	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
+	virtual void Print( FILE* cfile, int depth ) const;
 
 	/*	Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
@@ -1098,7 +1101,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* visitor, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* visitor ) const;
 
 protected:
 	void CopyTo( TiXmlComment* target ) const;
@@ -1147,10 +1150,10 @@ public:
 	void operator=( const TiXmlText& base )							 	{ base.CopyTo( this ); }
 
 	// Write this text object to a FILE stream.
-	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
+	virtual void Print( FILE* cfile, int depth ) const;
 
 	/// Queries whether this represents text using a CDATA section.
-	bool CDATA()					{ return cdata; }
+	bool CDATA() const				{ return cdata; }
 	/// Turns on or off a CDATA representation of text.
 	void SetCDATA( bool _cdata )	{ cdata = _cdata; }
 
@@ -1161,7 +1164,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* content ) const;
 
 protected :
 	///  [internal use] Creates a new Element and returns it.
@@ -1227,6 +1230,9 @@ public:
 	virtual TiXmlNode* Clone() const;
 	// Print this declaration to a FILE stream.
 	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
+	virtual void Print( FILE* cfile, int depth ) const {
+		Print( cfile, depth, 0 );
+	}
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
@@ -1235,7 +1241,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* visitor, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* visitor ) const;
 
 protected:
 	void CopyTo( TiXmlDeclaration* target ) const;
@@ -1272,7 +1278,7 @@ public:
 	/// Creates a copy of this Unknown and returns it.
 	virtual TiXmlNode* Clone() const;
 	// Print this Unknown to a FILE stream.
-	virtual void Print( FILE* cfile, int depth, TIXML_STRING* str ) const;
+	virtual void Print( FILE* cfile, int depth ) const;
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
@@ -1281,7 +1287,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* content ) const;
 
 protected:
 	void CopyTo( TiXmlUnknown* target ) const;
@@ -1430,14 +1436,14 @@ public:
 	/** Write the document to standard out using formatted printing ("pretty print"). */
 	void Print() const						{ Print( stdout, 0 ); }
 
-	/** Write the document to a string using formatted printing ("pretty print"). This
+	/* Write the document to a string using formatted printing ("pretty print"). This
 		will allocate a character array (new char[]) and return it as a pointer. The
 		calling code pust call delete[] on the return char* to avoid a memory leak.
 	*/
-	char* PrintToMemory() const; 
+	//char* PrintToMemory() const; 
 
 	/// Print this Document to a FILE stream.
-	virtual void Print( FILE* cfile, int depth = 0, TIXML_STRING* str = 0 ) const;
+	virtual void Print( FILE* cfile, int depth = 0 ) const;
 	// [internal use]
 	void SetError( int err, const char* errorLocation, TiXmlParsingData* prevData, TiXmlEncoding encoding );
 
@@ -1446,7 +1452,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* content, int depth = 0 ) const;
+	virtual bool Accept( TiXmlVisitor* content ) const;
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
@@ -1626,6 +1632,54 @@ public:
 private:
 	TiXmlNode* node;
 };
+
+
+class TiXmlPrinter : public TiXmlVisitor
+{
+public:
+	TiXmlPrinter() : depth( 0 ), simpleTextPrint( false ),
+					 buffer(), indent( "    " ), lineBreak( "\n" ) {}
+
+	virtual bool VisitEnter( const TiXmlDocument& doc );
+	virtual bool VisitExit( const TiXmlDocument& doc );
+
+	virtual bool VisitEnter( const TiXmlElement& element, const TiXmlAttribute* firstAttribute );
+	virtual bool VisitExit( const TiXmlElement& element );
+
+	virtual bool Visit( const TiXmlDeclaration& declaration );
+	virtual bool Visit( const TiXmlText& text );
+	virtual bool Visit( const TiXmlComment& comment );
+	virtual bool Visit( const TiXmlUnknown& unknown );
+
+	void SetIndent( const char* _indent )			{ indent = _indent; }
+	const char* Indent()							{ return indent.c_str(); }
+	void SetLineBreak( const char* _lineBreak )		{ lineBreak = _lineBreak; }
+	const char* LineBreak()							{ return lineBreak.c_str(); }
+
+	const char* CStr()								{ return buffer.c_str(); }
+	size_t Size()									{ return buffer.size(); }
+
+	#ifdef TIXML_USE_STL
+	const std::string& Str()						{ return buffer; }
+	#endif
+
+private:
+	void DoIndent()	{
+		for( int i=0; i<depth; ++i )
+			buffer += indent;
+	}
+	void DoLineBreak() {
+		buffer += lineBreak;
+	}
+
+	int depth;
+	bool simpleTextPrint;
+	TIXML_STRING buffer;
+	TIXML_STRING indent;
+	TIXML_STRING lineBreak;
+	//static const char* const XML_HEADER;
+};
+
 
 #ifdef _MSC_VER
 #pragma warning( pop )
