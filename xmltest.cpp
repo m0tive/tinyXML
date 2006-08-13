@@ -143,13 +143,21 @@ int main()
 		}
 
 		printf( "** Demo doc read from disk: ** \n\n" );
+		printf( "** Printing via doc.Print **\n" );
 		doc.Print( stdout );
 
 		{
+			printf( "** Printing via TiXmlPrinter **\n" );
 			TiXmlPrinter printer;
 			doc.Accept( &printer );
 			fprintf( stdout, "%s", printer.CStr() );
 		}
+		#ifdef TIXML_USE_STL	
+		{
+			printf( "** Printing via operator<< **\n" );
+			std::cout << doc;
+		}
+		#endif
 		TiXmlNode* node = 0;
 		TiXmlElement* todoElement = 0;
 		TiXmlElement* itemElement = 0;
@@ -746,7 +754,7 @@ int main()
 	const int FUZZ_ITERATION = 300;
 
 	// The only goal is not to crash on bad input.
-	int len = strlen( demoStart );
+	int len = (int) strlen( demoStart );
 	for( int i=0; i<FUZZ_ITERATION; ++i ) 
 	{
 		char* demoCopy = new char[ len+1 ];

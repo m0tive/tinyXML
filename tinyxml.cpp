@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxml
-Original code (2.0 and earlier )copyright (c) 2000-2002 Lee Thomason (www.grinninglizard.com)
+Original code (2.0 and earlier )copyright (c) 2000-2006 Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -34,12 +34,14 @@ distribution.
 
 bool TiXmlBase::condenseWhiteSpace = true;
 
+/*
 void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_OSTREAM* stream )
 {
 	TIXML_STRING buffer;
 	PutString( str, &buffer );
 	(*stream) << buffer;
 }
+*/
 
 void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 {
@@ -885,7 +887,7 @@ void TiXmlElement::Print( FILE* cfile, int depth ) const
 		fprintf( cfile, "</%s>", value.c_str() );
 	}
 }
-
+/*
 void TiXmlElement::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	(*stream) << "<" << value;
@@ -915,7 +917,7 @@ void TiXmlElement::StreamOut( TIXML_OSTREAM * stream ) const
 		(*stream) << " />";
 	}
 }
-
+*/
 
 void TiXmlElement::CopyTo( TiXmlElement* target ) const
 {
@@ -1261,7 +1263,7 @@ void TiXmlDocument::Print( FILE* cfile, int depth ) const
 //	return result;
 //}
 
-
+/*
 void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
 {
 	const TiXmlNode* node;
@@ -1276,6 +1278,7 @@ void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
 			break;
 	}
 }
+*/
 
 
 bool TiXmlDocument::Accept( TiXmlVisitor* visitor ) const
@@ -1353,7 +1356,7 @@ void TiXmlAttribute::Print( FILE* cfile, int /*depth*/, TIXML_STRING* str ) cons
 	}
 }
 
-
+/*
 void TiXmlAttribute::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	if (value.find( '\"' ) != TIXML_STRING::npos)
@@ -1371,6 +1374,7 @@ void TiXmlAttribute::StreamOut( TIXML_OSTREAM * stream ) const
 		(*stream) << "\"";
 	}
 }
+*/
 
 int TiXmlAttribute::QueryIntValue( int* ival ) const
 {
@@ -1442,6 +1446,7 @@ void TiXmlComment::Print( FILE* cfile, int depth ) const
 	fprintf( cfile, "<!--%s-->", value.c_str() );
 }
 
+/*
 void TiXmlComment::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	(*stream) << "<!--";
@@ -1449,7 +1454,7 @@ void TiXmlComment::StreamOut( TIXML_OSTREAM * stream ) const
 	(*stream) << value;
 	(*stream) << "-->";
 }
-
+*/
 
 void TiXmlComment::CopyTo( TiXmlComment* target ) const
 {
@@ -1495,7 +1500,7 @@ void TiXmlText::Print( FILE* cfile, int depth ) const
 	}
 }
 
-
+/*
 void TiXmlText::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	if ( cdata )
@@ -1507,6 +1512,7 @@ void TiXmlText::StreamOut( TIXML_OSTREAM * stream ) const
 		PutString( value, stream );
 	}
 }
+*/
 
 
 void TiXmlText::CopyTo( TiXmlText* target ) const
@@ -1594,6 +1600,7 @@ void TiXmlDeclaration::Print( FILE* cfile, int /*depth*/, TIXML_STRING* str ) co
 	if ( str )	 (*str) += "?>";
 }
 
+/*
 void TiXmlDeclaration::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	(*stream) << "<?xml ";
@@ -1618,7 +1625,7 @@ void TiXmlDeclaration::StreamOut( TIXML_OSTREAM * stream ) const
 	}
 	(*stream) << "?>";
 }
-
+*/
 
 void TiXmlDeclaration::CopyTo( TiXmlDeclaration* target ) const
 {
@@ -1655,12 +1662,12 @@ void TiXmlUnknown::Print( FILE* cfile, int depth ) const
 	fprintf( cfile, "<%s>", value.c_str() );
 }
 
-
+/*
 void TiXmlUnknown::StreamOut( TIXML_OSTREAM * stream ) const
 {
 	(*stream) << "<" << value << ">";		// Don't use entities here! It is unknown.
 }
-
+*/
 
 void TiXmlUnknown::CopyTo( TiXmlUnknown* target ) const
 {
@@ -1754,7 +1761,7 @@ TiXmlAttribute*	TiXmlAttributeSet::Find( const TIXML_STRING& name )
 }
 
 #ifdef TIXML_USE_STL	
-TIXML_ISTREAM & operator>> (TIXML_ISTREAM & in, TiXmlNode & base)
+std::istream& operator>> (std::istream & in, TiXmlNode & base)
 {
 	TIXML_STRING tag;
 	tag.reserve( 8 * 1000 );
@@ -1766,21 +1773,33 @@ TIXML_ISTREAM & operator>> (TIXML_ISTREAM & in, TiXmlNode & base)
 #endif
 
 
-TIXML_OSTREAM & operator<< (TIXML_OSTREAM & out, const TiXmlNode & base)
-{
-	base.StreamOut (& out);
-	return out;
-}
+//std::ostream& operator<< (std::ostream & out, const TiXmlNode & base)
+//{
+//	TiXmlPrinter printer;
+//	printer.SetStreamPrinting();
+//	base.Accept( &printer );
+//	out << printer.Str();
+//
+//	return out;
+//}
 
 
 #ifdef TIXML_USE_STL	
 std::string & operator<< (std::string& out, const TiXmlNode& base )
 {
-   std::ostringstream os_stream( std::ostringstream::out );
-   base.StreamOut( &os_stream );
-   
-   out.append( os_stream.str() );
-   return out;
+	/*
+	std::ostringstream os_stream( std::ostringstream::out );
+	base.StreamOut( &os_stream );
+
+	out.append( os_stream.str() );
+	*/
+	
+	TiXmlPrinter printer;
+	printer.SetStreamPrinting();
+	base.Accept( &printer );
+	out.append( printer.Str() );
+
+	return out;
 }
 #endif
 
