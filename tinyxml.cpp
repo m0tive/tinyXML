@@ -1773,27 +1773,20 @@ std::istream& operator>> (std::istream & in, TiXmlNode & base)
 #endif
 
 
-//std::ostream& operator<< (std::ostream & out, const TiXmlNode & base)
-//{
-//	TiXmlPrinter printer;
-//	printer.SetStreamPrinting();
-//	base.Accept( &printer );
-//	out << printer.Str();
-//
-//	return out;
-//}
-
-
 #ifdef TIXML_USE_STL	
-std::string & operator<< (std::string& out, const TiXmlNode& base )
+std::ostream& operator<< (std::ostream & out, const TiXmlNode & base)
 {
-	/*
-	std::ostringstream os_stream( std::ostringstream::out );
-	base.StreamOut( &os_stream );
+	TiXmlPrinter printer;
+	printer.SetStreamPrinting();
+	base.Accept( &printer );
+	out << printer.Str();
 
-	out.append( os_stream.str() );
-	*/
-	
+	return out;
+}
+
+
+std::string& operator<< (std::string& out, const TiXmlNode& base )
+{
 	TiXmlPrinter printer;
 	printer.SetStreamPrinting();
 	base.Accept( &printer );
