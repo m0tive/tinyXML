@@ -1789,11 +1789,8 @@ TiXmlHandle TiXmlHandle::ChildElement( const char* value, int count ) const
 }
 
 
-//const char* const TiXmlPrinter::XML_HEADER = "<?xml version=\"1.0\"?>";
-
 bool TiXmlPrinter::VisitEnter( const TiXmlDocument& )
 {
-	//buffer += TIXML_STRING( XML_HEADER );
 	return true;
 }
 
@@ -1819,18 +1816,21 @@ bool TiXmlPrinter::VisitEnter( const TiXmlElement& element, const TiXmlAttribute
 		buffer += " />";
 		DoLineBreak();
 	}
-	else if (    element.FirstChild()->ToText()
-	          && element.LastChild() == element.FirstChild()
+	else 
+	{
+		buffer += ">";
+		if (    element.FirstChild()->ToText()
+			  && element.LastChild() == element.FirstChild()
 			  && element.FirstChild()->ToText()->CDATA() == false )
-	{
-		buffer += ">";
-		simpleTextPrint = true;
-		// no DoLineBreak()!
-	}
-	else
-	{
-		buffer += ">";
-		DoLineBreak();
+		{
+			simpleTextPrint = true;
+			// no DoLineBreak()!
+		}
+		else
+		{
+			buffer += ">";
+			DoLineBreak();
+		}
 	}
 	++depth;	
 	return true;
@@ -1844,17 +1844,16 @@ bool TiXmlPrinter::VisitExit( const TiXmlElement& element )
 	{
 		// nothing.
 	}
-	else if ( simpleTextPrint )
+	else 
 	{
-		simpleTextPrint = false;
-		buffer += "</";
-		buffer += element.Value();
-		buffer += ">";
-		DoLineBreak();
-	}
-	else
-	{
-		DoIndent();
+		if ( simpleTextPrint )
+		{
+			simpleTextPrint = false;
+		}
+		else
+		{
+			DoIndent();
+		}
 		buffer += "</";
 		buffer += element.Value();
 		buffer += ">";
