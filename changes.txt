@@ -234,6 +234,6 @@ Changes in version 2.1.5
 - Andrew Baxter sent in some compiler warnings that were good clean up points.
 
 2.5
-- Added the Visit() API. Many thanks to both Andrew Ellerton and John-Philip for all there
+- Added the Visit() API. Many thanks to both Andrew Ellerton and John-Philip for all their
   work, code, suggestion, and just general pushing that it should be done.
 - Removed existing streaming code and use TiXmlPrinter instead.

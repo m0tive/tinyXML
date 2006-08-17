@@ -887,37 +887,7 @@ void TiXmlElement::Print( FILE* cfile, int depth ) const
 		fprintf( cfile, "</%s>", value.c_str() );
 	}
 }
-/*
-void TiXmlElement::StreamOut( TIXML_OSTREAM * stream ) const
-{
-	(*stream) << "<" << value;
 
-	const TiXmlAttribute* attrib;
-	for ( attrib = attributeSet.First(); attrib; attrib = attrib->Next() )
-	{	
-		(*stream) << " ";
-		attrib->StreamOut( stream );
-	}
-
-	// If this node has children, give it a closing tag. Else
-	// make it an empty tag.
-	TiXmlNode* node;
-	if ( firstChild )
-	{ 		
-		(*stream) << ">";
-
-		for ( node = firstChild; node; node=node->NextSibling() )
-		{
-			node->StreamOut( stream );
-		}
-		(*stream) << "</" << value << ">";
-	}
-	else
-	{
-		(*stream) << " />";
-	}
-}
-*/
 
 void TiXmlElement::CopyTo( TiXmlElement* target ) const
 {
@@ -1253,34 +1223,6 @@ void TiXmlDocument::Print( FILE* cfile, int depth ) const
 }
 
 
-//char* TiXmlDocument::PrintToMemory() const
-//{
-//	TIXML_STRING str;
-//	Print( 0, 0, &str );
-//
-//	char* result = new char[ str.size() + 1 ];
-//	strcpy( result, str.c_str() );
-//	return result;
-//}
-
-/*
-void TiXmlDocument::StreamOut( TIXML_OSTREAM * out ) const
-{
-	const TiXmlNode* node;
-	for ( node=FirstChild(); node; node=node->NextSibling() )
-	{
-		node->StreamOut( out );
-
-		// Special rule for streams: stop after the root element.
-		// The stream in code will only read one element, so don't
-		// write more than one.
-		if ( node->ToElement() )
-			break;
-	}
-}
-*/
-
-
 bool TiXmlDocument::Accept( TiXmlVisitor* visitor ) const
 {
 	if ( visitor->VisitEnter( *this ) )
@@ -1356,25 +1298,6 @@ void TiXmlAttribute::Print( FILE* cfile, int /*depth*/, TIXML_STRING* str ) cons
 	}
 }
 
-/*
-void TiXmlAttribute::StreamOut( TIXML_OSTREAM * stream ) const
-{
-	if (value.find( '\"' ) != TIXML_STRING::npos)
-	{
-		PutString( name, stream );
-		(*stream) << "=" << "'";
-		PutString( value, stream );
-		(*stream) << "'";
-	}
-	else
-	{
-		PutString( name, stream );
-		(*stream) << "=" << "\"";
-		PutString( value, stream );
-		(*stream) << "\"";
-	}
-}
-*/
 
 int TiXmlAttribute::QueryIntValue( int* ival ) const
 {
@@ -1446,15 +1369,6 @@ void TiXmlComment::Print( FILE* cfile, int depth ) const
 	fprintf( cfile, "<!--%s-->", value.c_str() );
 }
 
-/*
-void TiXmlComment::StreamOut( TIXML_OSTREAM * stream ) const
-{
-	(*stream) << "<!--";
-	//PutString( value, stream );
-	(*stream) << value;
-	(*stream) << "-->";
-}
-*/
 
 void TiXmlComment::CopyTo( TiXmlComment* target ) const
 {
@@ -1499,20 +1413,6 @@ void TiXmlText::Print( FILE* cfile, int depth ) const
 		fprintf( cfile, "%s", buffer.c_str() );
 	}
 }
-
-/*
-void TiXmlText::StreamOut( TIXML_OSTREAM * stream ) const
-{
-	if ( cdata )
-	{
-		(*stream) << "<![CDATA[" << value << "]]>";
-	}
-	else
-	{
-		PutString( value, stream );
-	}
-}
-*/
 
 
 void TiXmlText::CopyTo( TiXmlText* target ) const
@@ -1600,32 +1500,6 @@ void TiXmlDeclaration::Print( FILE* cfile, int /*depth*/, TIXML_STRING* str ) co
 	if ( str )	 (*str) += "?>";
 }
 
-/*
-void TiXmlDeclaration::StreamOut( TIXML_OSTREAM * stream ) const
-{
-	(*stream) << "<?xml ";
-
-	if ( !version.empty() )
-	{
-		(*stream) << "version=\"";
-		PutString( version, stream );
-		(*stream) << "\" ";
-	}
-	if ( !encoding.empty() )
-	{
-		(*stream) << "encoding=\"";
-		PutString( encoding, stream );
-		(*stream ) << "\" ";
-	}
-	if ( !standalone.empty() )
-	{
-		(*stream) << "standalone=\"";
-		PutString( standalone, stream );
-		(*stream) << "\" ";
-	}
-	(*stream) << "?>";
-}
-*/
 
 void TiXmlDeclaration::CopyTo( TiXmlDeclaration* target ) const
 {
@@ -1662,12 +1536,6 @@ void TiXmlUnknown::Print( FILE* cfile, int depth ) const
 	fprintf( cfile, "<%s>", value.c_str() );
 }
 
-/*
-void TiXmlUnknown::StreamOut( TIXML_OSTREAM * stream ) const
-{
-	(*stream) << "<" << value << ">";		// Don't use entities here! It is unknown.
-}
-*/
 
 void TiXmlUnknown::CopyTo( TiXmlUnknown* target ) const
 {
