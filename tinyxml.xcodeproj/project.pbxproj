@@ -15,6 +15,11 @@
 		9A5BB4410A4BA5BF007E7A65 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A5BB43A0A4BA5BF007E7A65 /* tinyxmlerror.cpp */; };
 		9A5BB4420A4BA5BF007E7A65 /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A5BB43B0A4BA5BF007E7A65 /* tinyxmlparser.cpp */; };
 		9A5BB4430A4BA5BF007E7A65 /* xmltest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A5BB43C0A4BA5BF007E7A65 /* xmltest.cpp */; };
+		9AE5A7270A9577A0002BC675 /* echo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9AE5A7260A9577A0002BC675 /* echo.cpp */; };
+		9AE5A72B0A9577B5002BC675 /* tinystr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A5BB4360A4BA5BF007E7A65 /* tinystr.cpp */; };
+		9AE5A72C0A9577B7002BC675 /* tinyxml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A5BB4380A4BA5BF007E7A65 /* tinyxml.cpp */; };
+		9AE5A72D0A9577B8002BC675 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A5BB43A0A4BA5BF007E7A65 /* tinyxmlerror.cpp */; };
+		9AE5A72E0A9577B9002BC675 /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A5BB43B0A4BA5BF007E7A65 /* tinyxmlparser.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,11 +46,20 @@
 		9A5BB43A0A4BA5BF007E7A65 /* tinyxmlerror.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxmlerror.cpp; sourceTree = "<group>"; };
 		9A5BB43B0A4BA5BF007E7A65 /* tinyxmlparser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxmlparser.cpp; sourceTree = "<group>"; };
 		9A5BB43C0A4BA5BF007E7A65 /* xmltest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = xmltest.cpp; sourceTree = "<group>"; };
+		9AE5A7240A957770002BC675 /* echo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = echo; path = build/Debug/echo; sourceTree = "<group>"; };
+		9AE5A7260A9577A0002BC675 /* echo.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = echo.cpp; sourceTree = "<group>"; };
 		C6859E8B029090EE04C91782 /* tinyxml.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = tinyxml.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9AE5A7220A957770002BC675 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -68,6 +82,7 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				9AE5A7260A9577A0002BC675 /* echo.cpp */,
 				9A5BB4360A4BA5BF007E7A65 /* tinystr.cpp */,
 				9A5BB4370A4BA5BF007E7A65 /* tinystr.h */,
 				9A5BB4380A4BA5BF007E7A65 /* tinyxml.cpp */,
@@ -83,6 +98,7 @@
 			isa = PBXGroup;
 			children = (
 				8DD76F6C0486A84900D96B5E /* tinyxml */,
+				9AE5A7240A957770002BC675 /* echo */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -116,6 +132,22 @@
 			productReference = 8DD76F6C0486A84900D96B5E /* tinyxml */;
 			productType = "com.apple.product-type.tool";
 		};
+		9AE5A7230A957770002BC675 /* echo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9AE5A7280A9577A0002BC675 /* Build configuration list for PBXNativeTarget "echo" */;
+			buildPhases = (
+				9AE5A7210A957770002BC675 /* Sources */,
+				9AE5A7220A957770002BC675 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = echo;
+			productName = echo;
+			productReference = 9AE5A7240A957770002BC675 /* echo */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -127,6 +159,7 @@
 			projectDirPath = "";
 			targets = (
 				8DD76F620486A84900D96B5E /* tinyxml */,
+				9AE5A7230A957770002BC675 /* echo */,
 			);
 		};
 /* End PBXProject section */
@@ -141,6 +174,18 @@
 				9A5BB4410A4BA5BF007E7A65 /* tinyxmlerror.cpp in Sources */,
 				9A5BB4420A4BA5BF007E7A65 /* tinyxmlparser.cpp in Sources */,
 				9A5BB4430A4BA5BF007E7A65 /* xmltest.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9AE5A7210A957770002BC675 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9AE5A7270A9577A0002BC675 /* echo.cpp in Sources */,
+				9AE5A72B0A9577B5002BC675 /* tinystr.cpp in Sources */,
+				9AE5A72C0A9577B7002BC675 /* tinyxml.cpp in Sources */,
+				9AE5A72D0A9577B8002BC675 /* tinyxmlerror.cpp in Sources */,
+				9AE5A72E0A9577B9002BC675 /* tinyxmlparser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,10 +223,7 @@
 		1DEB923608733DC60010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					TIXML_USE_STL,
-					"$(inherited)",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -239,6 +281,36 @@
 			};
 			name = Release;
 		};
+		9AE5A7290A9577A0002BC675 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/bin";
+				PREBINDING = NO;
+				PRODUCT_NAME = echo;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		9AE5A72A0A9577A0002BC675 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = "$(HOME)/bin";
+				PREBINDING = NO;
+				PRODUCT_NAME = echo;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -256,6 +328,15 @@
 			buildConfigurations = (
 				1DEB923608733DC60010E9CD /* Debug */,
 				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9AE5A7280A9577A0002BC675 /* Build configuration list for PBXNativeTarget "echo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9AE5A7290A9577A0002BC675 /* Debug */,
+				9AE5A72A0A9577A0002BC675 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

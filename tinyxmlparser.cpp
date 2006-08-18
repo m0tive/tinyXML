@@ -395,9 +395,12 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p, TiXmlEncoding encoding )
 }
 #endif
 
+// One of TinyXML's more performance demanding functions. Try to keep the memory overhead down. The
+// "assign" optimization removes over 10% of the execution time.
+//
 const char* TiXmlBase::ReadName( const char* p, TIXML_STRING * name, TiXmlEncoding encoding )
 {
-	*name = "";
+	name->clear();
 	assert( p );
 
 	// Names start with letters or underscores.
@@ -410,6 +413,7 @@ const char* TiXmlBase::ReadName( const char* p, TIXML_STRING * name, TiXmlEncodi
 	if (    p && *p 
 		 && ( IsAlpha( (unsigned char) *p, encoding ) || *p == '_' ) )
 	{
+		const char* start = p;
 		while(		p && *p
 				&&	(		IsAlphaNum( (unsigned char ) *p, encoding ) 
 						 || *p == '_'
@@ -417,8 +421,11 @@ const char* TiXmlBase::ReadName( const char* p, TIXML_STRING * name, TiXmlEncodi
 						 || *p == '.'
 						 || *p == ':' ) )
 		{
-			(*name) += *p;
+			//(*name) += *p; // expensive
 			++p;
+		}
+		if ( p-start > 0 ) {
+			name->assign( start, p-start );
 		}
 		return p;
 	}

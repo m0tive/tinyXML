@@ -13,8 +13,10 @@ int main( int argc, char* argv[] )
 		return 1;
 	}
 
+	clock_t start = clock();
+
 	TiXmlDocument doc( argv[1] );
-	bool result = doc.LoadFile();
+	doc.LoadFile();
 	if ( doc.Error() )
 	{
 		printf( "Error loading document.\n" );
@@ -25,7 +27,7 @@ int main( int argc, char* argv[] )
 	
 	printf( "Load '%s' successful.\n", doc.Value() );
 
-
+/*
 #ifdef TIXML_USE_STL	
 	printf( "STL mode on.\n" );
 	doc.SaveFile( "echotest.stl.xml" );
@@ -35,7 +37,12 @@ int main( int argc, char* argv[] )
 	doc.SaveFile( "echotest.xml" );
 
 	doc.Print( stdout, 0 );
+*/
+	TiXmlPrinter printer;
+	doc.Accept( &printer );
 	
+	clock_t end = clock();
+	printf( "Clocks: %d\n", (int)(end-start) );
 	return 0;
 }
 
