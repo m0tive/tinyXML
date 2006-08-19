@@ -766,7 +766,7 @@ int main()
 		iss >> doc;
 		std::string out;
 		out << doc;
-		XmlTest( "CDATA with all bytes #2.", out.c_str(), printer.CStr(), false );
+		XmlTest( "CDATA with all bytes #2.", out.c_str(), printer.CStr(), true );
 		#endif
 	}
 	{
