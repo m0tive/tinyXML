@@ -47,10 +47,10 @@ distribution.
 	#include <string>
  	#include <iostream>
 	#include <sstream>
-	#define TIXML_STRING	std::string
+	#define TIXML_STRING		std::string
 #else
 	#include "tinystr.h"
-	#define TIXML_STRING	TiXmlString
+	#define TIXML_STRING		TiXmlString
 #endif
 
 // Deprecated library function hell. Compilers want to use the
@@ -887,8 +887,12 @@ public:
 	const TiXmlAttribute* Last() const		{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 	TiXmlAttribute* Last()					{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 
-	const TiXmlAttribute*	Find( const TIXML_STRING& name ) const;
-	TiXmlAttribute*	Find( const TIXML_STRING& name );
+	const TiXmlAttribute*	Find( const char* name ) const;
+	TiXmlAttribute*	Find( const char* name );
+	#ifdef TIXML_USE_STL
+	const TiXmlAttribute*	Find( const std::string& name ) const;
+	TiXmlAttribute*	Find( const std::string& name );
+	#endif
 
 private:
 	//*ME:	Because of hidden/disabled copy-construktor in TiXmlAttribute (sentinel-element),
@@ -988,11 +992,11 @@ public:
 	void SetAttribute( const char* name, const char * _value );
 
     #ifdef TIXML_USE_STL
-	const char* Attribute( const std::string& name ) const				{ return Attribute( name.c_str() ); }
-	const char* Attribute( const std::string& name, int* i ) const		{ return Attribute( name.c_str(), i ); }
-	const char* Attribute( const std::string& name, double* d ) const	{ return Attribute( name.c_str(), d ); }
-	int QueryIntAttribute( const std::string& name, int* _value ) const	{ return QueryIntAttribute( name.c_str(), _value ); }
-	int QueryDoubleAttribute( const std::string& name, double* _value ) const { return QueryDoubleAttribute( name.c_str(), _value ); }
+	const std::string* Attribute( const std::string& name ) const;
+	const std::string* Attribute( const std::string& name, int* i ) const;
+	const std::string* Attribute( const std::string& name, double* d ) const;
+	int QueryIntAttribute( const std::string& name, int* _value ) const;
+	int QueryDoubleAttribute( const std::string& name, double* _value ) const;
 
 	/// STL std::string form.
 	void SetAttribute( const std::string& name, const std::string& _value );

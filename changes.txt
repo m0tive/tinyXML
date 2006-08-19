@@ -237,3 +237,8 @@ Changes in version 2.1.5
 - Added the Visit() API. Many thanks to both Andrew Ellerton and John-Philip for all their
   work, code, suggestion, and just general pushing that it should be done.
 - Removed existing streaming code and use TiXmlPrinter instead.
+- [ tinyxml-Bugs-1527079 ] Compile error in tinystr.cpp fixed, thanks to Paul Suggs
+- [ tinyxml-Bugs-1522890 ] SaveFile has no error checks fixed, thanks to Ivan Dobrokotov
+- Ivan Dobrokotov also reported redundant memory allocation in the Attribute() method,
+  which should now be fixed for both const char* and std::string.
+

@@ -1109,6 +1109,28 @@ int main()
 		XmlTest( "QueryValueAttribute", (f==3.0f), true );
 	}
 	#endif
+
+	#ifdef TIXML_USE_STL
+	{
+		// [ 1505267 ] redundant malloc in TiXmlElement::Attribute
+		TiXmlDocument xml;
+		xml.Parse( "<foo bar='3' />" );
+		TiXmlElement* ele = xml.FirstChildElement();
+		double d;
+		int i;
+
+		std::string bar = "bar";
+
+		const std::string* atrrib = ele->Attribute( bar );
+		ele->Attribute( bar, &d );
+		ele->Attribute( bar, &i );
+
+		XmlTest( "Attribute", atrrib->empty(), false );
+		XmlTest( "Attribute", (d==3.0), true );
+		XmlTest( "Attribute", (i==3), true );
+	}
+	#endif
+
 	{
 		// [ 1356059 ] Allow TiXMLDocument to only be at the top level
 		TiXmlDocument xml, xml2;
