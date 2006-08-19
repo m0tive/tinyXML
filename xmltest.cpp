@@ -771,6 +771,7 @@ int main()
 	}
 	{
 		// [ 1480107 ] Bug-fix for STL-streaming of CDATA that contains tags
+		// CDATA streaming had a couple of bugs, that this tests for.
 		const char* str =	"<xmlElement>"
 								"<![CDATA["
 									"<b>I am > the rules!</b>\n"
@@ -783,20 +784,18 @@ int main()
 
 		XmlTest( "CDATA parse. [ 1480107 ]", doc.FirstChildElement()->FirstChild()->Value(), 
 								 "<b>I am > the rules!</b>\n...since I make symbolic puns",
-								 false );
+								 true );
 
 		#ifdef TIXML_USE_STL
-		//cout << doc << '\n';
 
 		doc.Clear();
 
 		istringstream parse0( str );
 		parse0 >> doc;
-		//cout << doc << '\n';
 
 		XmlTest( "CDATA stream. [ 1480107 ]", doc.FirstChildElement()->FirstChild()->Value(), 
 								 "<b>I am > the rules!</b>\n...since I make symbolic puns",
-								 false );
+								 true );
 		#endif
 
 		TiXmlDocument doc1 = doc;
@@ -804,7 +803,7 @@ int main()
 
 		XmlTest( "CDATA copy. [ 1480107 ]", doc1.FirstChildElement()->FirstChild()->Value(), 
 								 "<b>I am > the rules!</b>\n...since I make symbolic puns",
-								 false );
+								 true );
 	}
 	//////////////////////////////////////////////////////
 	// Visit()
