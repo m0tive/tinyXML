@@ -277,16 +277,6 @@ public:
 
 protected:
 
-	// See STL_STRING_BUG
-	// Utility class to overcome a bug.
-	class StringToBuffer
-	{
-	  public:
-		StringToBuffer( const TIXML_STRING& str );
-		~StringToBuffer();
-		char* buffer;
-	};
-
 	static const char*	SkipWhiteSpace( const char*, TiXmlEncoding encoding );
 	inline static bool	IsWhiteSpace( char c )		
 	{ 
@@ -1105,6 +1095,10 @@ class TiXmlComment : public TiXmlNode
 public:
 	/// Constructs an empty comment.
 	TiXmlComment() : TiXmlNode( TiXmlNode::COMMENT ) {}
+	/// Construct a comment from text.
+	TiXmlComment( const char* _value ) : TiXmlNode( TiXmlNode::COMMENT ) {
+		SetValue( _value );
+	}
 	TiXmlComment( const TiXmlComment& );
 	void operator=( const TiXmlComment& base );
 
@@ -1368,13 +1362,15 @@ public:
 	#ifdef TIXML_USE_STL
 	bool LoadFile( const std::string& filename, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING )			///< STL std::string version.
 	{
-		StringToBuffer f( filename );
-		return ( f.buffer && LoadFile( f.buffer, encoding ));
+//		StringToBuffer f( filename );
+//		return ( f.buffer && LoadFile( f.buffer, encoding ));
+		return LoadFile( filename.c_str(), encoding );
 	}
 	bool SaveFile( const std::string& filename ) const		///< STL std::string version.
 	{
-		StringToBuffer f( filename );
-		return ( f.buffer && SaveFile( f.buffer ));
+//		StringToBuffer f( filename );
+//		return ( f.buffer && SaveFile( f.buffer ));
+		return SaveFile( filename.c_str() );
 	}
 	#endif
 

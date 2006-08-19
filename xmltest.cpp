@@ -742,6 +742,33 @@ int main()
 								 "I am > the rules!\n...since I make symbolic puns",
 								 true );
 	}
+	{
+		// [ 1482728 ] Wrong wide char parsing
+		char buf[256];
+		buf[255] = 0;
+		for( int i=0; i<255; ++i ) buf[i] = i>=32 ? i : 32;
+		TIXML_STRING str( "<xmlElement><![CDATA[" );
+		str += buf;
+		str += "]]></xmlElement>";
+
+		TiXmlDocument doc;
+		doc.Parse( str.c_str() );
+
+		TiXmlPrinter printer;
+		printer.SetStreamPrinting();
+		doc.Accept( &printer );
+
+		XmlTest( "CDATA with all bytes #1.", str.c_str(), printer.CStr(), true );
+
+		#ifdef TIXML_USE_STL
+		doc.Clear();
+		istringstream iss( printer.Str() );
+		iss >> doc;
+		std::string out;
+		out << doc;
+		XmlTest( "CDATA with all bytes #2.", out.c_str(), printer.CStr(), true );
+		#endif
+	}
 
 	//////////////////////////////////////////////////////
 	// Visit()

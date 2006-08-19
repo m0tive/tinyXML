@@ -118,24 +118,6 @@ void TiXmlBase::PutString( const TIXML_STRING& str, TIXML_STRING* outString )
 }
 
 
-// <-- Strange class for a bug fix. Search for STL_STRING_BUG
-TiXmlBase::StringToBuffer::StringToBuffer( const TIXML_STRING& str )
-{
-	buffer = new char[ str.length()+1 ];
-	if ( buffer )
-	{
-		strcpy( buffer, str.c_str() );
-	}
-}
-
-
-TiXmlBase::StringToBuffer::~StringToBuffer()
-{
-	delete [] buffer;
-}
-// End strange bug fix. -->
-
-
 TiXmlNode::TiXmlNode( NodeType _type ) : TiXmlBase()
 {
 	parent = 0;
@@ -1058,27 +1040,25 @@ void TiXmlDocument::operator=( const TiXmlDocument& copy )
 bool TiXmlDocument::LoadFile( TiXmlEncoding encoding )
 {
 	// See STL_STRING_BUG below.
-	StringToBuffer buf( value );
+	//StringToBuffer buf( value );
 
-	if ( buf.buffer && LoadFile( buf.buffer, encoding ) )
-		return true;
-
-	return false;
+	return LoadFile( Value(), encoding );
 }
 
 
 bool TiXmlDocument::SaveFile() const
 {
 	// See STL_STRING_BUG below.
-	StringToBuffer buf( value );
-
-	if ( buf.buffer && SaveFile( buf.buffer ) )
-		return true;
-
-	return false;
+//	StringToBuffer buf( value );
+//
+//	if ( buf.buffer && SaveFile( buf.buffer ) )
+//		return true;
+//
+//	return false;
+	return SaveFile( Value() );
 }
 
-bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
+bool TiXmlDocument::LoadFile( const char* _filename, TiXmlEncoding encoding )
 {
 	// There was a really terrifying little bug here. The code:
 	//		value = filename
@@ -1086,8 +1066,8 @@ bool TiXmlDocument::LoadFile( const char* filename, TiXmlEncoding encoding )
 	// be called. What is strange, is that the std::string had the same
 	// address as it's c_str() method, and so bad things happen. Looks
 	// like a bug in the Microsoft STL implementation.
-	// See STL_STRING_BUG above.
-	// Fixed with the StringToBuffer class.
+	// Add an extra string to avoid the crash.
+	TIXML_STRING filename( _filename );
 	value = filename;
 
 	// reading in binary mode so that tinyxml can normalize the EOL
