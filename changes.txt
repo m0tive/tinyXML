@@ -239,6 +239,12 @@ Changes in version 2.1.5
 - Removed existing streaming code and use TiXmlPrinter instead.
 - [ tinyxml-Bugs-1527079 ] Compile error in tinystr.cpp fixed, thanks to Paul Suggs
 - [ tinyxml-Bugs-1522890 ] SaveFile has no error checks fixed, thanks to Ivan Dobrokotov
-- Ivan Dobrokotov also reported redundant memory allocation in the Attribute() method,
-  which should now be fixed for both const char* and std::string.
+- Ivan Dobrokotov also reported redundant memory allocation in the Attribute() method, which
+  upon investigation was a mess. The attribute should now be fixed for both const char* and 
+  std::string, and the return types match the input parameters.
+- Feature [ 1511105 ] Make TiXmlComment constructor accept a string / char*, implemented.
+  Thanks to Karl Itschen for the feedback.
+- [ 1480108 ] Stream parsing fails when CDATA contains tags was found by Tobias Grimm, who also
+  submitted a test case and patch. A significant bug in CDATA streaming (operator>>) has now
+  been fixed.
 

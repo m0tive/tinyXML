@@ -150,10 +150,10 @@ What happens if the encoding is incorrectly set or detected? TinyXML will try
 to read and pass through text seen as improperly encoded. You may get some strange results or 
 mangled characters. You may want to force TinyXML to the correct mode.
 
-<b> You may force TinyXML to Legacy Mode by using LoadFile( TIXML_ENCODING_LEGACY ) or
+You may force TinyXML to Legacy Mode by using LoadFile( TIXML_ENCODING_LEGACY ) or
 LoadFile( filename, TIXML_ENCODING_LEGACY ). You may force it to use legacy mode all
 the time by setting TIXML_DEFAULT_ENCODING = TIXML_ENCODING_LEGACY. Likewise, you may 
-force it to TIXML_ENCODING_UTF8 with the same technique.</b>
+force it to TIXML_ENCODING_UTF8 with the same technique.
 
 For English users, using English XML, UTF-8 is the same as low-ASCII. You
 don't need to be aware of UTF-8 or change your code in any way. You can think
@@ -320,7 +320,7 @@ the previous code reduces to:
 
 @verbatim
 TiXmlHandle docHandle( &document );
-TiXmlElement* child2 = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).Child( "Child", 1 ).Element();
+TiXmlElement* child2 = docHandle.FirstChild( "Document" ).FirstChild( "Element" ).Child( "Child", 1 ).ToElement();
 if ( child2 )
 {
 	// do something useful

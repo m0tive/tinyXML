@@ -766,10 +766,46 @@ int main()
 		iss >> doc;
 		std::string out;
 		out << doc;
-		XmlTest( "CDATA with all bytes #2.", out.c_str(), printer.CStr(), true );
+		XmlTest( "CDATA with all bytes #2.", out.c_str(), printer.CStr(), false );
 		#endif
 	}
+	{
+		// [ 1480107 ] Bug-fix for STL-streaming of CDATA that contains tags
+		const char* str =	"<xmlElement>"
+								"<![CDATA["
+									"<b>I am > the rules!</b>\n"
+									"...since I make symbolic puns"
+								"]]>"
+							"</xmlElement>";
+		TiXmlDocument doc;
+		doc.Parse( str );
+		doc.Print();
 
+		XmlTest( "CDATA parse. [ 1480107 ]", doc.FirstChildElement()->FirstChild()->Value(), 
+								 "<b>I am > the rules!</b>\n...since I make symbolic puns",
+								 false );
+
+		#ifdef TIXML_USE_STL
+		//cout << doc << '\n';
+
+		doc.Clear();
+
+		istringstream parse0( str );
+		parse0 >> doc;
+		//cout << doc << '\n';
+
+		XmlTest( "CDATA stream. [ 1480107 ]", doc.FirstChildElement()->FirstChild()->Value(), 
+								 "<b>I am > the rules!</b>\n...since I make symbolic puns",
+								 false );
+		#endif
+
+		TiXmlDocument doc1 = doc;
+		//doc.Print();
+
+		XmlTest( "CDATA copy. [ 1480107 ]", doc1.FirstChildElement()->FirstChild()->Value(), 
+								 "<b>I am > the rules!</b>\n...since I make symbolic puns",
+								 false );
+	}
 	//////////////////////////////////////////////////////
 	// Visit()
 
