@@ -837,13 +837,13 @@ void TiXmlElement::SetAttribute( const char * cname, const char * cvalue )
 	TIXML_STRING _value( cvalue );
 	#else
 	const char* _name = cname;
-	const char* _cvalue = cvalue;
+	const char* _value = cvalue;
 	#endif
 
 	TiXmlAttribute* node = attributeSet.Find( _name );
 	if ( node )
 	{
-		node->SetValue( cvalue );
+		node->SetValue( _value );
 		return;
 	}
 
