@@ -86,7 +86,7 @@ interested in working on TinyXML.
 
 <h2> Related Projects </h2>
 
-TinyXML projects you may find useful!
+TinyXML projects you may find useful! (Descriptions provided by the projects.)
 
 <ul>
 <li> <b>TinyXPath</b> (http://tinyxpath.sourceforge.net). TinyXPath is a small footprint 
@@ -351,9 +351,9 @@ disk and generate output on the screen. It also tests walking the
 DOM by printing out the number of nodes found using different 
 techniques.
 
-The Linux makefile is very generic and will
-probably run on other systems, but is only tested on Linux. You no
-longer need to run 'make depend'. The dependecies have been
+The Linux makefile is very generic and runs on many systems - it 
+is currently tested on mingw and
+MacOSX. You do not need to run 'make depend'. The dependecies have been
 hard coded.
 
 <h3>Windows project file for VC6</h3>
@@ -364,7 +364,7 @@ hard coded.
 <li>tinyXmlTestSTL: test app, STL </li>
 </ul>
 
-<h3>Linux Make file</h3>
+<h3>Makefile</h3>
 At the top of the makefile you can set:
 
 PROFILE, DEBUG, and TINYXML_USE_STL. Details (such that they are) are in
@@ -414,7 +414,7 @@ relate to the DOM.
 	document node.
 	
 	This is the only directive/special tag parsed by by TinyXML.
-	Generally directive targs are stored in TiXmlUnknown so the 
+	Generally directive tags are stored in TiXmlUnknown so the 
 	commands wont be lost when it is saved back to disk.
 
 @verbatim
@@ -438,7 +438,9 @@ relate to the DOM.
 	This element has 1 attribute, with the name "priority" and the value 
 	"1".
 
-Go to the 
+@verbatim
+Go to the
+@endverbatim 
 
 	A TiXmlText. This is a leaf node and cannot contain other nodes. 
 	It is a child of the "Item" TiXmlElement.
@@ -454,15 +456,15 @@ Etc.
 
 Looking at the entire object tree, you end up with:
 @verbatim
-TiXmlDocument				"demo.xml"
-	TiXmlDeclaration		"version='1.0'" "standalone=no"
-	TiXmlComment			" Our to do list data"
-	TiXmlElement			"ToDo"
-		TiXmlElement		"Item"		Attribtutes: priority = 1
-			TiXmlText		"Go to the "
-			TiXmlElement    "bold"
-				TiXmlText	"Toy store!"
-		TiXmlElement			"Item"		Attributes: priority=2
+TiXmlDocument					"demo.xml"
+	TiXmlDeclaration			"version='1.0'" "standalone=no"
+	TiXmlComment				" Our to do list data"
+	TiXmlElement				"ToDo"
+		TiXmlElement			"Item" Attribtutes: priority = 1
+			TiXmlText			"Go to the "
+			TiXmlElement		"bold"
+				TiXmlText		"Toy store!"
+		TiXmlElement			"Item" Attributes: priority=2
 			TiXmlText			"Do bills"
 @endverbatim
 
@@ -514,7 +516,7 @@ to the contributors on the web pages that keep it lively.
 So many people have sent in bugs and ideas, that rather than list here 
 we try to give credit due in the "changes.txt" file.
 
-TinyXML was originally written be Lee Thomason. (Often the "I" still
+TinyXML was originally written by Lee Thomason. (Often the "I" still
 in the documentation.) Lee reviews changes and releases new versions,
 with the help of Yves Berquin, Andrew Ellerton, and the tinyXml community.
 
