@@ -400,7 +400,10 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p, TiXmlEncoding encoding )
 //
 const char* TiXmlBase::ReadName( const char* p, TIXML_STRING * name, TiXmlEncoding encoding )
 {
-	name->clear();
+	// Oddly, not supported on some comilers,
+	//name->clear();
+	// So use this:
+	*name = "";
 	assert( p );
 
 	// Names start with letters or underscores.

@@ -1828,7 +1828,6 @@ bool TiXmlPrinter::VisitEnter( const TiXmlElement& element, const TiXmlAttribute
 		}
 		else
 		{
-			buffer += ">";
 			DoLineBreak();
 		}
 	}

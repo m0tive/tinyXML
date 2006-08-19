@@ -84,6 +84,17 @@ out as soon as possible.
 There are some areas of improvement; please check sourceforge if you are
 interested in working on TinyXML.
 
+<h2> Related Projects </h2>
+
+TinyXML projects you may find useful!
+
+<ul>
+<li> <b>TinyXPath</b> (http://tinyxpath.sourceforge.net). TinyXPath is a small footprint 
+     XPath syntax decoder, written in C++.</li>
+<li> <b>TinyXML++</b> (http://code.google.com/p/ticpp/). TinyXML++ is a completely new 
+     interface to TinyXML that uses MANY of the C++ strengths. Templates, 
+	 exceptions, and much better error handling.</li>
+</ul>
 
 <h2> Features </h2>
 
