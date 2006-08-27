@@ -277,12 +277,12 @@ public:
 
 protected:
 
-	static const char*	SkipWhiteSpace( const char*, TiXmlEncoding encoding );
-	inline static bool	IsWhiteSpace( char c )		
+	static const char* SkipWhiteSpace( const char*, TiXmlEncoding encoding );
+	inline static bool IsWhiteSpace( char c )		
 	{ 
 		return ( isspace( (unsigned char) c ) || c == '\n' || c == '\r' ); 
 	}
-	inline static bool	IsWhiteSpace( int c )
+	inline static bool IsWhiteSpace( int c )
 	{
 		if ( c < 256 )
 			return IsWhiteSpace( (char) c );
@@ -515,12 +515,19 @@ public:
 	const TiXmlNode* FirstChild()	const	{ return firstChild; }		///< The first child of this node. Will be null if there are no children.
 	TiXmlNode* FirstChild()					{ return firstChild; }
 	const TiXmlNode* FirstChild( const char * value ) const;			///< The first child of this node with the matching 'value'. Will be null if none found.
-	TiXmlNode* FirstChild( const char * value );						///< The first child of this node with the matching 'value'. Will be null if none found.
-
+	/// The first child of this node with the matching 'value'. Will be null if none found.
+	TiXmlNode* FirstChild( const char * _value ) {
+		// Call through to the const version - safe since nothing is changed. Exiting syntax: cast this to a const (always safe)
+		// call the method, cast the return back to non-const.
+		return const_cast< TiXmlNode* > ((const_cast< const TiXmlNode* >(this))->FirstChild( _value ));
+	}
 	const TiXmlNode* LastChild() const	{ return lastChild; }		/// The last child of this node. Will be null if there are no children.
 	TiXmlNode* LastChild()	{ return lastChild; }
+	
 	const TiXmlNode* LastChild( const char * value ) const;			/// The last child of this node matching 'value'. Will be null if there are no children.
-	TiXmlNode* LastChild( const char * value );	
+	TiXmlNode* LastChild( const char * _value ) {
+		return const_cast< TiXmlNode* > ((const_cast< const TiXmlNode* >(this))->LastChild( _value ));
+	}
 
     #ifdef TIXML_USE_STL
 	const TiXmlNode* FirstChild( const std::string& _value ) const	{	return FirstChild (_value.c_str ());	}	///< STL std::string form.
@@ -546,11 +553,15 @@ public:
 		first. IterateChildren will return null when done.
 	*/
 	const TiXmlNode* IterateChildren( const TiXmlNode* previous ) const;
-	TiXmlNode* IterateChildren( TiXmlNode* previous );
+	TiXmlNode* IterateChildren( TiXmlNode* previous ) {
+		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( previous ) );
+	}
 
 	/// This flavor of IterateChildren searches for children with a particular 'value'
 	const TiXmlNode* IterateChildren( const char * value, const TiXmlNode* previous ) const;
-	TiXmlNode* IterateChildren( const char * value, TiXmlNode* previous );
+	TiXmlNode* IterateChildren( const char * _value, TiXmlNode* previous ) {
+		return const_cast< TiXmlNode* >( const_cast< const TiXmlNode* >(this)->IterateChildren( _value, previous ) );
+	}
 
     #ifdef TIXML_USE_STL
 	const TiXmlNode* IterateChildren( const std::string& _value, const TiXmlNode* previous ) const	{	return IterateChildren (_value.c_str (), previous);	}	///< STL std::string form.
@@ -598,7 +609,9 @@ public:
 
 	/// Navigate to a sibling node.
 	const TiXmlNode* PreviousSibling( const char * ) const;
-	TiXmlNode* PreviousSibling( const char * );
+	TiXmlNode* PreviousSibling( const char *_prev ) {
+		return const_cast< TiXmlNode* >( const_cast< const TiXmlNode* >(this)->PreviousSibling( _prev ) );
+	}
 
     #ifdef TIXML_USE_STL
 	const TiXmlNode* PreviousSibling( const std::string& _value ) const	{	return PreviousSibling (_value.c_str ());	}	///< STL std::string form.
@@ -613,21 +626,27 @@ public:
 
 	/// Navigate to a sibling node with the given 'value'.
 	const TiXmlNode* NextSibling( const char * ) const;
-	TiXmlNode* NextSibling( const char * );
+	TiXmlNode* NextSibling( const char* _next ) {
+		return const_cast< TiXmlNode* >( const_cast< const TiXmlNode* >(this)->NextSibling( _next ) );
+	}
 
 	/** Convenience function to get through elements.
 		Calls NextSibling and ToElement. Will skip all non-Element
 		nodes. Returns 0 if there is not another element.
 	*/
 	const TiXmlElement* NextSiblingElement() const;
-	TiXmlElement* NextSiblingElement();
+	TiXmlElement* NextSiblingElement() {
+		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->NextSiblingElement() );
+	}
 
 	/** Convenience function to get through elements.
 		Calls NextSibling and ToElement. Will skip all non-Element
 		nodes. Returns 0 if there is not another element.
 	*/
 	const TiXmlElement* NextSiblingElement( const char * ) const;
-	TiXmlElement* NextSiblingElement( const char * );
+	TiXmlElement* NextSiblingElement( const char *_next ) {
+		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->NextSiblingElement( _next ) );
+	}
 
     #ifdef TIXML_USE_STL
 	const TiXmlElement* NextSiblingElement( const std::string& _value) const	{	return NextSiblingElement (_value.c_str ());	}	///< STL std::string form.
@@ -636,11 +655,15 @@ public:
 
 	/// Convenience function to get through elements.
 	const TiXmlElement* FirstChildElement()	const;
-	TiXmlElement* FirstChildElement();
+	TiXmlElement* FirstChildElement() {
+		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->FirstChildElement() );
+	}
 
 	/// Convenience function to get through elements.
-	const TiXmlElement* FirstChildElement( const char * value ) const;
-	TiXmlElement* FirstChildElement( const char * value );
+	const TiXmlElement* FirstChildElement( const char * _value ) const;
+	TiXmlElement* FirstChildElement( const char * _value ) {
+		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->FirstChildElement( _value ) );
+	}
 
     #ifdef TIXML_USE_STL
 	const TiXmlElement* FirstChildElement( const std::string& _value ) const	{	return FirstChildElement (_value.c_str ());	}	///< STL std::string form.
@@ -657,7 +680,9 @@ public:
 		Returns null if not in a document.
 	*/
 	const TiXmlDocument* GetDocument() const;
-	TiXmlDocument* GetDocument();
+	TiXmlDocument* GetDocument() {
+		return const_cast< TiXmlDocument* >( const_cast< const TiXmlNode* >(this)->GetDocument() );
+	}
 
 	/// Returns true if this node has no children.
 	bool NoChildren() const						{ return !firstChild; }
@@ -815,10 +840,15 @@ public:
 
 	/// Get the next sibling attribute in the DOM. Returns null at end.
 	const TiXmlAttribute* Next() const;
-	TiXmlAttribute* Next();
+	TiXmlAttribute* Next() {
+		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttribute* >(this)->Next() ); 
+	}
+
 	/// Get the previous sibling attribute in the DOM. Returns null at beginning.
 	const TiXmlAttribute* Previous() const;
-	TiXmlAttribute* Previous();
+	TiXmlAttribute* Previous() {
+		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttribute* >(this)->Previous() ); 
+	}
 
 	bool operator==( const TiXmlAttribute& rhs ) const { return rhs.name == name; }
 	bool operator<( const TiXmlAttribute& rhs )	 const { return name < rhs.name; }
@@ -877,11 +907,16 @@ public:
 	const TiXmlAttribute* Last() const		{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 	TiXmlAttribute* Last()					{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 
-	const TiXmlAttribute*	Find( const char* name ) const;
-	TiXmlAttribute*	Find( const char* name );
+	const TiXmlAttribute*	Find( const char* _name ) const;
+	TiXmlAttribute*	Find( const char* _name ) {
+		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttributeSet* >(this)->Find( _name ) );
+	}
 	#ifdef TIXML_USE_STL
-	const TiXmlAttribute*	Find( const std::string& name ) const;
-	TiXmlAttribute*	Find( const std::string& name );
+	const TiXmlAttribute*	Find( const std::string& _name ) const;
+	TiXmlAttribute*	Find( const std::string& _name ) {
+		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttributeSet* >(this)->Find( _name ) );
+	}
+
 	#endif
 
 private:
