@@ -560,7 +560,7 @@ public:
 	/// This flavor of IterateChildren searches for children with a particular 'value'
 	const TiXmlNode* IterateChildren( const char * value, const TiXmlNode* previous ) const;
 	TiXmlNode* IterateChildren( const char * _value, TiXmlNode* previous ) {
-		return const_cast< TiXmlNode* >( const_cast< const TiXmlNode* >(this)->IterateChildren( _value, previous ) );
+		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( _value, previous ) );
 	}
 
     #ifdef TIXML_USE_STL
@@ -610,7 +610,7 @@ public:
 	/// Navigate to a sibling node.
 	const TiXmlNode* PreviousSibling( const char * ) const;
 	TiXmlNode* PreviousSibling( const char *_prev ) {
-		return const_cast< TiXmlNode* >( const_cast< const TiXmlNode* >(this)->PreviousSibling( _prev ) );
+		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->PreviousSibling( _prev ) );
 	}
 
     #ifdef TIXML_USE_STL
@@ -627,7 +627,7 @@ public:
 	/// Navigate to a sibling node with the given 'value'.
 	const TiXmlNode* NextSibling( const char * ) const;
 	TiXmlNode* NextSibling( const char* _next ) {
-		return const_cast< TiXmlNode* >( const_cast< const TiXmlNode* >(this)->NextSibling( _next ) );
+		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->NextSibling( _next ) );
 	}
 
 	/** Convenience function to get through elements.
@@ -636,7 +636,7 @@ public:
 	*/
 	const TiXmlElement* NextSiblingElement() const;
 	TiXmlElement* NextSiblingElement() {
-		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->NextSiblingElement() );
+		return const_cast< TiXmlElement* >( (const_cast< const TiXmlNode* >(this))->NextSiblingElement() );
 	}
 
 	/** Convenience function to get through elements.
@@ -645,7 +645,7 @@ public:
 	*/
 	const TiXmlElement* NextSiblingElement( const char * ) const;
 	TiXmlElement* NextSiblingElement( const char *_next ) {
-		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->NextSiblingElement( _next ) );
+		return const_cast< TiXmlElement* >( (const_cast< const TiXmlNode* >(this))->NextSiblingElement( _next ) );
 	}
 
     #ifdef TIXML_USE_STL
@@ -656,13 +656,13 @@ public:
 	/// Convenience function to get through elements.
 	const TiXmlElement* FirstChildElement()	const;
 	TiXmlElement* FirstChildElement() {
-		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->FirstChildElement() );
+		return const_cast< TiXmlElement* >( (const_cast< const TiXmlNode* >(this))->FirstChildElement() );
 	}
 
 	/// Convenience function to get through elements.
 	const TiXmlElement* FirstChildElement( const char * _value ) const;
 	TiXmlElement* FirstChildElement( const char * _value ) {
-		return const_cast< TiXmlElement* >( const_cast< const TiXmlNode* >(this)->FirstChildElement( _value ) );
+		return const_cast< TiXmlElement* >( (const_cast< const TiXmlNode* >(this))->FirstChildElement( _value ) );
 	}
 
     #ifdef TIXML_USE_STL
@@ -681,7 +681,7 @@ public:
 	*/
 	const TiXmlDocument* GetDocument() const;
 	TiXmlDocument* GetDocument() {
-		return const_cast< TiXmlDocument* >( const_cast< const TiXmlNode* >(this)->GetDocument() );
+		return const_cast< TiXmlDocument* >( (const_cast< const TiXmlNode* >(this))->GetDocument() );
 	}
 
 	/// Returns true if this node has no children.
@@ -841,13 +841,13 @@ public:
 	/// Get the next sibling attribute in the DOM. Returns null at end.
 	const TiXmlAttribute* Next() const;
 	TiXmlAttribute* Next() {
-		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttribute* >(this)->Next() ); 
+		return const_cast< TiXmlAttribute* >( (const_cast< const TiXmlAttribute* >(this))->Next() ); 
 	}
 
 	/// Get the previous sibling attribute in the DOM. Returns null at beginning.
 	const TiXmlAttribute* Previous() const;
 	TiXmlAttribute* Previous() {
-		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttribute* >(this)->Previous() ); 
+		return const_cast< TiXmlAttribute* >( (const_cast< const TiXmlAttribute* >(this))->Previous() ); 
 	}
 
 	bool operator==( const TiXmlAttribute& rhs ) const { return rhs.name == name; }
@@ -909,12 +909,12 @@ public:
 
 	const TiXmlAttribute*	Find( const char* _name ) const;
 	TiXmlAttribute*	Find( const char* _name ) {
-		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttributeSet* >(this)->Find( _name ) );
+		return const_cast< TiXmlAttribute* >( (const_cast< const TiXmlAttributeSet* >(this))->Find( _name ) );
 	}
 	#ifdef TIXML_USE_STL
 	const TiXmlAttribute*	Find( const std::string& _name ) const;
 	TiXmlAttribute*	Find( const std::string& _name ) {
-		return const_cast< TiXmlAttribute* >( const_cast< const TiXmlAttributeSet* >(this)->Find( _name ) );
+		return const_cast< TiXmlAttribute* >( (const_cast< const TiXmlAttributeSet* >(this))->Find( _name ) );
 	}
 
 	#endif
