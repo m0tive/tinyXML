@@ -248,3 +248,7 @@ Changes in version 2.1.5
   submitted a test case and patch. A significant bug in CDATA streaming (operator>>) has now
   been fixed.
 
+2.5.2
+- Lieven, and others, pointed out a missing const-cast that upset the Open Watcom compiler.
+  Should now be fixed.
+- ErrorRow and ErrorCol should have been const, and weren't. Fixed thanks to Dmitry Polutov.

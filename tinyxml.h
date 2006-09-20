@@ -88,7 +88,7 @@ class TiXmlParsingData;
 
 const int TIXML_MAJOR_VERSION = 2;
 const int TIXML_MINOR_VERSION = 5;
-const int TIXML_PATCH_VERSION = 1;
+const int TIXML_PATCH_VERSION = 2;
 
 /*	Internal structure for tracking location of items 
 	in the XML file.
@@ -553,19 +553,19 @@ public:
 		first. IterateChildren will return null when done.
 	*/
 	const TiXmlNode* IterateChildren( const TiXmlNode* previous ) const;
-	TiXmlNode* IterateChildren( TiXmlNode* previous ) {
+	TiXmlNode* IterateChildren( const TiXmlNode* previous ) {
 		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( previous ) );
 	}
 
 	/// This flavor of IterateChildren searches for children with a particular 'value'
 	const TiXmlNode* IterateChildren( const char * value, const TiXmlNode* previous ) const;
-	TiXmlNode* IterateChildren( const char * _value, TiXmlNode* previous ) {
+	TiXmlNode* IterateChildren( const char * _value, const TiXmlNode* previous ) {
 		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( _value, previous ) );
 	}
 
     #ifdef TIXML_USE_STL
 	const TiXmlNode* IterateChildren( const std::string& _value, const TiXmlNode* previous ) const	{	return IterateChildren (_value.c_str (), previous);	}	///< STL std::string form.
-	TiXmlNode* IterateChildren( const std::string& _value, TiXmlNode* previous ) {	return IterateChildren (_value.c_str (), previous);	}	///< STL std::string form.
+	TiXmlNode* IterateChildren( const std::string& _value, const TiXmlNode* previous ) {	return IterateChildren (_value.c_str (), previous);	}	///< STL std::string form.
 	#endif
 
 	/** Add a new node related to this. Adds a child past the LastChild.
@@ -1444,8 +1444,8 @@ public:
 
 		@sa SetTabSize, Row, Column
 	*/
-	int ErrorRow()	{ return errorLocation.row+1; }
-	int ErrorCol()	{ return errorLocation.col+1; }	///< The column where the error occured. See ErrorRow()
+	int ErrorRow() const	{ return errorLocation.row+1; }
+	int ErrorCol() const	{ return errorLocation.col+1; }	///< The column where the error occured. See ErrorRow()
 
 	/** SetTabSize() allows the error reporting functions (ErrorRow() and ErrorCol())
 		to report the correct values for row and column. It does not change the output
