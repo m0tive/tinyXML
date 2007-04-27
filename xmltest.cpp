@@ -266,6 +266,7 @@ int main()
 	#endif
 
 		node = doc.RootElement();
+		assert( node );
 		XmlTest( "Root element exists.", true, ( node != 0 && node->ToElement() ) );
 		XmlTest ( "Root element value is 'ToDo'.", "ToDo",  node->Value());
 
@@ -746,7 +747,9 @@ int main()
 		// [ 1482728 ] Wrong wide char parsing
 		char buf[256];
 		buf[255] = 0;
-		for( int i=0; i<255; ++i ) buf[i] = i>=32 ? i : 32;
+		for( int i=0; i<255; ++i ) {
+			buf[i] = (char)((i>=32) ? i : 32);
+		}
 		TIXML_STRING str( "<xmlElement><![CDATA[" );
 		str += buf;
 		str += "]]></xmlElement>";
@@ -1151,22 +1154,26 @@ int main()
 	{
 		// Bug [ 1449463 ] Consider generic query
 		TiXmlDocument xml;
-		xml.Parse( "<foo bar='3' />" );
+		xml.Parse( "<foo bar='3' barStr='a string'/>" );
+
 		TiXmlElement* ele = xml.FirstChildElement();
 		double d;
 		int i;
 		float f;
 		bool b;
+		std::string str;
 
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &d ), TIXML_SUCCESS );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &i ), TIXML_SUCCESS );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &f ), TIXML_SUCCESS );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &b ), TIXML_WRONG_TYPE );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "nobar", &b ), TIXML_NO_ATTRIBUTE );
+		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "barStr", &str ), TIXML_SUCCESS );
 
 		XmlTest( "QueryValueAttribute", (d==3.0), true );
 		XmlTest( "QueryValueAttribute", (i==3), true );
 		XmlTest( "QueryValueAttribute", (f==3.0f), true );
+		XmlTest( "QueryValueAttribute", (str==std::string( "a string" )), true );
 	}
 	#endif
 
@@ -1199,7 +1206,25 @@ int main()
 		XmlTest( "Document only at top level.", xml.ErrorId(), TiXmlBase::TIXML_ERROR_DOCUMENT_TOP_ONLY );
 	}
 
-	/*  1417717 experiment
+	{
+		// [ 1663758 ] Failure to report error on bad XML
+		TiXmlDocument xml;
+		xml.Parse("<x>");
+		XmlTest("Missing end tag at end of input", xml.Error(), true);
+		xml.Parse("<x> ");
+		XmlTest("Missing end tag with trailing whitespace", xml.Error(), true);
+	} 
+
+	{
+		// [ 1635701 ] fail to parse files with a tag separated into two lines
+		// Unable to reproduce, but good test.
+		TiXmlDocument xml;
+		xml.Parse( "<title><p>text</p\n><title>" );
+		xml.Print();
+		XmlTest( "Tag split by newline", xml.Error(), false );
+	}
+
+/*  1417717 experiment
 	{
 		TiXmlDocument xml;
 		xml.Parse("<text>Dan & Tracie</text>");

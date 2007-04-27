@@ -252,3 +252,15 @@ Changes in version 2.1.5
 - Lieven, and others, pointed out a missing const-cast that upset the Open Watcom compiler.
   Should now be fixed.
 - ErrorRow and ErrorCol should have been const, and weren't. Fixed thanks to Dmitry Polutov.
+
+2.5.3
+- zloe_zlo identified a missing string specialization for QueryValueAttribute() [ 1695429 ]
+- increased warning level to 4 and turned on detect 64 bit portability issues for VC2005.
+  May address [ 1677737 ] VS2005: /Wp64 warnings
+- grosheck identified several problems with the Document copy. Many thanks for [ 1660367 ]
+- Nice catch, and suggested fix, be Gilad Novik on the Printer dropping entities.
+  "[ 1600650 ] Bug when printing xml text" is now fixed.
+- A subtle fix from Nicos Gollan in the tinystring initializer: 
+  [ 1581449 ] Fix initialiser of TiXmlString::nullrep_
+  
+  

@@ -1114,8 +1114,12 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 			// elements -- read the end tag, and return.
 			++p;
 			p = ReadValue( p, data, encoding );		// Note this is an Element method, and will set the error if one happens.
-			if ( !p || !*p )
+			if ( !p || !*p ) {
+				// We were looking for the end tag, but found nothing.
+				// Fix for [ 1663758 ] Failure to report error on bad XML
+				if ( document ) document->SetError( TIXML_ERROR_READING_END_TAG, p, data, encoding );
 				return 0;
+			}
 
 			// We should find the end tag now
 			if ( StringEqual( p, endTag.c_str(), false, encoding ) )
