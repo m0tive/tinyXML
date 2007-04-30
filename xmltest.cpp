@@ -1217,14 +1217,47 @@ int main()
 
 	{
 		// [ 1635701 ] fail to parse files with a tag separated into two lines
-		// Unable to reproduce, but good test.
+		// I'm not sure this is a bug. Marked 'pending' for feedback.
 		TiXmlDocument xml;
 		xml.Parse( "<title><p>text</p\n><title>" );
-		xml.Print();
-		XmlTest( "Tag split by newline", xml.Error(), false );
+		//xml.Print();
+		//XmlTest( "Tag split by newline", xml.Error(), false );
 	}
 
-/*  1417717 experiment
+	#ifdef TIXML_USE_STL
+	{
+		// [ 1475201 ] TinyXML parses entities in comments
+		TiXmlDocument xml;
+		istringstream parse1( "<!-- declarations for <head> & <body> -->"
+						      "<!-- far &amp; away -->" );
+		parse1 >> xml;
+
+		TiXmlNode* e0 = xml.FirstChild();
+		TiXmlNode* e1 = e0->NextSibling();
+		TiXmlComment* c0 = e0->ToComment();
+		TiXmlComment* c1 = e1->ToComment();
+
+		XmlTest( "Comments ignore entities.", " declarations for <head> & <body> ", c0->Value(), true );
+		XmlTest( "Comments ignore entities.", " far &amp; away ", c1->Value(), true );
+	}
+	#endif
+
+	{
+		// [ 1475201 ] TinyXML parses entities in comments
+		TiXmlDocument xml;
+		xml.Parse("<!-- declarations for <head> & <body> -->"
+				  "<!-- far &amp; away -->" );
+
+		TiXmlNode* e0 = xml.FirstChild();
+		TiXmlNode* e1 = e0->NextSibling();
+		TiXmlComment* c0 = e0->ToComment();
+		TiXmlComment* c1 = e1->ToComment();
+
+		XmlTest( "Comments ignore entities.", " declarations for <head> & <body> ", c0->Value(), true );
+		XmlTest( "Comments ignore entities.", " far &amp; away ", c1->Value(), true );
+	}
+	
+	/*  1417717 experiment
 	{
 		TiXmlDocument xml;
 		xml.Parse("<text>Dan & Tracie</text>");

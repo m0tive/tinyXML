@@ -520,8 +520,8 @@ public:
 	TiXmlNode* Parent()							{ return parent; }
 	const TiXmlNode* Parent() const				{ return parent; }
 
-	const TiXmlNode* FirstChild()	const	{ return firstChild; }		///< The first child of this node. Will be null if there are no children.
-	TiXmlNode* FirstChild()					{ return firstChild; }
+	const TiXmlNode* FirstChild()	const		{ return firstChild; }	///< The first child of this node. Will be null if there are no children.
+	TiXmlNode* FirstChild()						{ return firstChild; }
 	const TiXmlNode* FirstChild( const char * value ) const;			///< The first child of this node with the matching 'value'. Will be null if none found.
 	/// The first child of this node with the matching 'value'. Will be null if none found.
 	TiXmlNode* FirstChild( const char * _value ) {

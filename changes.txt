@@ -262,5 +262,6 @@ Changes in version 2.1.5
   "[ 1600650 ] Bug when printing xml text" is now fixed.
 - A subtle fix from Nicos Gollan in the tinystring initializer: 
   [ 1581449 ] Fix initialiser of TiXmlString::nullrep_
-  
+- Great catch, although there isn't a submitter for the bug. [ 1475201 ] TinyXML parses entities in comments. 
+  Comments should not, in fact, parse entities. Fixed the code path and added tests.
   
