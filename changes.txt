@@ -264,4 +264,5 @@ Changes in version 2.1.5
   [ 1581449 ] Fix initialiser of TiXmlString::nullrep_
 - Great catch, although there isn't a submitter for the bug. [ 1475201 ] TinyXML parses entities in comments. 
   Comments should not, in fact, parse entities. Fixed the code path and added tests.
+- We were not catching all the returns from ftell. Thanks to Bernard for catching that.
   
