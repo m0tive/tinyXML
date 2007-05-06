@@ -1256,6 +1256,15 @@ int main()
 		XmlTest( "Comments ignore entities.", " declarations for <head> & <body> ", c0->Value(), true );
 		XmlTest( "Comments ignore entities.", " far &amp; away ", c1->Value(), true );
 	}
+	/*
+	{
+		TiXmlDocument xml;
+		xml.Parse( "<tag>/</tag>" );
+		xml.Print();
+		xml.FirstChild()->Print( stdout, 0 );
+		xml.FirstChild()->Type();
+	}
+	*/
 	
 	/*  1417717 experiment
 	{
