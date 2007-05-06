@@ -254,7 +254,8 @@ Changes in version 2.1.5
 - ErrorRow and ErrorCol should have been const, and weren't. Fixed thanks to Dmitry Polutov.
 
 2.5.3
-- zloe_zlo identified a missing string specialization for QueryValueAttribute() [ 1695429 ]
+- zloe_zlo identified a missing string specialization for QueryValueAttribute() [ 1695429 ]. Worked
+  on this bug, but not sure how to fix it in a safe, cross-compiler way.
 - increased warning level to 4 and turned on detect 64 bit portability issues for VC2005.
   May address [ 1677737 ] VS2005: /Wp64 warnings
 - grosheck identified several problems with the Document copy. Many thanks for [ 1660367 ]
