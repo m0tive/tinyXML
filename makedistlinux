@@ -45,6 +45,12 @@ cp tinyxml_lib.dsp tinyxml
 cp tinyxmlSTL.dsp tinyxml
 cp tinyxml.dsw tinyxml
 
+cp tinyXmlTest.vcproj tinyxml
+cp tinyXmlTestSTL.vcproj tinyxml
+cp tinyxml_lib.vcproj tinyxml
+cp tinyxmlSTL.vcproj tinyxml
+cp tinyxml.sln tinyxml
+
 unix2dos ./tinyxml/echo.dsp
 unix2dos ./tinyxml/tinyXmlTest.dsp
 unix2dos ./tinyxml/tinyXmlTestSTL.dsp
