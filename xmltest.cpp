@@ -1256,6 +1256,7 @@ int main()
 		XmlTest( "Comments ignore entities.", " declarations for <head> & <body> ", c0->Value(), true );
 		XmlTest( "Comments ignore entities.", " far &amp; away ", c1->Value(), true );
 	}
+
 	/*
 	{
 		TiXmlDocument xml;

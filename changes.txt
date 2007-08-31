@@ -267,3 +267,6 @@ Changes in version 2.1.5
   Comments should not, in fact, parse entities. Fixed the code path and added tests.
 - We were not catching all the returns from ftell. Thanks to Bernard for catching that.
   
+2.5.4
+- A TiXMLDocument can't be a sub-node. Block this from happening in the 'replace'. Thanks Noam.
+- [ 1714831 ] TiXmlBase::location is not copied by copy-ctors, fix reported and suggested by Nicola Civran.
