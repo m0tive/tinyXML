@@ -270,3 +270,4 @@ Changes in version 2.1.5
 2.5.4
 - A TiXMLDocument can't be a sub-node. Block this from happening in the 'replace'. Thanks Noam.
 - [ 1714831 ] TiXmlBase::location is not copied by copy-ctors, fix reported and suggested by Nicola Civran.
+- Fixed possible memory overrun in the comment reading code - thanks gcarlton77

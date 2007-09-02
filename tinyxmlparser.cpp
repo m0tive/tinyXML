@@ -1379,7 +1379,7 @@ const char* TiXmlComment::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 		value.append( p, 1 );
 		++p;
 	}
-	if ( p ) 
+	if ( p && *p ) 
 		p += strlen( endTag );
 
 	return p;
