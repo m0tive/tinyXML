@@ -1063,8 +1063,8 @@ int main()
 		TiXmlDocument doc;
 		doc.Parse( doctype );
 		
-		XmlTest( "Parsing repeated attributes.", 0, (int)doc.Error() );	// not an  error to tinyxml
-		XmlTest( "Parsing repeated attributes.", "blue", doc.FirstChildElement( "element" )->Attribute( "attr" ) );
+		XmlTest( "Parsing repeated attributes.", true, doc.Error() );	// is an  error to tinyxml (didn't use to be, but caused issues)
+		//XmlTest( "Parsing repeated attributes.", "blue", doc.FirstChildElement( "element" )->Attribute( "attr" ) );
 	}
 
 	{

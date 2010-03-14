@@ -93,7 +93,7 @@ class TiXmlParsingData;
 
 const int TIXML_MAJOR_VERSION = 2;
 const int TIXML_MINOR_VERSION = 5;
-const int TIXML_PATCH_VERSION = 3;
+const int TIXML_PATCH_VERSION = 5;
 
 /*	Internal structure for tracking location of items 
 	in the XML file.
@@ -1001,6 +1001,16 @@ public:
 	}
 
     #ifdef TIXML_USE_STL
+	/// QueryStringAttribute examines the attribute - see QueryIntAttribute().
+	int QueryStringAttribute( const char* name, std::string* _value ) const {
+		const char* cstr = Attribute( name );
+		if ( cstr ) {
+			*_value = std::string( cstr );
+			return TIXML_SUCCESS;
+		}
+		return TIXML_NO_ATTRIBUTE;
+	}
+
 	/** Template form of the attribute query which will try to read the
 		attribute into the specified type. Very easy, very powerful, but
 		be careful to make sure to call this with the correct type.

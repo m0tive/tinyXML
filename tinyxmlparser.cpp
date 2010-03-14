@@ -1162,7 +1162,7 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 			#endif
 			if ( node )
 			{
-				node->SetValue( attrib->Value() );
+				if ( document ) document->SetError( TIXML_ERROR_PARSING_ELEMENT, pErr, data, encoding );
 				delete attrib;
 				return 0;
 			}
