@@ -631,7 +631,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 			}
 		}
 	}
-	if ( p ) 
+	if ( p && *p ) 
 		p += strlen( endTag );
 	return p;
 }
@@ -825,7 +825,6 @@ TiXmlNode* TiXmlNode::Identify( const char* p, TiXmlEncoding encoding )
 		return 0;
 	}
 
-	TiXmlDocument* doc = GetDocument();
 	p = SkipWhiteSpace( p, encoding );
 
 	if ( !p || !*p )
@@ -895,11 +894,6 @@ TiXmlNode* TiXmlNode::Identify( const char* p, TiXmlEncoding encoding )
 	{
 		// Set the parent, so it can report errors
 		returnNode->parent = this;
-	}
-	else
-	{
-		if ( doc )
-			doc->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0, 0, TIXML_ENCODING_UNKNOWN );
 	}
 	return returnNode;
 }
@@ -1139,7 +1133,6 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 			TiXmlAttribute* attrib = new TiXmlAttribute();
 			if ( !attrib )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, pErr, data, encoding );
 				return 0;
 			}
 
@@ -1191,8 +1184,7 @@ const char* TiXmlElement::ReadValue( const char* p, TiXmlParsingData* data, TiXm
 
 			if ( !textNode )
 			{
-				if ( document ) document->SetError( TIXML_ERROR_OUT_OF_MEMORY, 0, 0, encoding );
-				    return 0;
+			    return 0;
 			}
 
 			if ( TiXmlBase::IsWhiteSpaceCondensed() )

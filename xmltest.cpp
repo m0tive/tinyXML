@@ -91,8 +91,8 @@ int main()
 	{
 
 	#ifdef TIXML_USE_STL
-		/*	What the todo list should look like after processing.
-			In stream (no formatting) representation. */
+		//	What the todo list should look like after processing.
+		// In stream (no formatting) representation.
 		const char* demoEnd =
 			"<?xml version=\"1.0\" standalone=\"no\" ?>"
 			"<!-- Our to do list data -->"
@@ -399,7 +399,7 @@ int main()
 		}
 	#endif
 	}
-	
+
 	{
 		const char* str = "<doc attr0='1' attr1='2.0' attr2='foo' />";
 
@@ -423,6 +423,30 @@ int main()
 		XmlTest( "Query attribute: not a number", result, TIXML_WRONG_TYPE );
 		result = ele->QueryIntAttribute( "bar", &iVal );
 		XmlTest( "Query attribute: does not exist", result, TIXML_NO_ATTRIBUTE );
+	}
+
+	{
+		const char* str = "<doc/>";
+
+		TiXmlDocument doc;
+		doc.Parse( str );
+
+		TiXmlElement* ele = doc.FirstChildElement();
+
+		int iVal;
+		double dVal;
+
+		ele->SetAttribute( "str", "strValue" );
+		ele->SetAttribute( "int", 1 );
+		ele->SetDoubleAttribute( "double", -1.0 );
+
+		const char* cStr = ele->Attribute( "str" );
+		ele->QueryIntAttribute( "int", &iVal );
+		ele->QueryDoubleAttribute( "double", &dVal );
+
+		XmlTest( "Attribute round trip. c-string.", "strValue", cStr );
+		XmlTest( "Attribute round trip. int.", 1, iVal );
+		XmlTest( "Attribute round trip. double.", -1, (int)dVal );
 	}
 	
 	{
@@ -1255,6 +1279,22 @@ int main()
 
 		XmlTest( "Comments ignore entities.", " declarations for <head> & <body> ", c0->Value(), true );
 		XmlTest( "Comments ignore entities.", " far &amp; away ", c1->Value(), true );
+	}
+
+	{
+		TiXmlDocument xml;
+		xml.Parse( "<Parent>"
+						"<child1 att=''/>"
+						"<!-- With this comment, child2 will not be parsed! -->"
+						"<child2 att=''/>"
+					"</Parent>" );
+		int count = 0;
+
+		TiXmlNode* ele = 0;
+		while ( (ele = xml.FirstChildElement( "Parent" )->IterateChildren( ele ) ) != 0 ) {
+			++count;
+		}
+		XmlTest( "Comments iterate correctly.", 3, count );
 	}
 
 	/*

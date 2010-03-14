@@ -268,7 +268,6 @@ public:
 		TIXML_NO_ERROR = 0,
 		TIXML_ERROR,
 		TIXML_ERROR_OPENING_FILE,
-		TIXML_ERROR_OUT_OF_MEMORY,
 		TIXML_ERROR_PARSING_ELEMENT,
 		TIXML_ERROR_FAILED_TO_READ_ELEMENT_NAME,
 		TIXML_ERROR_READING_ELEMENT_VALUE,
@@ -916,17 +915,14 @@ public:
 	const TiXmlAttribute* Last() const		{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 	TiXmlAttribute* Last()					{ return ( sentinel.prev == &sentinel ) ? 0 : sentinel.prev; }
 
-	const TiXmlAttribute*	Find( const char* _name ) const;
-	TiXmlAttribute*	Find( const char* _name ) {
-		return const_cast< TiXmlAttribute* >( (const_cast< const TiXmlAttributeSet* >(this))->Find( _name ) );
-	}
-	#ifdef TIXML_USE_STL
-	const TiXmlAttribute*	Find( const std::string& _name ) const;
-	TiXmlAttribute*	Find( const std::string& _name ) {
-		return const_cast< TiXmlAttribute* >( (const_cast< const TiXmlAttributeSet* >(this))->Find( _name ) );
-	}
+	TiXmlAttribute*	Find( const char* _name ) const;
+	TiXmlAttribute* FindOrCreate( const char* _name );
 
-	#endif
+#	ifdef TIXML_USE_STL
+	TiXmlAttribute*	Find( const std::string& _name ) const;
+	TiXmlAttribute* FindOrCreate( const std::string& _name );
+#	endif
+
 
 private:
 	//*ME:	Because of hidden/disabled copy-construktor in TiXmlAttribute (sentinel-element),
@@ -1058,6 +1054,8 @@ public:
 	void SetAttribute( const std::string& name, const std::string& _value );
 	///< STL std::string form.
 	void SetAttribute( const std::string& name, int _value );
+	///< STL std::string form.
+	void SetDoubleAttribute( const std::string& name, double value );
 	#endif
 
 	/** Sets an attribute of name to a given value. The attribute
@@ -1149,7 +1147,6 @@ protected:
 	const char* ReadValue( const char* in, TiXmlParsingData* prevData, TiXmlEncoding encoding );
 
 private:
-
 	TiXmlAttributeSet attributeSet;
 };
 
