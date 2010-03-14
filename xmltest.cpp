@@ -1161,19 +1161,19 @@ int main()
 		int i;
 		float f;
 		bool b;
-		//std::string str;
+		std::string str;
 
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &d ), TIXML_SUCCESS );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &i ), TIXML_SUCCESS );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &f ), TIXML_SUCCESS );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "bar", &b ), TIXML_WRONG_TYPE );
 		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "nobar", &b ), TIXML_NO_ATTRIBUTE );
-		//XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "barStr", &str ), TIXML_SUCCESS );
+		XmlTest( "QueryValueAttribute", ele->QueryValueAttribute( "barStr", &str ), TIXML_SUCCESS );
 
 		XmlTest( "QueryValueAttribute", (d==3.0), true );
 		XmlTest( "QueryValueAttribute", (i==3), true );
 		XmlTest( "QueryValueAttribute", (f==3.0f), true );
-		//XmlTest( "QueryValueAttribute", (str==std::string( "a string" )), true );
+		XmlTest( "QueryValueAttribute", (str==std::string( "a string" )), true );
 	}
 	#endif
 

@@ -277,5 +277,7 @@ Changes in version 2.1.5
 - Johannes Hillert pointed out some bug typos.
 - Christian Mueller identified inconsistent error handling with Attributes.
 - olivier barthelemy also reported a problem with double truncation, also related to the %lf issue.
+- zaelsius came up with a great (and simple) suggestion to fix QueryValueAttribute truncating strings.
+
 
 
