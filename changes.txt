@@ -282,6 +282,8 @@ Changes in version 2.1.5
 - Sami Väisänen found a (rare) buffer overrun that could occur in parsing.
 - vi tri filed a bug that led to a refactoring of the attribute setting mess (as well as adding a missing SetDoubleAttribute() )
 - removed TIXML_ERROR_OUT_OF_MEMORY. TinyXML does not systematically address OOO, and the notion it does is misleading.
+- vanneto, keithmarshall, others all reported the warning from IsWhiteSpace() usage. Cleaned this up - many thanks to everyone who reported this one.
+- tibur found a bug in end tag parsing
 
 
 

@@ -346,7 +346,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p, TiXmlEncoding encoding )
 				continue;
 			}
 
-			if ( IsWhiteSpace( *p ) || *p == '\n' || *p =='\r' )		// Still using old rules for white space.
+			if ( IsWhiteSpace( *p ) )		// Still using old rules for white space.
 				++p;
 			else
 				break;
@@ -354,7 +354,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p, TiXmlEncoding encoding )
 	}
 	else
 	{
-		while ( *p && IsWhiteSpace( *p ) || *p == '\n' || *p =='\r' )
+		while ( *p && IsWhiteSpace( *p ) )
 			++p;
 	}
 
@@ -1077,7 +1077,6 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 
     TIXML_STRING endTag ("</");
 	endTag += value;
-	endTag += ">";
 
 	// Check for and read attributes. Also look for an empty
 	// tag or an end tag.
@@ -1116,10 +1115,20 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
 			}
 
 			// We should find the end tag now
+			// note that:
+			// </foo > and
+			// </foo> 
+			// are both valid end tags.
 			if ( StringEqual( p, endTag.c_str(), false, encoding ) )
 			{
 				p += endTag.length();
-				return p;
+				p = SkipWhiteSpace( p, encoding );
+				if ( p && *p && *p == '>' ) {
+					++p;
+					return p;
+				}
+				if ( document ) document->SetError( TIXML_ERROR_READING_END_TAG, p, data, encoding );
+				return 0;
 			}
 			else
 			{
@@ -1383,10 +1392,6 @@ const char* TiXmlAttribute::Parse( const char* p, TiXmlParsingData* data, TiXmlE
 	p = SkipWhiteSpace( p, encoding );
 	if ( !p || !*p ) return 0;
 
-//	int tabsize = 4;
-//	if ( document )
-//		tabsize = document->TabSize();
-
 	if ( data )
 	{
 		data->Stamp( p, encoding );
@@ -1438,7 +1443,7 @@ const char* TiXmlAttribute::Parse( const char* p, TiXmlParsingData* data, TiXmlE
 		// its best, even without them.
 		value = "";
 		while (    p && *p											// existence
-				&& !IsWhiteSpace( *p ) && *p != '\n' && *p != '\r'	// whitespace
+				&& !IsWhiteSpace( *p )								// whitespace
 				&& *p != '/' && *p != '>' )							// tag end
 		{
 			if ( *p == SINGLE_QUOTE || *p == DOUBLE_QUOTE ) {

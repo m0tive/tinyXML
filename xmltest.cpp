@@ -74,6 +74,7 @@ bool XmlTest( const char* testString, int expected, int found, bool noEcho = fal
 
 int main()
 {
+
 	//
 	// We start with the 'demoStart' todo list. Process it. And
 	// should hopefully end up with the todo list as illustrated.
@@ -1297,16 +1298,42 @@ int main()
 		XmlTest( "Comments iterate correctly.", 3, count );
 	}
 
-	/*
 	{
+		// trying to repro ]1874301]. If it doesn't go into an infinite loop, all is well.
+		unsigned char buf[] = "<?xml version=\"1.0\" encoding=\"utf-8\"?><feed><![CDATA[Test XMLblablablalblbl";
+		buf[60] = 239;
+		buf[61] = 0;
+
+		TiXmlDocument doc;
+		doc.Parse( (const char*)buf);
+	} 
+
+
+	{
+		// bug 1827248 Error while parsing a little bit malformed file
+		// Actually not malformed - should work.
 		TiXmlDocument xml;
-		xml.Parse( "<tag>/</tag>" );
-		xml.Print();
-		xml.FirstChild()->Print( stdout, 0 );
-		xml.FirstChild()->Type();
+		xml.Parse( "<attributelist> </attributelist >" );
+		XmlTest( "Handle end tag whitespace", false, xml.Error() );
 	}
-	*/
-	
+
+	{
+		// 1709904 - can not repro the crash
+		{
+			TiXmlDocument xml;
+			xml.Parse( "<tag>/</tag>" );
+			XmlTest( "Odd XML parsing.", xml.FirstChild()->Value(), "tag" );
+		}
+		/* Could not repro. {
+			TiXmlDocument xml;
+			xml.LoadFile( "EQUI_Inventory.xml" );
+			//XmlTest( "Odd XML parsing.", xml.FirstChildElement()->Value(), "XML" );
+			TiXmlPrinter printer;
+			xml.Accept( &printer );
+			fprintf( stdout, "%s", printer.CStr() );
+		}*/
+	}
+
 	/*  1417717 experiment
 	{
 		TiXmlDocument xml;
