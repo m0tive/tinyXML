@@ -19,11 +19,15 @@
 
 #include "tinyxml.h"
 
+bool XmlTest (const char* testString, const char* expected, const char* found, bool noEcho = false);
+bool XmlTest( const char* testString, int expected, int found, bool noEcho = false );
+
 static int gPass = 0;
 static int gFail = 0;
 
 
-bool XmlTest (const char* testString, const char* expected, const char* found, bool noEcho = false)
+
+bool XmlTest (const char* testString, const char* expected, const char* found, bool noEcho )
 {
 	bool pass = !strcmp( expected, found );
 	if ( pass )
@@ -44,7 +48,7 @@ bool XmlTest (const char* testString, const char* expected, const char* found, b
 }
 
 
-bool XmlTest( const char* testString, int expected, int found, bool noEcho = false )
+bool XmlTest( const char* testString, int expected, int found, bool noEcho )
 {
 	bool pass = ( expected == found );
 	if ( pass )
