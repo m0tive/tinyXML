@@ -580,9 +580,9 @@ const char* TiXmlElement::Attribute( const char* name ) const
 #ifdef TIXML_USE_STL
 const std::string* TiXmlElement::Attribute( const std::string& name ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
-	if ( node )
-		return &node->ValueStr();
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	if ( attrib )
+		return &attrib->ValueStr();
 	return 0;
 }
 #endif
@@ -590,108 +590,104 @@ const std::string* TiXmlElement::Attribute( const std::string& name ) const
 
 const char* TiXmlElement::Attribute( const char* name, int* i ) const
 {
-	const char* s = Attribute( name );
-	if ( i )
-	{
-		if ( s ) {
-			*i = atoi( s );
-		}
-		else {
-			*i = 0;
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	const char* result = 0;
+
+	if ( attrib ) {
+		result = attrib->Value();
+		if ( i ) {
+			attrib->QueryIntValue( i );
 		}
 	}
-	return s;
+	return result;
 }
 
 
 #ifdef TIXML_USE_STL
 const std::string* TiXmlElement::Attribute( const std::string& name, int* i ) const
 {
-	const std::string* s = Attribute( name );
-	if ( i )
-	{
-		if ( s ) {
-			*i = atoi( s->c_str() );
-		}
-		else {
-			*i = 0;
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	const std::string* result = 0;
+
+	if ( attrib ) {
+		result = &attrib->ValueStr();
+		if ( i ) {
+			attrib->QueryIntValue( i );
 		}
 	}
-	return s;
+	return result;
 }
 #endif
 
 
 const char* TiXmlElement::Attribute( const char* name, double* d ) const
 {
-	const char* s = Attribute( name );
-	if ( d )
-	{
-		if ( s ) {
-			*d = atof( s );
-		}
-		else {
-			*d = 0;
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	const char* result = 0;
+
+	if ( attrib ) {
+		result = attrib->Value();
+		if ( d ) {
+			attrib->QueryDoubleValue( d );
 		}
 	}
-	return s;
+	return result;
 }
 
 
 #ifdef TIXML_USE_STL
 const std::string* TiXmlElement::Attribute( const std::string& name, double* d ) const
 {
-	const std::string* s = Attribute( name );
-	if ( d )
-	{
-		if ( s ) {
-			*d = atof( s->c_str() );
-		}
-		else {
-			*d = 0;
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	const std::string* result = 0;
+
+	if ( attrib ) {
+		result = &attrib->ValueStr();
+		if ( d ) {
+			attrib->QueryDoubleValue( d );
 		}
 	}
-	return s;
+	return result;
 }
 #endif
 
 
 int TiXmlElement::QueryIntAttribute( const char* name, int* ival ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
-	if ( !node )
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	if ( !attrib )
 		return TIXML_NO_ATTRIBUTE;
-	return node->QueryIntValue( ival );
+	return attrib->QueryIntValue( ival );
 }
 
 
 #ifdef TIXML_USE_STL
 int TiXmlElement::QueryIntAttribute( const std::string& name, int* ival ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
-	if ( !node )
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	if ( !attrib )
 		return TIXML_NO_ATTRIBUTE;
-	return node->QueryIntValue( ival );
+	return attrib->QueryIntValue( ival );
 }
 #endif
 
 
 int TiXmlElement::QueryDoubleAttribute( const char* name, double* dval ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
-	if ( !node )
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	if ( !attrib )
 		return TIXML_NO_ATTRIBUTE;
-	return node->QueryDoubleValue( dval );
+	return attrib->QueryDoubleValue( dval );
 }
 
 
 #ifdef TIXML_USE_STL
 int TiXmlElement::QueryDoubleAttribute( const std::string& name, double* dval ) const
 {
-	const TiXmlAttribute* node = attributeSet.Find( name );
-	if ( !node )
+	const TiXmlAttribute* attrib = attributeSet.Find( name );
+	if ( !attrib )
 		return TIXML_NO_ATTRIBUTE;
-	return node->QueryDoubleValue( dval );
+	return attrib->QueryDoubleValue( dval );
 }
 #endif
 
