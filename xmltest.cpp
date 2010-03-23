@@ -1362,5 +1362,3 @@ int main()
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
 	return gFail;
 }
-
-
