@@ -174,7 +174,7 @@ class TiXmlParsingData
   public:
 	void Stamp( const char* now, TiXmlEncoding encoding );
 
-	const TiXmlCursor& Cursor()	{ return cursor; }
+	const TiXmlCursor& Cursor() const	{ return cursor; }
 
   private:
 	// Only used by the document!
@@ -1536,7 +1536,7 @@ const char* TiXmlText::Parse( const char* p, TiXmlParsingData* data, TiXmlEncodi
 
 		const char* end = "<";
 		p = ReadText( p, &value, ignoreWhite, end, false, encoding );
-		if ( p )
+		if ( p && *p )
 			return p-1;	// don't truncate the '<'
 		return 0;
 	}

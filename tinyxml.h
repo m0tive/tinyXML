@@ -950,7 +950,7 @@ public:
 
 	TiXmlElement( const TiXmlElement& );
 
-	void operator=( const TiXmlElement& base );
+	TiXmlElement& operator=( const TiXmlElement& base );
 
 	virtual ~TiXmlElement();
 
@@ -1162,7 +1162,7 @@ public:
 		SetValue( _value );
 	}
 	TiXmlComment( const TiXmlComment& );
-	void operator=( const TiXmlComment& base );
+	TiXmlComment& operator=( const TiXmlComment& base );
 
 	virtual ~TiXmlComment()	{}
 
@@ -1227,7 +1227,7 @@ public:
 	#endif
 
 	TiXmlText( const TiXmlText& copy ) : TiXmlNode( TiXmlNode::TINYXML_TEXT )	{ copy.CopyTo( this ); }
-	void operator=( const TiXmlText& base )							 	{ base.CopyTo( this ); }
+	TiXmlText& operator=( const TiXmlText& base )							 	{ base.CopyTo( this ); return *this; }
 
 	// Write this text object to a FILE stream.
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -1294,7 +1294,7 @@ public:
 						const char* _standalone );
 
 	TiXmlDeclaration( const TiXmlDeclaration& copy );
-	void operator=( const TiXmlDeclaration& copy );
+	TiXmlDeclaration& operator=( const TiXmlDeclaration& copy );
 
 	virtual ~TiXmlDeclaration()	{}
 
@@ -1351,7 +1351,7 @@ public:
 	virtual ~TiXmlUnknown() {}
 
 	TiXmlUnknown( const TiXmlUnknown& copy ) : TiXmlNode( TiXmlNode::TINYXML_UNKNOWN )		{ copy.CopyTo( this ); }
-	void operator=( const TiXmlUnknown& copy )										{ copy.CopyTo( this ); }
+	TiXmlUnknown& operator=( const TiXmlUnknown& copy )										{ copy.CopyTo( this ); return *this; }
 
 	/// Creates a copy of this Unknown and returns it.
 	virtual TiXmlNode* Clone() const;
@@ -1397,7 +1397,7 @@ public:
 	#endif
 
 	TiXmlDocument( const TiXmlDocument& copy );
-	void operator=( const TiXmlDocument& copy );
+	TiXmlDocument& operator=( const TiXmlDocument& copy );
 
 	virtual ~TiXmlDocument() {}
 

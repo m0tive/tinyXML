@@ -598,9 +598,11 @@ int main()
 						break;
 					}
 				}
-				fclose( saved );
-				fclose( verify );
 			}
+			if ( saved )
+				fclose( saved );
+			if ( verify )
+				fclose( verify );
 			XmlTest( "UTF-8: Verified multi-language round trip.", 1, okay );
 
 			// On most Western machines, this is an element that contains
