@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxml
-Original code (2.0 and earlier )copyright (c) 2000-2006 Lee Thomason (www.grinninglizard.com)
+Original code by Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -191,7 +191,8 @@ TiXmlNode* TiXmlNode::LinkEndChild( TiXmlNode* node )
 	if ( node->Type() == TiXmlNode::TINYXML_DOCUMENT )
 	{
 		delete node;
-		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		if ( GetDocument() ) 
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -214,7 +215,8 @@ TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 {
 	if ( addThis.Type() == TiXmlNode::TINYXML_DOCUMENT )
 	{
-		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		if ( GetDocument() ) 
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 	TiXmlNode* node = addThis.Clone();
@@ -232,7 +234,8 @@ TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode&
 	}
 	if ( addThis.Type() == TiXmlNode::TINYXML_DOCUMENT )
 	{
-		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		if ( GetDocument() ) 
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -264,7 +267,8 @@ TiXmlNode* TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& a
 	}
 	if ( addThis.Type() == TiXmlNode::TINYXML_DOCUMENT )
 	{
-		if ( GetDocument() ) GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		if ( GetDocument() ) 
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 

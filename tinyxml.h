@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxml
-Original code (2.0 and earlier )copyright (c) 2000-2006 Lee Thomason (www.grinninglizard.com)
+Original code by Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -1176,8 +1176,8 @@ public:
 	*/
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
-	virtual const TiXmlComment*  ToComment() const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
-	virtual TiXmlComment*  ToComment() { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
+	virtual const TiXmlComment*  ToComment() const	{ return this; } ///< Cast to a more defined type. Will return null not of the requested type.
+	virtual		  TiXmlComment*  ToComment()		{ return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
@@ -1360,8 +1360,8 @@ public:
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
-	virtual const TiXmlUnknown*     ToUnknown()     const { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
-	virtual TiXmlUnknown*           ToUnknown()	    { return this; } ///< Cast to a more defined type. Will return null not of the requested type.
+	virtual const TiXmlUnknown*     ToUnknown()     const	{ return this; } ///< Cast to a more defined type. Will return null not of the requested type.
+	virtual TiXmlUnknown*           ToUnknown()				{ return this; } ///< Cast to a more defined type. Will return null not of the requested type.
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
@@ -1635,7 +1635,7 @@ public:
 	TiXmlHandle( TiXmlNode* _node )					{ this->node = _node; }
 	/// Copy constructor
 	TiXmlHandle( const TiXmlHandle& ref )			{ this->node = ref.node; }
-	TiXmlHandle operator=( const TiXmlHandle& ref ) { this->node = ref.node; return *this; }
+	TiXmlHandle operator=( const TiXmlHandle& ref ) { if ( &ref != this ) this->node = ref.node; return *this; }
 
 	/// Return a handle to the first child node.
 	TiXmlHandle FirstChild() const;
